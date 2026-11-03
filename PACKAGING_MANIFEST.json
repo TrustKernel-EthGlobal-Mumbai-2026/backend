@@ -77,11 +77,11 @@
     {
       "destination": "README.md",
       "previous_source_ref": "repository-authoring/README.md",
-      "previous_staged_sha256": "eba1e8c602468927f06f7b4b2c7eff17768489cf4c57c2f43d8c93893cbb4700",
+      "previous_staged_sha256": "9d2f3805a3d77f51db79631f28e4a3327c0dc14c5de2fa88a5dcd2016f789cc8",
       "source_ref": "repository-authoring/README.md",
-      "source_sha256": "9d2f3805a3d77f51db79631f28e4a3327c0dc14c5de2fa88a5dcd2016f789cc8",
-      "staged_bytes": 14340,
-      "staged_sha256": "9d2f3805a3d77f51db79631f28e4a3327c0dc14c5de2fa88a5dcd2016f789cc8",
+      "source_sha256": "d367396b088b2c778a14f927d6e60cae011a075d6e5c82bdc45bc12ddda6bdd5",
+      "staged_bytes": 14680,
+      "staged_sha256": "d367396b088b2c778a14f927d6e60cae011a075d6e5c82bdc45bc12ddda6bdd5",
       "treatment": "repository_handoff_adaptation",
       "workstream": "repository-entrypoint"
     },
@@ -808,22 +808,22 @@
     {
       "destination": "context-index/catalog.json",
       "previous_source_ref": "repository-authoring/context-index/catalog.json",
-      "previous_staged_sha256": "4987c0d2a6c64e967f6ae4679fe823998830783c67365fae2a5faf952b21d9ab",
+      "previous_staged_sha256": "d0dabeddaffa4e8c34476fc5995a0c21360435aa5c09dff51d45824162ee089c",
       "source_ref": "repository-authoring/context-index/catalog.json",
-      "source_sha256": "d0dabeddaffa4e8c34476fc5995a0c21360435aa5c09dff51d45824162ee089c",
+      "source_sha256": "f00ad4b3dea9410471637222273b1cfdb1edab16508f2f836c597d3a0487a2e8",
       "staged_bytes": 66398,
-      "staged_sha256": "d0dabeddaffa4e8c34476fc5995a0c21360435aa5c09dff51d45824162ee089c",
+      "staged_sha256": "f00ad4b3dea9410471637222273b1cfdb1edab16508f2f836c597d3a0487a2e8",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
     {
       "destination": "context-index/chunks.jsonl",
       "previous_source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "previous_staged_sha256": "2ef4005f6c3cbd3ae6fbb029ac3aae48582da781beea394e044e4a76c8bc2894",
+      "previous_staged_sha256": "20db1ce540ce50bc17b59cc908caafedd0e7792ced0755ef371c0999ed446e2a",
       "source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "source_sha256": "20db1ce540ce50bc17b59cc908caafedd0e7792ced0755ef371c0999ed446e2a",
-      "staged_bytes": 276218,
-      "staged_sha256": "20db1ce540ce50bc17b59cc908caafedd0e7792ced0755ef371c0999ed446e2a",
+      "source_sha256": "c28fc9bce72b74dacd170156c03d621fdc369f79c69028965e534a7dd866d3e0",
+      "staged_bytes": 276611,
+      "staged_sha256": "c28fc9bce72b74dacd170156c03d621fdc369f79c69028965e534a7dd866d3e0",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
@@ -840,12 +840,14 @@
     },
     {
       "destination": "docs/ARTIFACT_POLICY.md",
-      "source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/ARTIFACT_POLICY.md",
-      "source_sha256": "8811afd5da13dec0e66db70768de88e302ae2b287966535623afb44f531ef022",
-      "staged_bytes": 2486,
-      "staged_sha256": "8811afd5da13dec0e66db70768de88e302ae2b287966535623afb44f531ef022",
-      "treatment": "unchanged",
-      "workstream": "repository-scaffolding"
+      "previous_source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/ARTIFACT_POLICY.md",
+      "previous_staged_sha256": "8811afd5da13dec0e66db70768de88e302ae2b287966535623afb44f531ef022",
+      "source_ref": "repository-authoring/docs/ARTIFACT_POLICY.md",
+      "source_sha256": "4b8df77633818e32941efd31a98f0f7774f3f945cc616d19d8d534380e1e244b",
+      "staged_bytes": 2566,
+      "staged_sha256": "4b8df77633818e32941efd31a98f0f7774f3f945cc616d19d8d534380e1e244b",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "docs"
     },
     {
       "destination": "docs/DECISIONS.md",
@@ -860,12 +862,12 @@
     },
     {
       "destination": "docs/PUBLICATION_PLAN.md",
-      "previous_source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/PUBLICATION_PLAN.md",
-      "previous_staged_sha256": "15feaacad4081cfa6a77fb41227daf2c2770759454e7ec282d646ef61f7db01b",
+      "previous_source_ref": "repository-authoring/docs/PUBLICATION_PLAN.md",
+      "previous_staged_sha256": "81d03e7e537ead9ce93cd1282e31714cd9c6a4dfabea8ff92f9fc9adb42034d5",
       "source_ref": "repository-authoring/docs/PUBLICATION_PLAN.md",
-      "source_sha256": "81d03e7e537ead9ce93cd1282e31714cd9c6a4dfabea8ff92f9fc9adb42034d5",
-      "staged_bytes": 1743,
-      "staged_sha256": "81d03e7e537ead9ce93cd1282e31714cd9c6a4dfabea8ff92f9fc9adb42034d5",
+      "source_sha256": "21b5225d3468a82a283dccc1b725c08437604c78288a4bf2103d4ef50d5e266d",
+      "staged_bytes": 2018,
+      "staged_sha256": "21b5225d3468a82a283dccc1b725c08437604c78288a4bf2103d4ef50d5e266d",
       "treatment": "repository_handoff_adaptation",
       "workstream": "docs"
     },
@@ -938,12 +940,14 @@
     },
     {
       "destination": "docs/research/HISTORY.md",
-      "source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/research/HISTORY.md",
-      "source_sha256": "b1cfdf81f247c2f5996ff5b78516e5c493266ac75fe5fd01cff9946168a0b9f7",
-      "staged_bytes": 4002,
-      "staged_sha256": "b1cfdf81f247c2f5996ff5b78516e5c493266ac75fe5fd01cff9946168a0b9f7",
-      "treatment": "unchanged",
-      "workstream": "repository-scaffolding"
+      "previous_source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/research/HISTORY.md",
+      "previous_staged_sha256": "b1cfdf81f247c2f5996ff5b78516e5c493266ac75fe5fd01cff9946168a0b9f7",
+      "source_ref": "repository-authoring/docs/research/HISTORY.md",
+      "source_sha256": "2ad187e8d620c42e59aac8a9db9ec3c17d141bab58e7acf760128b042572ce18",
+      "staged_bytes": 4671,
+      "staged_sha256": "2ad187e8d620c42e59aac8a9db9ec3c17d141bab58e7acf760128b042572ce18",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "docs"
     },
     {
       "destination": "docs/research/SOURCE_INDEX.json",

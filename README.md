@@ -8,6 +8,8 @@ TrustKernel exists to catch agent decisions that depend on stale evidence, fault
 
 **Current phase: completed live-source recording, completed offline ledger/verification, and repository handoff. No research experiment is running.** The next product milestone is an actual agent receiving a finding, holding a proposal, refreshing/correcting its evidence and passing a scoped recheck. That live corrective loop has not yet been demonstrated.
 
+The repository handoff is published. The [initial offline CI run](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/actions/runs/41722496087) passed on a fresh GitHub checkout, including BB8 verification and rebuilding/checking the committed context index. This is repository/mechanism validation, not another agent experiment.
+
 | Workstream | What exists now | Boundary / next action |
 |---|---|---|
 | Runtime and trace capture | Read-only adapter over pinned TradingAgents; observable prompts, messages, tools, results, configuration, usage and errors in JSONL/SQLite | No hidden chain-of-thought, wallet, order or on-chain execution |

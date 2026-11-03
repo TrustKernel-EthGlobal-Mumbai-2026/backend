@@ -1,6 +1,6 @@
 # Artifact and publication policy
 
-The default staging profile is public-safe review material: source, tests, contracts, curated research history, upstream license/provenance and authored synthetic examples. Repository visibility, source-code license and final publication remain user/parent decisions. This preparation neither publishes files nor changes those decisions.
+The public repository contains reviewed source, tests, contracts, curated research/context history, upstream license/provenance, authored synthetic examples and a portable BB8 guidance snapshot. The owner supplied the public target and authorized this publication on4November2026. A license for newly authored code remains undecided. Private data/access choices are not expanded by making this reviewed subset public.
 
 Always exclude real credentials, private keys, wallet material, native Yahoo cookie/credential caches, virtual environments, whole cumulative spending databases, approval files and unrelated personal knowledge/chat/account exports. A private Git repository is not a reason to add credential/cache databases. Runtime cookie handling remains local to native provider requests.
 
