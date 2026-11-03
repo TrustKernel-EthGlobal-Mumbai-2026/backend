@@ -1,0 +1,61 @@
+{
+  "scope": "Original report fingerprints for curated history; private originals not embedded",
+  "sources": [
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-Purpose-and-Verification-Direction.md",
+      "sha256": "8ca444d74ed462b81d3f2d4cdbfc2561527783bde7ba8512f80b2bdf3078fcf4",
+      "disposition": "curated-summary-only-original-not-exported"
+    },
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-30-Minute-Analysis.md",
+      "sha256": "7291f72944d4b6145f5a33e757c7399a9175b1ab857ddd29bcfa48e764ba78b7",
+      "disposition": "curated-summary-only-original-not-exported"
+    },
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-Refinement-Orchestrator-Review-v3.0.1.md",
+      "sha256": "849be9fb341105ae1d0043b1ee4b4f03f79f7c33dc7f2a9cec3088367482e6e3",
+      "disposition": "curated-summary-only-original-not-exported"
+    },
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-First-Verification-Loop.md",
+      "sha256": "25cbabf36f546ef39958a438661b14c979644e7eeb624f3d8e229a3c5b9c5d19",
+      "disposition": "curated-summary-only-original-not-exported"
+    },
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-Recorded-Log-Verification.md",
+      "sha256": "303c64a752fa083cfe519844305022a256979c253b786eda4ddc400dcfbdb7da",
+      "disposition": "curated-summary-only-original-not-exported"
+    },
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-Live-30-Minute-Analysis.md",
+      "sha256": "852d1ea1866f10be489f89abceea2a2769a5b641ad168018fb4cf8b5a9d7c8de",
+      "disposition": "curated-summary-only-original-not-exported"
+    },
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-Workflow-Alternatives.md",
+      "sha256": "74222663f3e1f8a8de5f816e3aea0a3d9466a5d648b1ab9d215561c8ce2aa85c",
+      "disposition": "curated-summary-only-original-not-exported"
+    },
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-System-Observatory-Design-v2.md",
+      "sha256": "897fdcc902e599473a386b0157849adbd81fc6232be3624b857801582b0cd08e",
+      "disposition": "curated-summary-only-original-not-exported"
+    },
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-Workstream-Standup-2026-11-02.md",
+      "sha256": "84b414d0d9a3db393e4b8f3534aec1931abc341768414caa097ee8ca0f4a27e0",
+      "disposition": "curated-summary-only-original-not-exported"
+    },
+    {
+      "archive_ref": "desktop-project/explorations/sponsor-fit/Sponsor-Fit-Feasibility.md",
+      "sha256": "c61d2eb83f60d0d4908caa671fe30e11293a58b2bc5a3f506cfc0bb83089cc07",
+      "disposition": "included historical dated source notes"
+    },
+    {
+      "archive_ref": "orchestrator/outputs/TrustKernel-Live-Ledger-and-Verification.md",
+      "sha256": "4ebfab6a0f5249c28f0b924fc31aecef2ccca307371591aa17120b528c2cee49",
+      "disposition": "curated-summary-only-original-not-exported"
+    }
+  ],
+  "live_verification_final_parent_report": "orchestrator/outputs/TrustKernel-Live-Ledger-and-Verification.md"
+}

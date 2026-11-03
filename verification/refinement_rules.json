@@ -1,0 +1,31 @@
+{
+  "registry_version": "3.0.1",
+  "author": "Codex worker; provisional hand-authored rules",
+  "independent_semantic_validation": false,
+  "rules": [
+    {"id":"S001","order":0,"name":"scope_primary_and_explicit_actor_references","interpretation":"Target 18 decision/investment/trader sources, plus explicitly named same-run discussion roles; naming is not reliance."},
+    {"id":"S002","order":1,"name":"legacy_punctuation_slot_regression_scope","interpretation":"Also audit originating discussion texts where a legacy normalized value is punctuation-only. This is a structural-regression scope addition, not factual relevance or support."},
+    {"id":"R010","order":10,"name":"section_metadata_guard","interpretation":"Report section prefixes are metadata and never semantic predicates. Rating/action/target/horizon scalar fields are declarations, not imperative instructions or inferred semantic predications."},
+    {"id":"R020","order":20,"name":"sentence_frame","interpretation":"Surface punctuation frames; full paragraph/parent scope retained."},
+    {"id":"R030","order":30,"name":"discourse_and_author_position_guard","interpretation":"Administrative discourse abstains from market-fact normalization; author position is its own kind."},
+    {"id":"R035","order":35,"name":"semicolon_attachment_fence","interpretation":"Partition semicolon branches before reason/condition parsing, regardless of local viable() grammar. Typed condition guards stay local; unknown cross-branch scope is queued and full-frame cues remain context only."},
+    {"id":"R040","order":40,"name":"positive_and_negated_because","interpretation":"Separate declared/rejected reason clauses, preserving full reason frame; no causal validation."},
+    {"id":"R050","order":50,"name":"explicit_condition_branch","interpretation":"Parse bounded local prefix/suffix conditions within an R035 branch. Withhold unsupported postposed IF-after-colon or IF-comma-instruction attachments; nested/alternative Boolean scope remains unresolved."},
+    {"id":"R060","order":60,"name":"bounded_independent_coordination","interpretation":"Split only clauses with explicit subject/predicate or explicit imperative branches; no guessed shared subject."},
+    {"id":"R070","order":70,"name":"bounded_surface_slots","interpretation":"Parse exact surface slots after guards; no inferred coreference/time/unit attachment."},
+    {"id":"R075","order":75,"name":"explicit_imperative_action_slot","interpretation":"An explicit instruction verb/object may be retained with subject null; no inferred addressee, authorization or unconditional factual assertion."},
+    {"id":"R090","order":90,"name":"abstain_and_queue","interpretation":"Unsupported grammar and unresolved fields remain explicit."},
+    {"id":"T010","order":100,"name":"exact_input_handoff","interpretation":"Complete source in recorded input, same run and preceding output; presence not reliance."},
+    {"id":"T020","order":110,"name":"literal_rationale_overlap","interpretation":"Exact contiguous case-sensitive block at least 32 code points and five word tokens, plus separate whole-clause match; no semantic support claim."},
+    {"id":"A010","order":120,"name":"annotation_anchor_validation","interpretation":"Exact unique quote anchors validated; relation meaning remains worker-authored provisional interpretation."}
+  ],
+  "actor_aliases": {
+    "Aggressive Analyst": ["aggressive analyst"],
+    "Conservative Analyst": ["conservative analyst", "conservative and neutral analysts"],
+    "Neutral Analyst": ["neutral analyst", "conservative and neutral analysts"],
+    "Bull Researcher": ["bull", "bull researcher"],
+    "Bear Researcher": ["bear", "bear researcher"]
+  },
+  "overlap_min_characters": 32,
+  "overlap_min_word_tokens": 5
+}

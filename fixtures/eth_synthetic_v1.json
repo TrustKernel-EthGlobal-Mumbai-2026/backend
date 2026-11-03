@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "fixture_id": "eth-synthetic-v1",
+  "kind": "synthetic-instrumentation-fixture-not-real-market-data",
+  "ticker": "ETH-USD",
+  "as_of": "2026-10-28",
+  "captured_at": "2026-10-29T17:00:00Z",
+  "provenance": {"provider": "TrustKernel local fixture author", "uri": "fixture://eth-synthetic-v1", "independence_status": "synthetic; no independent real-world corroboration"},
+  "tools": {
+    "get_stock_data": {"evidence_id": "E_PRICE", "observed_at": "2026-10-28T23:59:59Z", "content": "Synthetic OHLCV CSV, USD\nDate,Open,High,Low,Close,Volume\n2026-10-26,2500,2550,2480,2520,10000\n2026-10-27,2520,2580,2500,2550,12000\n2026-10-28,2550,2600,2510,2540,15000"},
+    "get_indicators": {"evidence_id": "E_INDICATOR", "observed_at": "2026-10-28T23:59:59Z", "content": "Synthetic fixture: RSI, moving averages, MACD and ATR unavailable; three candles are insufficient. Do not invent values."},
+    "get_verified_market_snapshot": {"evidence_id": "E_SNAPSHOT", "observed_at": "2026-10-28T23:59:59Z", "content": "Synthetic ETH-USD snapshot at 2026-10-28 close: open=2550 high=2600 low=2510 close=2540 volume=15000. Recent closes: 2520,2550,2540. Long-window indicators unavailable."},
+    "get_news": {"evidence_id": "E_NEWS", "source_id": "S_SYNTHETIC_A", "root_source_id": "S_SYNTHETIC_A", "observed_at": "2026-10-28T12:00:00Z", "content": "SYNTHETIC NEWS. An unverified desk note alleges increased ETH demand. No flows or independent corroboration are supplied. fixture://news/unverified-demand. This is an instrumentation example, not a real article."},
+    "get_global_news": {"evidence_id": "E_GLOBAL", "source_id": "S_SYNTHETIC_A", "root_source_id": "S_SYNTHETIC_A", "observed_at": "2026-10-28T13:00:00Z", "content": "SYNTHETIC NEWS. A digest repeats the same unverified desk note. It is not independent confirmation. fixture://news/digest"},
+    "get_macro_indicators": {"evidence_id": "E_MACRO", "observed_at": "2026-10-28T12:00:00Z", "content": "No macro series supplied in this synthetic snapshot."},
+    "get_prediction_markets": {"evidence_id": "E_PREDICTION", "observed_at": "2026-10-28T12:00:00Z", "content": "No prediction-market evidence supplied in this synthetic snapshot."}
+  }
+}

@@ -1,0 +1,139 @@
+<div id="tk-explore" class="viz-carousel" aria-label="TrustKernel observability directions">
+  <section data-variant="Graph led" aria-label="Graph led trace exploration"></section>
+  <section data-variant="Timeline led" aria-label="Timeline led trace exploration" hidden></section>
+</div>
+<style>
+#tk-explore { color-scheme:light dark; --tk-bg:light-dark(#f8fafb,#11181e); --tk-panel:light-dark(#ffffff,#19232c); --tk-ink:light-dark(#172b39,#e4edf3); --tk-muted:light-dark(#526675,#b4c3cf); --tk-line:light-dark(#c8d4dd,#455561); --tk-active:light-dark(#17465e,#a4d8f3); --tk-active-ink:light-dark(#ffffff,#10202c); --tk-soft:light-dark(#e9f0f4,#233847); --tk-check:light-dark(#704713,#f2c179); color:var(--tk-ink); font-family:system-ui,sans-serif; font-size:14px; line-height:1.5; }
+#tk-explore * { box-sizing:border-box; }
+#tk-explore [data-variant] { min-height:840px; }
+#tk-explore [hidden] { display:none !important; }
+#tk-explore .tk-app { background:var(--tk-bg); border:1px solid var(--tk-line); border-radius:12px; overflow:hidden; }
+#tk-explore header { padding:20px 24px; border-bottom:1px solid var(--tk-line); display:flex; gap:18px; flex-wrap:wrap; align-items:baseline; }
+#tk-explore h2,#tk-explore h3,#tk-explore p { margin:0; }
+#tk-explore h2 { font-size:18px; font-weight:500; }
+#tk-explore h3 { font-size:14px; font-weight:500; }
+#tk-explore .tk-small { font-size:12px; color:var(--tk-muted); }
+#tk-explore .tk-scenario { flex-basis:100%; }
+#tk-explore .tk-step { padding:16px 24px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+#tk-explore .tk-step label { display:flex; flex-wrap:wrap; align-items:center; gap:8px; min-width:0; max-width:100%; }
+#tk-explore select { max-width:100%; background:var(--tk-panel); color:var(--tk-ink); border:1px solid var(--tk-line); padding:8px 10px; border-radius:6px; font:inherit; }
+#tk-explore button { font:inherit; color:var(--tk-ink); background:var(--tk-panel); border:1px solid var(--tk-line); border-radius:8px; padding:10px; text-align:left; }
+#tk-explore button:focus-visible,#tk-explore select:focus-visible { outline:3px solid var(--tk-active); outline-offset:3px; }
+#tk-explore button[aria-pressed=true] { background:var(--tk-active); color:var(--tk-active-ink); }
+#tk-explore button[aria-pressed=true] .tk-small { color:inherit; }
+#tk-explore .tk-main { padding:0 24px 24px; }
+#tk-explore .tk-graph { position:relative; min-width:0; }
+#tk-explore .tk-graph svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+#tk-explore .tk-nodes { position:relative; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(3,minmax(82px,auto)); gap:32px 30px; padding:12px 0; }
+#tk-explore .tk-node { min-width:0; z-index:1; overflow-wrap:anywhere; }
+#tk-explore .tk-node strong { display:block; font-weight:500; }
+#tk-explore .tk-node[data-id="s"] { grid-area:2/1; }
+#tk-explore .tk-node[data-id="e1"] { grid-area:1/2; }
+#tk-explore .tk-node[data-id="e2"] { grid-area:2/2; }
+#tk-explore .tk-node[data-id="e3"] { grid-area:3/2; }
+#tk-explore .tk-node[data-id="c"] { grid-area:2/3; }
+#tk-explore .tk-node[data-id="d"] { grid-area:2/4; }
+#tk-explore .tk-node[data-id="f"] { grid-area:3/3; }
+#tk-explore .tk-legend { display:flex; flex-wrap:wrap; gap:8px 20px; padding:8px 0 16px; font-size:12px; color:var(--tk-muted); }
+#tk-explore .tk-detail { padding:16px; background:var(--tk-panel); border:1px solid var(--tk-line); border-radius:8px; }
+#tk-explore .tk-detail dl { margin:10px 0 0; display:grid; grid-template-columns:110px minmax(0,1fr); gap:6px 12px; font-size:12px; }
+#tk-explore dt { color:var(--tk-muted); }
+#tk-explore dd { margin:0; overflow-wrap:anywhere; }
+#tk-explore .tk-relations { margin-bottom:14px; color:var(--tk-muted); font-size:12px; }
+#tk-explore .tk-events { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:10px; }
+#tk-explore .tk-events li { flex:1; min-width:0; }
+#tk-explore .tk-events button { width:100%; height:100%; }
+#tk-explore .tk-events span { display:block; }
+#tk-explore .tk-footer { padding:16px 24px; border-top:1px solid var(--tk-line); }
+#tk-explore .tk-findings { margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+#tk-explore .tk-finding { padding-left:12px; border-left:2px solid var(--tk-check); }
+#tk-explore .tk-time-layout { display:grid; grid-template-columns:220px minmax(0,1fr); gap:24px; }
+#tk-explore [data-layout="timeline"] .tk-events { flex-direction:column; }
+#tk-explore [data-layout="timeline"] .tk-nodes { gap:32px 16px; }
+#tk-explore .tk-noids .tk-ref { display:none; }
+@media(max-width:760px) { #tk-explore .tk-time-layout { grid-template-columns:1fr; } #tk-explore [data-layout="timeline"] .tk-events { flex-direction:row; flex-wrap:wrap; } #tk-explore .tk-events li { flex-basis:28%; } #tk-explore .tk-nodes { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:none; gap:28px 20px; } #tk-explore .tk-node[data-id] { grid-area:auto; } #tk-explore .tk-findings { grid-template-columns:1fr; } #tk-explore [data-variant] { min-height:1150px; } }
+@media(max-width:430px) { #tk-explore .tk-main { padding:0 12px 16px; } #tk-explore header,#tk-explore .tk-step,#tk-explore .tk-footer { padding:14px 12px; } #tk-explore .tk-events li { flex-basis:45%; } #tk-explore .tk-detail dl { grid-template-columns:1fr; gap:2px; } #tk-explore dd { margin-bottom:7px; } #tk-explore select { width:100%; } #tk-explore [data-variant] { min-height:1350px; } }
+@media(pointer:coarse) { #tk-explore button,#tk-explore select { min-height:44px; } }
+</style>
+<script>
+(() => {
+ const root=document.getElementById('tk-explore');
+ const steps=['Inputs captured','Report emitted','TrustKernel checked','Finding delivered','Agent responded'];
+ const times=['+00s','+10s','+12s','+13s','+18s'];
+ const records={
+  s:{type:'Source root · S1',title:'Original market note',status:'One declared origin',quote:'Illustrative note: a market participant alleges higher demand.',origin:'DEMO/source-note · not a real trace',context:'Event DEMO-01 · available at +00s',scope:'Source identity is separate from factual accuracy.'},
+  e1:{type:'Evidence · E1',title:'Market note',status:'Retrieved · delivered',quote:'Illustrative note: a market participant alleges higher demand.',origin:'DEMO/tool-result-01 · source root S1',context:'Market analyst input DEMO-02',scope:'Presence in input establishes access, not attention or reliance.'},
+  e2:{type:'Evidence · E2',title:'Digest of same note',status:'Retrieved · delivered',quote:'Illustrative digest repeats the same demand allegation.',origin:'DEMO/tool-result-02 · source root S1',context:'Market analyst input DEMO-02',scope:'A second document does not establish independent corroboration.'},
+  e3:{type:'Evidence · E3',title:'Market snapshot',status:'Available · no recorded retrieval',quote:'Illustrative snapshot: price observations only; no direct demand measurement.',origin:'DEMO/fixture-snapshot · separate source',context:'Available +00s; absent from this illustrative call context',scope:'Potential comparison only. Relevance and any use obligation remain unresolved.'},
+  c:{type:'Assertion · C1',title:'Demand increased',status:'Candidate assertion',quote:'Illustrative report: “Demand increased, supported by the note and digest.”',origin:'DEMO/report · exact illustrative sentence',context:'Market analyst output DEMO-03 · +10s',scope:'Citations are recorded claims of support; the graph does not accept their sufficiency.'},
+  d:{type:'Decision · D1',title:'Hold',status:'Conditional recommendation',quote:'Illustrative recommendation: “Hold if exposure remains within risk limits.”',origin:'DEMO/decision · rationale mentions C1',context:'Portfolio step DEMO-04 · +10s',scope:'Holdings and risk limits are absent. Suitability remains unresolved.'},
+  f:{type:'Check · F1',title:'Shared source root',status:'Finding · bounded lineage check',quote:'Illustrative result: E1 and E2 declare the same root S1.',origin:'DEMO/check-01 · method lineage-demo/v1',context:'Triggered after report DEMO-03 · +12s',scope:'Does not establish the demand claim is false. Independence is not established.'}
+ };
+ const notices=[
+  ['No TrustKernel check yet','Input capture only; no intervention.'],
+  ['Report recorded','Claim and recommendation precede the illustrative check.'],
+  ['Check completed · +12s','Trigger: report emitted. Result exists; not yet delivered to the agent.'],
+  ['Finding delivered · +13s','Agent input DEMO-05 contains F1. No acknowledgement recorded yet.'],
+  ['Response recorded · +18s','Illustrative response acknowledges F1 and qualifies C1; Hold is maintained.']
+ ];
+ const saved=window.openai?.widgetState?.modelContent;
+ const initial=saved?.kind==='tk-observability' ? saved : {};
+ const state={step:Number.isInteger(initial.step)&&initial.step>=0&&initial.step<5?initial.step:2,node:records[initial.node]?initial.node:'f',showIds:true};
+ const apps=[];
+ function escaped(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ function events(){return '<ol class="tk-events" aria-label="Illustrative run sequence">'+steps.map((s,i)=>'<li><button type="button" class="cursor-interaction" data-step="'+i+'"><span class="tk-small">'+times[i]+'</span><span>'+s+'</span></button></li>').join('')+'</ol>';}
+ function graph(){return '<div class="tk-graph"><svg role="img" aria-label="Source lineage, citation and candidate comparison relationships"></svg><div class="tk-nodes">'+Object.entries(records).map(([id,r])=>'<button type="button" class="tk-node cursor-interaction" data-id="'+id+'"><span class="tk-small tk-ref">'+r.type+'</span><strong>'+r.title+'</strong><span class="tk-small tk-node-status">'+r.status+'</span></button>').join('')+'</div></div><div class="tk-legend"><span>→ Declared origin / citation / rationale mention</span><span>┄ Candidate comparison, relevance unresolved</span></div><details class="tk-relations"><summary>Relationship list</summary><ul></ul></details>';}
+ function details(){return '<div class="tk-detail" aria-live="polite"><h3 class="tk-detail-title"></h3><dl class="tk-detail-fields"></dl></div><div class="tk-findings"><div class="tk-finding"><h3 class="tk-check-title"></h3><p class="tk-small tk-check-detail"></p></div><div class="tk-finding"><h3>Evidence review</h3><p class="tk-small tk-missed"></p></div></div>';}
+ root.querySelectorAll('[data-variant]').forEach((variant,index)=>{
+  const layout=index===0?'graph':'timeline';
+  variant.innerHTML='<div class="tk-app" data-layout="'+layout+'"><header><h2>TrustKernel / Trace explorer</h2><span class="tk-small">Research only</span><p class="tk-small tk-scenario">Illustrative inline-check scenario · DEMO · no recorded run attached</p></header><div class="tk-step"><label>As of <select aria-label="Recorded point in illustrative sequence">'+steps.map((s,i)=>'<option value="'+i+'">'+times[i]+' · '+s+'</option>').join('')+'</select></label><span class="tk-small">Assessment scope: this recorded call</span></div><div class="tk-main">'+(index===0?graph()+details():'<div class="tk-time-layout">'+events()+'<div>'+graph()+details()+'</div></div>')+'</div>'+(index===0?'<div class="tk-footer">'+events()+'</div>':'')+'</div>';
+  const app=variant.querySelector('.tk-app');apps.push(app);
+  app.querySelector('select').addEventListener('change',e=>{state.step=Number(e.target.value);if(state.step<2&&state.node==='f')state.node='c';render();persist();});
+  app.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{state.step=Number(b.dataset.step);if(state.step<2&&state.node==='f')state.node='c';render();persist();}));
+  app.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click',()=>{state.node=b.dataset.id;render();persist();}));
+ });
+ function persist(){window.openai?.setWidgetState?.({modelContent:{kind:'tk-observability',step:state.step,node:state.node},privateContent:null})?.catch(()=>{});}
+ function draw(app){
+  const area=app.querySelector('.tk-graph'),svg=area.querySelector('svg');
+  const bounds=area.getBoundingClientRect();if(bounds.width===0)return;
+  svg.setAttribute('viewBox','0 0 '+bounds.width+' '+bounds.height);svg.replaceChildren();
+  const ns='http://www.w3.org/2000/svg';
+  const add=(tag,attrs)=>{const e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));return e;};
+  const markerId='tk-arrow-'+app.dataset.layout;
+  const defs=add('defs',{}),marker=add('marker',{id:markerId,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'});
+  marker.append(add('path',{d:'M 0 0 L 10 5 L 0 10 z',fill:'var(--tk-line)'}));defs.append(marker);svg.append(defs);
+  let edges=[['s','e1',false],['s','e2',false]];
+  if(state.step>=1)edges.push(['e1','c',false],['e2','c',false],['c','d',false]);
+  if(state.step>=2)edges.push(['e3','c',true],['e2','f',false]);
+  edges.forEach(([a,b,candidate])=>{
+   const ra=app.querySelector('[data-id="'+a+'"]').getBoundingClientRect(),rb=app.querySelector('[data-id="'+b+'"]').getBoundingClientRect();
+   const vertical=innerWidth<760;
+   const x1=(vertical?ra.left+ra.width/2:ra.right)-bounds.left,y1=(vertical?ra.bottom:ra.top+ra.height/2)-bounds.top;
+   const x2=(vertical?rb.left+rb.width/2:rb.left)-bounds.left,y2=(vertical?rb.top:rb.top+rb.height/2)-bounds.top;
+   svg.append(add('path',{d:'M '+x1+' '+y1+' C '+(vertical?x1:(x1+x2)/2)+' '+(vertical?(y1+y2)/2:y1)+' '+(vertical?x2:(x1+x2)/2)+' '+(vertical?(y1+y2)/2:y2)+' '+x2+' '+y2,fill:'none',stroke:'var(--tk-line)','stroke-width':1.5,'stroke-dasharray':candidate?'5 4':'none','marker-end':'url(#'+markerId+')'}));
+  });
+ }
+ function render(){apps.forEach(app=>{
+  app.classList.toggle('tk-noids',!state.showIds);app.querySelector('select').value=String(state.step);
+  app.querySelectorAll('[data-step]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.step)===state.step)));
+  app.querySelectorAll('[data-id]').forEach(b=>{b.hidden=(['c','d'].includes(b.dataset.id)&&state.step<1)||(b.dataset.id==='f'&&state.step<2);b.setAttribute('aria-pressed',String(b.dataset.id===state.node));});
+  let id=state.node;if(state.step===0&&['c','d','f'].includes(id))id='e1';if(state.step<2&&id==='f')id='c';
+  const r={...records[id]};
+  if(id==='c'&&state.step===4){r.title='Demand increase unverified';r.status='Illustrative revision · original retained';r.quote='Illustrative revision: “The demand increase remains an unverified allegation.”';r.context='Agent response DEMO-06 · +18s; supersedes DEMO-03 wording';}
+  app.querySelector('.tk-detail-title').textContent=r.type+' · '+r.title;
+  app.querySelector('.tk-detail-fields').innerHTML=[['Status',r.status],['Text',r.quote],['Source',r.origin],['Context',r.context],['Interpretation',r.scope]].map(([k,v])=>'<dt>'+escaped(k)+'</dt><dd>'+escaped(v)+'</dd>').join('');
+  app.querySelector('.tk-check-title').textContent=notices[state.step][0];app.querySelector('.tk-check-detail').textContent=notices[state.step][1];
+  app.querySelector('.tk-missed').textContent=state.step<2?'Not assessed yet. Available sources are visible; no omission finding exists.':'E3: available, no recorded retrieval. Candidate comparison flagged; relevance, use obligation and decision impact unresolved.';
+  const relationships=['E1 declares origin S1','E2 declares origin S1'];
+  if(state.step>=1)relationships.push('C1 cites E1; sufficient support not established','C1 cites E2; independent corroboration not established','D1 rationale mentions C1; logical dependency not established');
+  if(state.step>=2)relationships.push('E3 proposed for comparison with C1; relevance unresolved','F1 inspects E2 source lineage against E1');
+  app.querySelector('.tk-relations ul').innerHTML=relationships.map(s=>'<li>'+escaped(s)+'</li>').join('');
+  const cb=app.querySelector('[data-id="c"]');cb.querySelector('strong').textContent=state.step===4?'Demand increase unverified':'Demand increased';cb.querySelector('.tk-node-status').textContent=state.step===4?'Revised · original retained':'Candidate assertion';
+  requestAnimationFrame(()=>draw(app));
+ });}
+ render();
+ const ro=new ResizeObserver(()=>apps.forEach(draw));apps.forEach(a=>ro.observe(a));
+ window.addEventListener('openai:set_globals',e=>{const s=e.detail?.globals?.widgetState?.modelContent;if(s?.kind==='tk-observability'&&Number.isInteger(s.step)&&s.step>=0&&s.step<5){state.step=s.step;state.node=records[s.node]?s.node:'c';render();}});
+ if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:render});tweak.addToggle(state,'showIds',{label:'Show source and assertion IDs'});}
+})();
+</script>

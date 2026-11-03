@@ -1,0 +1,43 @@
+{
+  "mapping_registry_version": "0.2.0",
+  "author": "Codex verification semantics lane",
+  "status": "provisional_authored_mapping_not_independent_gold",
+  "mappings": [
+    {
+      "id": "M-CLOSE-TERRA-P0",
+      "version": "0.2.0",
+      "status": "provisional_complete_for_conditional_comparison",
+      "selector": {"run_id": "terra-2f66dbe7f15d", "rule_id": "market.ohlcv.close"},
+      "anchor": {"start": 346, "end": 351, "quote": "2,540"},
+      "context_quotes": ["# ETH-USD indicator report", "As of October 28, 2026.", "The verified snapshot reports an October 28 open of **$2,550**, high of **$2,600**, low of **$2,510**, and close of **$2,540**, with volume of **15,000**."],
+      "entity": "ETH-USD",
+      "predicate": "close",
+      "value": "2540",
+      "unit": "USD",
+      "valid_date": "2026-10-28",
+      "evidence_key": "E_PRICE",
+      "evidence_column": "Close",
+      "evidence_unit_context": "Synthetic OHLCV CSV, USD",
+      "scope": "fixture_consistency",
+      "assumptions": ["The report header and enclosing snapshot paragraph attach instrument, year, date and price role to this token.", "The fixture's USD header applies to the Close price column; Volume units are not inferred.", "The mapping is an authored premise; passing its anchor gates is not semantic adjudication."]
+    },
+    {
+      "id": "M-CLOSE-TERRA-P0-INCOMPLETE",
+      "version": "0.2.0",
+      "status": "provisional_incomplete",
+      "selector": {"run_id": "terra-2f66dbe7f15d", "rule_id": "market.ohlcv.close"},
+      "anchor": {"start": 346, "end": 351, "quote": "2,540"},
+      "context_quotes": ["# ETH-USD indicator report", "As of October 28, 2026."],
+      "entity": "ETH-USD",
+      "predicate": "close",
+      "value": "2540",
+      "unit": null,
+      "valid_date": "2026-10-28",
+      "evidence_key": "E_PRICE",
+      "evidence_column": "Close",
+      "evidence_unit_context": "Synthetic OHLCV CSV, USD",
+      "scope": "fixture_consistency",
+      "assumptions": ["Deliberately incomplete companion mapping on the same real occurrence; omitted unit is not an observed model error."]
+    }
+  ]
+}

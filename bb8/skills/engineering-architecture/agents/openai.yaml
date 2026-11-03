@@ -1,0 +1,7 @@
+interface:
+  display_name: "Engineering Architecture"
+  short_description: "Design boundaries and system tradeoffs"
+  brand_color: "#34495E"
+  default_prompt: "Use $engineering-architecture to evaluate these boundaries and architecture tradeoffs."
+policy:
+  allow_implicit_invocation: true

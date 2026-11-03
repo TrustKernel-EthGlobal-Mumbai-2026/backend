@@ -1,0 +1,7 @@
+interface:
+  display_name: "Engineering Review"
+  short_description: "Find actionable defects in changes"
+  brand_color: "#34495E"
+  default_prompt: "Use $engineering-review to inspect this change for concrete defects and risks."
+policy:
+  allow_implicit_invocation: true

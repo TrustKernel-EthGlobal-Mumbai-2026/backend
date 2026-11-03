@@ -1,0 +1,7 @@
+interface:
+  display_name: "Minto Communication"
+  short_description: "Answer-first executive communication"
+  brand_color: "#4D5C8A"
+  default_prompt: "Use $minto-communication to turn this analysis into an answer-first executive narrative."
+policy:
+  allow_implicit_invocation: true

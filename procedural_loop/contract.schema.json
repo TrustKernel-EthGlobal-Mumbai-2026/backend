@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trustkernel:procedural-loop-contract-0.1",
+  "title": "Offline procedural verification packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "packet_id", "run_id", "context", "capabilities", "evidence", "proposal", "policy"],
+  "properties": {
+    "schema_version": {"const": "procedural-loop-contract-0.1", "type": "string"},
+    "packet_id": {"$ref": "#/$defs/id"},
+    "run_id": {"$ref": "#/$defs/id"},
+    "context": {"$ref": "#/$defs/context"},
+    "capabilities": {"type": "array", "items": {"$ref": "#/$defs/capability"}},
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "proposal": {"$ref": "#/$defs/proposal"},
+    "policy": {"$ref": "#/$defs/policy"}
+  },
+  "$defs": {
+    "id": {"type": "string", "minLength": 1},
+    "clock": {"type": ["string", "null"], "format": "date-time"},
+    "refs": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+    "span": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 0}},
+    "context": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "revision", "observed_at", "event_refs"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "revision": {"type": "integer", "minimum": 1},
+        "observed_at": {"$ref": "#/$defs/clock"}, "event_refs": {"$ref": "#/$defs/refs"}
+      }
+    },
+    "capability": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "scope", "state", "detail"],
+      "properties": {
+        "name": {"$ref": "#/$defs/id"}, "scope": {"$ref": "#/$defs/id"},
+        "state": {"type": "string", "enum": ["CAPTURED", "NOT_CAPTURED", "UNKNOWN"]},
+        "detail": {"type": "string"}
+      }
+    },
+    "pointer": {
+      "type": "object", "additionalProperties": false, "required": ["uri", "json_pointer", "span"],
+      "properties": {
+        "uri": {"$ref": "#/$defs/id"},
+        "json_pointer": {"type": "string", "pattern": "^(?:/(?:[^~/]|~[01])*)*$"},
+        "span": {"$ref": "#/$defs/span"}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "source_id", "source_version", "supersedes", "valid_at", "retrieved_at", "recorded_at", "content", "content_digest", "pointer", "run_id", "actor_id", "call_id", "causal_refs", "status"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "source_id": {"$ref": "#/$defs/id"},
+        "source_version": {"$ref": "#/$defs/id"}, "supersedes": {"$ref": "#/$defs/refs"},
+        "valid_at": {"$ref": "#/$defs/clock"}, "retrieved_at": {"$ref": "#/$defs/clock"},
+        "recorded_at": {"$ref": "#/$defs/clock"}, "content": {"type": "string"},
+        "content_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pointer": {"$ref": "#/$defs/pointer"}, "run_id": {"$ref": "#/$defs/id"},
+        "actor_id": {"$ref": "#/$defs/id"}, "call_id": {"$ref": "#/$defs/id"},
+        "causal_refs": {"$ref": "#/$defs/refs"},
+        "status": {"type": "string", "enum": ["AVAILABLE", "NO_DATA"]}
+      }
+    },
+    "dependency": {
+      "type": "object", "additionalProperties": false,
+      "required": ["evidence_id", "source_version", "status"],
+      "properties": {
+        "evidence_id": {"$ref": "#/$defs/id"}, "source_version": {"$ref": "#/$defs/id"},
+        "status": {"type": "string", "enum": ["DECLARED", "PROVISIONAL"]}
+      }
+    },
+    "extract": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "evidence_id", "source_version", "span", "quote", "field", "value", "unit"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "evidence_id": {"$ref": "#/$defs/id"},
+        "source_version": {"$ref": "#/$defs/id"}, "span": {"$ref": "#/$defs/span"},
+        "quote": {"type": "string"}, "field": {"$ref": "#/$defs/id"},
+        "value": {"type": "string"}, "unit": {"type": ["string", "null"]}
+      }
+    },
+    "proposal": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "revision", "as_of", "created_at", "run_id", "actor_id", "call_id", "causal_refs", "text", "dependencies", "dependency_completeness", "extracts"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "revision": {"type": "integer", "minimum": 1},
+        "as_of": {"$ref": "#/$defs/clock"}, "created_at": {"$ref": "#/$defs/clock"},
+        "run_id": {"$ref": "#/$defs/id"}, "actor_id": {"$ref": "#/$defs/id"},
+        "call_id": {"$ref": "#/$defs/id"}, "causal_refs": {"$ref": "#/$defs/refs"},
+        "text": {"type": "string"},
+        "dependencies": {"type": ["array", "null"], "uniqueItems": true, "items": {"$ref": "#/$defs/dependency"}},
+        "dependency_completeness": {"type": "string", "enum": ["COMPLETE", "PARTIAL", "UNKNOWN"]},
+        "extracts": {"type": "array", "items": {"$ref": "#/$defs/extract"}}
+      }
+    },
+    "policy": {
+      "type": "object", "additionalProperties": true,
+      "required": ["id", "version", "max_age_seconds", "required_capabilities"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "version": {"$ref": "#/$defs/id"},
+        "max_age_seconds": {"type": "integer", "minimum": 0},
+        "required_capabilities": {"$ref": "#/$defs/refs"}
+      }
+    }
+  }
+}

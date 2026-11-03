@@ -1,0 +1,7 @@
+interface:
+  display_name: "Design Critique"
+  short_description: "Evaluate product and service designs"
+  brand_color: "#A23B72"
+  default_prompt: "Use $design-critique to evaluate this artifact and prioritize consequential improvements."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trustkernel:scoped-finding:0.2.0",
+  "title": "Scoped finding envelope 0.2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["finding_contract_version", "finding_id", "case_id", "check", "subject", "ledger_context", "mapping", "required_prerequisites", "expected", "observed", "result", "positive_witnesses", "negative_witnesses", "assumptions", "limits", "assessed_at", "supersedes", "accepted_factual_support"],
+  "properties": {
+    "finding_contract_version": {"const": "0.2.0"},
+    "finding_id": {"type": "string", "pattern": "^finding:[0-9a-f]{64}$"},
+    "case_id": {"type": "string", "minLength": 1},
+    "check": {"type": "object", "required": ["check_id", "type", "method_version", "implementation_sha256"], "properties": {"check_id": {"type": "string", "pattern": "^check:[0-9a-f]{64}$"}, "type": {"type": "string"}, "method_version": {"type": "string"}, "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}},
+    "subject": {"type": "object", "required": ["occurrence", "proposition_revision", "source", "run_id", "actor", "call_id", "input_event_id", "input_seq", "output_event_id", "output_seq", "asserted_at", "anchor", "original_unresolved", "original_identity_status"], "properties": {"anchor": {"type": "object", "required": ["path", "artifact_sha256", "pointer", "start", "end", "quote", "offset_unit", "enclosing_context"]}, "original_unresolved": {"type": "array", "items": {"type": "string"}}}},
+    "ledger_context": {"type": "object", "required": ["build_id", "canonical_sha256", "release_versions", "registry_version", "authored_overlay_version", "context"], "properties": {"build_id": {"const": "refined-v3-99d181ef7ca54fea4ff1"}, "canonical_sha256": {"const": "950d60f56d835d08cb01fa4bd24d93153ce48ab211bcc1b2f630b35a815a3556"}, "context": {"type": "object", "required": ["corpus", "support_search", "search_completeness"]}}},
+    "mapping": {"type": "object", "required": ["id", "author", "version", "status"]},
+    "required_prerequisites": {"type": "array", "items": {"type": "object", "required": ["id", "state", "detail"], "properties": {"id": {"type": "string"}, "state": {"enum": ["met", "unresolved"]}, "detail": {"type": "string"}}}},
+    "expected": {"type": "object"}, "observed": {"type": "object"},
+    "result": {"type": "object", "required": ["status", "reason_code"], "additionalProperties": false, "properties": {"status": {"enum": ["PASS", "FAIL", "INCONCLUSIVE", "NOT_APPLICABLE", "ERROR"]}, "reason_code": {"type": "string", "minLength": 1}}},
+    "positive_witnesses": {"type": "array", "items": {"type": "object"}},
+    "negative_witnesses": {"type": "array", "items": {"type": "object"}},
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "limits": {"type": "array", "items": {"type": "string"}},
+    "assessed_at": {"type": "string", "format": "date-time"},
+    "supersedes": {"oneOf": [{"type": "null"}, {"type": "string", "pattern": "^finding:[0-9a-f]{64}$"}]},
+    "accepted_factual_support": {"const": false}
+  }
+}

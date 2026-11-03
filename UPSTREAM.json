@@ -1,0 +1,9 @@
+{
+  "official_project_page": "https://tauric.ai/research/tradingagents",
+  "repository": "https://github.com/TauricResearch/TradingAgents.git",
+  "tag": "v0.7.1",
+  "commit": "c4544913a14ed3df5f1ed7b9e8483270ce20682a",
+  "verified_on": "2026-10-29",
+  "license": "Apache-2.0",
+  "source_modifications": []
+}

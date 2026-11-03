@@ -1,0 +1,7 @@
+interface:
+  display_name: "Engineering Testing"
+  short_description: "Design risk-based verification"
+  brand_color: "#34495E"
+  default_prompt: "Use $engineering-testing to design a risk-based verification strategy for this change."
+policy:
+  allow_implicit_invocation: true

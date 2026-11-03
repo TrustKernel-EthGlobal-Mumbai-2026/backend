@@ -1,0 +1,26 @@
+{
+  "name": "bb8",
+  "version": "0.2.0+codex.20260917171643",
+  "description": "Local-first executive thinking partner, planner, and capability router.",
+  "author": {
+    "name": "Personal"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "BB8",
+    "shortDescription": "Executive thinking partner and navigator",
+    "longDescription": "A local-first chief of staff and thinking partner that questions, frames, plans, routes specialist work, and preserves continuity.",
+    "developerName": "Personal",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use BB8 to frame and plan this complex decision.",
+      "Use BB8 to create a Now, Next, Later mission plan.",
+      "Use BB8 to challenge my assumptions before we act."
+    ],
+    "brandColor": "#E58B2A"
+  }
+}

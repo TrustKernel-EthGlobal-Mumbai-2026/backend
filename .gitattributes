@@ -1,0 +1,2 @@
+# Preserve manifest-bound historical source bytes, including original line endings.
+* -text

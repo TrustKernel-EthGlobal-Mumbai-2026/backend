@@ -1,0 +1,2188 @@
+{
+  "base_export": {
+    "manifest_sha256": "2a9ae835eddb8bb7498006ef7efdd67dbc6f328ab2838305a714c3b6023e8a59",
+    "profile": "public-safe-review-v1"
+  },
+  "bb8_provenance": "bb8/SNAPSHOT.json",
+  "context_entrypoint": "README.md",
+  "derived_cache_excluded": ".context/",
+  "files": [
+    {
+      "destination": ".agents/skills/bb8/SKILL.md",
+      "source_ref": "repository-authoring/.agents/skills/bb8/SKILL.md",
+      "source_sha256": "a5d359c4fc142dba1f49d8476e317e753e20cb81de8554c74dc9576a4c648c2e",
+      "staged_bytes": 1127,
+      "staged_sha256": "a5d359c4fc142dba1f49d8476e317e753e20cb81de8554c74dc9576a4c648c2e",
+      "treatment": "repository_handoff_addition",
+      "workstream": ".agents"
+    },
+    {
+      "destination": ".gitattributes",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/.gitattributes",
+      "source_sha256": "60e6005d072201fdfe6fe8fa78e34525155f29120b45b598c5944348d7f336f3",
+      "staged_bytes": 92,
+      "staged_sha256": "60e6005d072201fdfe6fe8fa78e34525155f29120b45b598c5944348d7f336f3",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": ".github/workflows/offline.yml",
+      "previous_source_ref": "repository-authoring/.github/workflows/offline.yml",
+      "previous_staged_sha256": "71bc5f6b2d8bf7425372ce25e4ea302a9dd24a69f3c3b485a1eb728f61bc73bd",
+      "source_ref": "repository-authoring/.github/workflows/offline.yml",
+      "source_sha256": "306c192042d28cbb594603cf86b34561fc5cf4813632e676ada53f94934a49bf",
+      "staged_bytes": 1523,
+      "staged_sha256": "306c192042d28cbb594603cf86b34561fc5cf4813632e676ada53f94934a49bf",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": ".github"
+    },
+    {
+      "destination": ".gitignore",
+      "previous_source_ref": "orchestrator-workspace/work/repository-prep/templates/.gitignore",
+      "previous_staged_sha256": "08ab16c8664960509605bbfbf2348f8779b7a9bf7ec24c528c55c66156fbf6da",
+      "source_ref": "repository-authoring/.gitignore",
+      "source_sha256": "b0da834b4b351610f13b2a6a7ae967848d8347f267bf5b6402f6b139f429481e",
+      "staged_bytes": 442,
+      "staged_sha256": "b0da834b4b351610f13b2a6a7ae967848d8347f267bf5b6402f6b139f429481e",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "repository-entrypoint"
+    },
+    {
+      "destination": "AGENTS.md",
+      "source_ref": "repository-authoring/AGENTS.md",
+      "source_sha256": "2c786eb9e5682cd963c40695181a63f1f5f72605c27d06851091bd4f48f68982",
+      "staged_bytes": 3741,
+      "staged_sha256": "2c786eb9e5682cd963c40695181a63f1f5f72605c27d06851091bd4f48f68982",
+      "treatment": "repository_handoff_addition",
+      "workstream": "repository-entrypoint"
+    },
+    {
+      "destination": "Launch-Research.ps1",
+      "source_ref": "desktop-project/Launch-Research.ps1",
+      "source_sha256": "a2935ec658d03da54ca2218bedc7c64b03c010cd174d0a481a0067c31a1197a0",
+      "staged_bytes": 811,
+      "staged_sha256": "a2935ec658d03da54ca2218bedc7c64b03c010cd174d0a481a0067c31a1197a0",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "Monitor.ps1",
+      "source_ref": "desktop-project/Monitor.ps1",
+      "source_sha256": "e2a2ed42786b48c1a4f485e5647a73d7e602a96c382a646e0c2d70d9eb45b625",
+      "staged_bytes": 833,
+      "staged_sha256": "e2a2ed42786b48c1a4f485e5647a73d7e602a96c382a646e0c2d70d9eb45b625",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "README.md",
+      "previous_source_ref": "repository-authoring/README.md",
+      "previous_staged_sha256": "eba1e8c602468927f06f7b4b2c7eff17768489cf4c57c2f43d8c93893cbb4700",
+      "source_ref": "repository-authoring/README.md",
+      "source_sha256": "9d2f3805a3d77f51db79631f28e4a3327c0dc14c5de2fa88a5dcd2016f789cc8",
+      "staged_bytes": 14340,
+      "staged_sha256": "9d2f3805a3d77f51db79631f28e4a3327c0dc14c5de2fa88a5dcd2016f789cc8",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "repository-entrypoint"
+    },
+    {
+      "destination": "Run-30Minutes.ps1",
+      "source_ref": "desktop-project/Run-30Minutes.ps1",
+      "source_sha256": "b0635f959860fca8b3c6c9112f7573bc26ee58a2c192986cd6e93afa515a4c33",
+      "staged_bytes": 288,
+      "staged_sha256": "b0635f959860fca8b3c6c9112f7573bc26ee58a2c192986cd6e93afa515a4c33",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "Run-Live-30Minutes.ps1",
+      "source_ref": "desktop-project/Run-Live-30Minutes.ps1",
+      "source_sha256": "6c923bd36f25fe17917016cb40a64ec926baa19727118c8a9d10ff8e1fad2d87",
+      "staged_bytes": 530,
+      "staged_sha256": "6c923bd36f25fe17917016cb40a64ec926baa19727118c8a9d10ff8e1fad2d87",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "Run-Live-Verification.ps1",
+      "source_ref": "desktop-project/Run-Live-Verification.ps1",
+      "source_sha256": "98d0d68c87dab2855df06c31a34ffb189558ca6b552f88d3e4637bfb7e43112d",
+      "staged_bytes": 318,
+      "staged_sha256": "98d0d68c87dab2855df06c31a34ffb189558ca6b552f88d3e4637bfb7e43112d",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "Run-Recorded-Verification.ps1",
+      "source_ref": "desktop-project/Run-Recorded-Verification.ps1",
+      "source_sha256": "3c36f27006474b16c08ac82b459b5aca58e1063be4991f40745c32e669c49b68",
+      "staged_bytes": 423,
+      "staged_sha256": "3c36f27006474b16c08ac82b459b5aca58e1063be4991f40745c32e669c49b68",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "Run-Verification-Loop.ps1",
+      "source_ref": "desktop-project/Run-Verification-Loop.ps1",
+      "source_sha256": "fe01169a61756070c9d55d8cab9e5fddfbf249fd1b649607738942d9996b9367",
+      "staged_bytes": 420,
+      "staged_sha256": "fe01169a61756070c9d55d8cab9e5fddfbf249fd1b649607738942d9996b9367",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "Smoke.ps1",
+      "source_ref": "desktop-project/Smoke.ps1",
+      "source_sha256": "5d1145eb405d9e4c80ab964fe008bab46f637eb6e183d8c221b3eae335dd3e73",
+      "staged_bytes": 165,
+      "staged_sha256": "5d1145eb405d9e4c80ab964fe008bab46f637eb6e183d8c221b3eae335dd3e73",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "UPSTREAM.json",
+      "source_ref": "desktop-project/UPSTREAM.json",
+      "source_sha256": "8d263fa30485b8ab2a933684c5d9f687ce6e2c208179a5bcae62a8027a216834",
+      "staged_bytes": 308,
+      "staged_sha256": "8d263fa30485b8ab2a933684c5d9f687ce6e2c208179a5bcae62a8027a216834",
+      "treatment": "unchanged",
+      "workstream": "setup-provenance"
+    },
+    {
+      "destination": "View-Traces.ps1",
+      "source_ref": "desktop-project/View-Traces.ps1",
+      "source_sha256": "3aaf3b788b436d1a4b1710c110c58291648284fc9af183863b16ca602446cf3a",
+      "staged_bytes": 127,
+      "staged_sha256": "3aaf3b788b436d1a4b1710c110c58291648284fc9af183863b16ca602446cf3a",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "Watch-Console.ps1",
+      "source_ref": "desktop-project/Watch-Console.ps1",
+      "source_sha256": "0c78180dcbe6f700a7bd23dce1ce8ae7842ed1b3bbe10f3c41b069072179a5f6",
+      "staged_bytes": 374,
+      "staged_sha256": "0c78180dcbe6f700a7bd23dce1ce8ae7842ed1b3bbe10f3c41b069072179a5f6",
+      "treatment": "unchanged",
+      "workstream": "historical-launchers"
+    },
+    {
+      "destination": "bb8/.codex-plugin/plugin.json",
+      "source_ref": "repository-authoring/bb8/.codex-plugin/plugin.json",
+      "source_sha256": "de5568e225bb28f9a27dfb8aa864aa7b4c595a739ec4d89bebde513caa043f97",
+      "staged_bytes": 885,
+      "staged_sha256": "de5568e225bb28f9a27dfb8aa864aa7b4c595a739ec4d89bebde513caa043f97",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/README.md",
+      "source_ref": "repository-authoring/bb8/README.md",
+      "source_sha256": "c30a90876a4a1d58217bb10d34668491c094dd686ceab1f3996fba853d686d94",
+      "staged_bytes": 4789,
+      "staged_sha256": "c30a90876a4a1d58217bb10d34668491c094dd686ceab1f3996fba853d686d94",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/SNAPSHOT.json",
+      "source_ref": "repository-authoring/bb8/SNAPSHOT.json",
+      "source_sha256": "a14e15cc5b4929f105a33d8e1350d01324d9c4f776479fec68e077cd3d9ee288",
+      "staged_bytes": 27699,
+      "staged_sha256": "a14e15cc5b4929f105a33d8e1350d01324d9c4f776479fec68e077cd3d9ee288",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/capability-registry.yaml",
+      "source_ref": "repository-authoring/bb8/harness/capability-registry.yaml",
+      "source_sha256": "b51fc23cdeb240dfa7b970bb978dc0d4d5ef362570ed80b4bb0a1a467da733d1",
+      "staged_bytes": 4864,
+      "staged_sha256": "b51fc23cdeb240dfa7b970bb978dc0d4d5ef362570ed80b4bb0a1a467da733d1",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/manifest.yaml",
+      "source_ref": "repository-authoring/bb8/harness/manifest.yaml",
+      "source_sha256": "126b82327da273c37c36338f490b259a3ef664d3e006493bf8eef96dcc1e5c8d",
+      "staged_bytes": 1115,
+      "staged_sha256": "126b82327da273c37c36338f490b259a3ef664d3e006493bf8eef96dcc1e5c8d",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/plan-template.md",
+      "source_ref": "repository-authoring/bb8/harness/plan-template.md",
+      "source_sha256": "f3e62fb05d3fae25b2608dfd4d9aa37f3445bddd0a9ea02bfdd8eab01c980cdd",
+      "staged_bytes": 3071,
+      "staged_sha256": "f3e62fb05d3fae25b2608dfd4d9aa37f3445bddd0a9ea02bfdd8eab01c980cdd",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/references/aggregation-disaggregation.md",
+      "source_ref": "repository-authoring/bb8/harness/references/aggregation-disaggregation.md",
+      "source_sha256": "42046866de5636729c4c23449e1e2d644662eb17c8e64edc4ab72d58d06e82c7",
+      "staged_bytes": 1687,
+      "staged_sha256": "42046866de5636729c4c23449e1e2d644662eb17c8e64edc4ab72d58d06e82c7",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/references/engineering-principles.md",
+      "source_ref": "repository-authoring/bb8/harness/references/engineering-principles.md",
+      "source_sha256": "84444bafa737d1e41b523c7fedd3c6c7ad2b4385eb8900f14960355769254c5f",
+      "staged_bytes": 2352,
+      "staged_sha256": "84444bafa737d1e41b523c7fedd3c6c7ad2b4385eb8900f14960355769254c5f",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/references/intent-continuity.md",
+      "source_ref": "repository-authoring/bb8/harness/references/intent-continuity.md",
+      "source_sha256": "0f2902bc9874cd5d0b5dbc3354d298b000d1fcbb9ada3d736dceed77f37c2803",
+      "staged_bytes": 3506,
+      "staged_sha256": "0f2902bc9874cd5d0b5dbc3354d298b000d1fcbb9ada3d736dceed77f37c2803",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/references/product-principles.md",
+      "source_ref": "repository-authoring/bb8/harness/references/product-principles.md",
+      "source_sha256": "01019cd25ca981fc57c922c53186c6cbc720790a88676910e2d32ca3fcc7e410",
+      "staged_bytes": 1324,
+      "staged_sha256": "01019cd25ca981fc57c922c53186c6cbc720790a88676910e2d32ca3fcc7e410",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/routing-contract.md",
+      "source_ref": "repository-authoring/bb8/harness/routing-contract.md",
+      "source_sha256": "30b78efa620694fc7a5fffea5c1af016f72e9230f657b4c9fd6d80e06290b7d8",
+      "staged_bytes": 5688,
+      "staged_sha256": "30b78efa620694fc7a5fffea5c1af016f72e9230f657b4c9fd6d80e06290b7d8",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/skill-catalog.md",
+      "source_ref": "repository-authoring/bb8/harness/skill-catalog.md",
+      "source_sha256": "daccb85a1a7d20ed4fb89f8a608aa8f11a189362b991bb29917848af9301dccf",
+      "staged_bytes": 2606,
+      "staged_sha256": "daccb85a1a7d20ed4fb89f8a608aa8f11a189362b991bb29917848af9301dccf",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/harness/system-prompt.md",
+      "source_ref": "repository-authoring/bb8/harness/system-prompt.md",
+      "source_sha256": "28b42315cf9b03f42b1b4eb4a5dd4306e128420e7eee3f650a58bfeaf7e3bf75",
+      "staged_bytes": 12361,
+      "staged_sha256": "28b42315cf9b03f42b1b4eb4a5dd4306e128420e7eee3f650a58bfeaf7e3bf75",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/bb8/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/bb8/SKILL.md",
+      "source_sha256": "3144e168d069c76c741accfa1349f009ce00aa0dffc969bdf19d1d3ebecebf04",
+      "staged_bytes": 1913,
+      "staged_sha256": "3144e168d069c76c741accfa1349f009ce00aa0dffc969bdf19d1d3ebecebf04",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/bb8/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/bb8/agents/openai.yaml",
+      "source_sha256": "d2c8cb17011d0e1eb9ddf04d00e0fb06eb5aa7178d70b7744aa73d5feb374e9a",
+      "staged_bytes": 250,
+      "staged_sha256": "d2c8cb17011d0e1eb9ddf04d00e0fb06eb5aa7178d70b7744aa73d5feb374e9a",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/data-analysis/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/data-analysis/SKILL.md",
+      "source_sha256": "09e81c831f1eca98a4201a26bdb42581c72d56c0d24da74ffc049907c8de1d7f",
+      "staged_bytes": 2196,
+      "staged_sha256": "09e81c831f1eca98a4201a26bdb42581c72d56c0d24da74ffc049907c8de1d7f",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/data-analysis/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/data-analysis/agents/openai.yaml",
+      "source_sha256": "750e6c3388c5437dde93030be528be7977ee7279a7874578c19b2109c846e3d7",
+      "staged_bytes": 270,
+      "staged_sha256": "750e6c3388c5437dde93030be528be7977ee7279a7874578c19b2109c846e3d7",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/data-analysis/references/analysis-protocol.md",
+      "source_ref": "repository-authoring/bb8/skills/data-analysis/references/analysis-protocol.md",
+      "source_sha256": "5b15fbe6013264bef3f10d10531d5bbc7355be1cb8d1a856e33eaa1d23ec87fd",
+      "staged_bytes": 1338,
+      "staged_sha256": "5b15fbe6013264bef3f10d10531d5bbc7355be1cb8d1a856e33eaa1d23ec87fd",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/deep-research/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/deep-research/SKILL.md",
+      "source_sha256": "213ba046ddc5d5fe592101abaeefbd29f68b55067bddedc1d73b00cf94c495e0",
+      "staged_bytes": 1951,
+      "staged_sha256": "213ba046ddc5d5fe592101abaeefbd29f68b55067bddedc1d73b00cf94c495e0",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/deep-research/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/deep-research/agents/openai.yaml",
+      "source_sha256": "37454707a213af4b62aab464cd569c6b5cd103e8740524f59cf14ea895d09653",
+      "staged_bytes": 270,
+      "staged_sha256": "37454707a213af4b62aab464cd569c6b5cd103e8740524f59cf14ea895d09653",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/deep-research/references/evidence-protocol.md",
+      "source_ref": "repository-authoring/bb8/skills/deep-research/references/evidence-protocol.md",
+      "source_sha256": "ab00921f3fb9f27201fff0ccd075cb86818f5d50aa4be04c14c52ff8349cd7a9",
+      "staged_bytes": 1841,
+      "staged_sha256": "ab00921f3fb9f27201fff0ccd075cb86818f5d50aa4be04c14c52ff8349cd7a9",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/design-critique/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/design-critique/SKILL.md",
+      "source_sha256": "70d3a9ca132d9bbc1dd18996642f2af7e4fb12a4d29004f2601214d5be94ace5",
+      "staged_bytes": 1364,
+      "staged_sha256": "70d3a9ca132d9bbc1dd18996642f2af7e4fb12a4d29004f2601214d5be94ace5",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/design-critique/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/design-critique/agents/openai.yaml",
+      "source_sha256": "5525670768fff335099e7f9b15bf0d469b516acbd1aa57e0a055ebd2d2690378",
+      "staged_bytes": 282,
+      "staged_sha256": "5525670768fff335099e7f9b15bf0d469b516acbd1aa57e0a055ebd2d2690378",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-architecture/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/engineering-architecture/SKILL.md",
+      "source_sha256": "0bbae7a4a35b7a4aa0d2f1fef449037caa6b9bd259def56c36f747354abb3286",
+      "staged_bytes": 1511,
+      "staged_sha256": "0bbae7a4a35b7a4aa0d2f1fef449037caa6b9bd259def56c36f747354abb3286",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-architecture/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/engineering-architecture/agents/openai.yaml",
+      "source_sha256": "3c7ad7d2b01220570c1dd30562eaa6d9c2518d49078b035c38150f34fefc0921",
+      "staged_bytes": 290,
+      "staged_sha256": "3c7ad7d2b01220570c1dd30562eaa6d9c2518d49078b035c38150f34fefc0921",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-debugging/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/engineering-debugging/SKILL.md",
+      "source_sha256": "6338fdb3aaaf56c6301894e9f42f6cfbeba1ba0e12d161dbf4f4806bd93a5d73",
+      "staged_bytes": 2750,
+      "staged_sha256": "6338fdb3aaaf56c6301894e9f42f6cfbeba1ba0e12d161dbf4f4806bd93a5d73",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-debugging/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/engineering-debugging/agents/openai.yaml",
+      "source_sha256": "e3d219b78315fb733182c20ac609b4119953cacefd4f2ef5df443976310c082a",
+      "staged_bytes": 276,
+      "staged_sha256": "e3d219b78315fb733182c20ac609b4119953cacefd4f2ef5df443976310c082a",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-implementation/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/engineering-implementation/SKILL.md",
+      "source_sha256": "541fa5e452851a5e147493e9086ff2f5c636337d192bc3b692af1339fd0bfc8b",
+      "staged_bytes": 1432,
+      "staged_sha256": "541fa5e452851a5e147493e9086ff2f5c636337d192bc3b692af1339fd0bfc8b",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-implementation/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/engineering-implementation/agents/openai.yaml",
+      "source_sha256": "da48447870b10a583d8ff8fbde8c0e557c64ad78475408a347c01eefe1fd6cf7",
+      "staged_bytes": 282,
+      "staged_sha256": "da48447870b10a583d8ff8fbde8c0e557c64ad78475408a347c01eefe1fd6cf7",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-review/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/engineering-review/SKILL.md",
+      "source_sha256": "e4d9b32734240300f9cb5552aaf326a4e7cf04d2811ee7a01be6682684bc756e",
+      "staged_bytes": 1347,
+      "staged_sha256": "e4d9b32734240300f9cb5552aaf326a4e7cf04d2811ee7a01be6682684bc756e",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-review/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/engineering-review/agents/openai.yaml",
+      "source_sha256": "b7bf66a8b1ee0b964aa357b6115f809c57957f281f3be8b5f19b7e1a0534a8e8",
+      "staged_bytes": 272,
+      "staged_sha256": "b7bf66a8b1ee0b964aa357b6115f809c57957f281f3be8b5f19b7e1a0534a8e8",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-security/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/engineering-security/SKILL.md",
+      "source_sha256": "fe4f87e635d391c87855ab73eca2eb3e7e3b0ea3d8704a1e31fec97490854033",
+      "staged_bytes": 1425,
+      "staged_sha256": "fe4f87e635d391c87855ab73eca2eb3e7e3b0ea3d8704a1e31fec97490854033",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-security/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/engineering-security/agents/openai.yaml",
+      "source_sha256": "34036a57bb5e9e8f414c8a98b1c790ba168d614640820f6aa32f7d803a5f394d",
+      "staged_bytes": 296,
+      "staged_sha256": "34036a57bb5e9e8f414c8a98b1c790ba168d614640820f6aa32f7d803a5f394d",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-testing/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/engineering-testing/SKILL.md",
+      "source_sha256": "17b85c364f958a516cedcd04f98683a9d6c6f647a39ec6a196afbe5734d9f647",
+      "staged_bytes": 1423,
+      "staged_sha256": "17b85c364f958a516cedcd04f98683a9d6c6f647a39ec6a196afbe5734d9f647",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering-testing/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/engineering-testing/agents/openai.yaml",
+      "source_sha256": "1f74eba71eec26e4465429485869fb11167b8f05a067842b0fab108322b33529",
+      "staged_bytes": 277,
+      "staged_sha256": "1f74eba71eec26e4465429485869fb11167b8f05a067842b0fab108322b33529",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/engineering/SKILL.md",
+      "source_sha256": "50322cda05fe483c73f3afba7f309545effc6ddf8fe1cddfe1c24302dbb33c4b",
+      "staged_bytes": 1470,
+      "staged_sha256": "50322cda05fe483c73f3afba7f309545effc6ddf8fe1cddfe1c24302dbb33c4b",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/engineering/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/engineering/agents/openai.yaml",
+      "source_sha256": "664fd31fdcf4d0890649b5c972e060477a8f55df8072b77ac96c52a9a168d1f7",
+      "staged_bytes": 268,
+      "staged_sha256": "664fd31fdcf4d0890649b5c972e060477a8f55df8072b77ac96c52a9a168d1f7",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/experience-design/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/experience-design/SKILL.md",
+      "source_sha256": "4156dac0cb61b33d93915311aef61ad145531db6de3fe3df86e27ec9640bcf3f",
+      "staged_bytes": 1353,
+      "staged_sha256": "4156dac0cb61b33d93915311aef61ad145531db6de3fe3df86e27ec9640bcf3f",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/experience-design/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/experience-design/agents/openai.yaml",
+      "source_sha256": "4e3d6b7730e915b2c72f5aa4a604c58c164df7d8cd2bd6d4a19ddbb2d1a7700b",
+      "staged_bytes": 280,
+      "staged_sha256": "4e3d6b7730e915b2c72f5aa4a604c58c164df7d8cd2bd6d4a19ddbb2d1a7700b",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/experiment-design/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/experiment-design/SKILL.md",
+      "source_sha256": "917138b9db3ecfee8f877e277e6b59823cff40cae5be2abee2d93a072f27b9f9",
+      "staged_bytes": 1417,
+      "staged_sha256": "917138b9db3ecfee8f877e277e6b59823cff40cae5be2abee2d93a072f27b9f9",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/experiment-design/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/experiment-design/agents/openai.yaml",
+      "source_sha256": "1b2d680eec3b60305b1b5e02a688e2a0038a0a066bc8efa0aab905a28d052f95",
+      "staged_bytes": 276,
+      "staged_sha256": "1b2d680eec3b60305b1b5e02a688e2a0038a0a066bc8efa0aab905a28d052f95",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/minto-communication/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/minto-communication/SKILL.md",
+      "source_sha256": "f6548d11a83a06514622f0e39b7619485bcb596a725b3b18d923d8fe01e50d21",
+      "staged_bytes": 1749,
+      "staged_sha256": "f6548d11a83a06514622f0e39b7619485bcb596a725b3b18d923d8fe01e50d21",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/minto-communication/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/minto-communication/agents/openai.yaml",
+      "source_sha256": "a93c82f4b600187a4419b999f675329b348a1e4a9e11f35222aeb963ed8713a1",
+      "staged_bytes": 285,
+      "staged_sha256": "a93c82f4b600187a4419b999f675329b348a1e4a9e11f35222aeb963ed8713a1",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/minto-communication/references/pyramid-protocol.md",
+      "source_ref": "repository-authoring/bb8/skills/minto-communication/references/pyramid-protocol.md",
+      "source_sha256": "6ee13caaf907900ba16c189d889fbf2072ca363ca647f59a4de4ccb3cf9e7a71",
+      "staged_bytes": 1490,
+      "staged_sha256": "6ee13caaf907900ba16c189d889fbf2072ca363ca647f59a4de4ccb3cf9e7a71",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/organise/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/organise/SKILL.md",
+      "source_sha256": "c7e84f99cb4366a2492ece2769ddf7b94d96273a1740bbb6a81b9917f31b528b",
+      "staged_bytes": 4206,
+      "staged_sha256": "c7e84f99cb4366a2492ece2769ddf7b94d96273a1740bbb6a81b9917f31b528b",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/organise/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/organise/agents/openai.yaml",
+      "source_sha256": "b0742b2d0c6a29b2a8b406eec1c51a38dd72fb62e998f57bdb2b623c7fccbd23",
+      "staged_bytes": 274,
+      "staged_sha256": "b0742b2d0c6a29b2a8b406eec1c51a38dd72fb62e998f57bdb2b623c7fccbd23",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/organise/references/curate.md",
+      "source_ref": "repository-authoring/bb8/skills/organise/references/curate.md",
+      "source_sha256": "f23a00ab6a621b717ec2ce89b426cb7ed14059ef3893d74b736378ded4e59bbf",
+      "staged_bytes": 1056,
+      "staged_sha256": "f23a00ab6a621b717ec2ce89b426cb7ed14059ef3893d74b736378ded4e59bbf",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/organise/references/ingest.md",
+      "source_ref": "repository-authoring/bb8/skills/organise/references/ingest.md",
+      "source_sha256": "e04661052ea9a9a0ecbc421d45e1c699e1cac96f825ab2b94e8d341e1ef72bb6",
+      "staged_bytes": 2277,
+      "staged_sha256": "e04661052ea9a9a0ecbc421d45e1c699e1cac96f825ab2b94e8d341e1ef72bb6",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/organise/references/maintain.md",
+      "source_ref": "repository-authoring/bb8/skills/organise/references/maintain.md",
+      "source_sha256": "e6986947976257f57b9e6d4dcd998d6436ad3602245f234b321f85c51b61fdb0",
+      "staged_bytes": 1050,
+      "staged_sha256": "e6986947976257f57b9e6d4dcd998d6436ad3602245f234b321f85c51b61fdb0",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/organise/references/retrieve.md",
+      "source_ref": "repository-authoring/bb8/skills/organise/references/retrieve.md",
+      "source_sha256": "1ac4fd6294d7fb88fd9c40917d022f9b41c1474175fb606496e8e627b95d7948",
+      "staged_bytes": 903,
+      "staged_sha256": "1ac4fd6294d7fb88fd9c40917d022f9b41c1474175fb606496e8e627b95d7948",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/organise/references/schema.md",
+      "source_ref": "repository-authoring/bb8/skills/organise/references/schema.md",
+      "source_sha256": "19de75607536f5a2d2a7b6c7f931d49cac3feab54b7b87ba83508f0cfba423b9",
+      "staged_bytes": 1743,
+      "staged_sha256": "19de75607536f5a2d2a7b6c7f931d49cac3feab54b7b87ba83508f0cfba423b9",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/organise/scripts/organise.py",
+      "source_ref": "repository-authoring/bb8/skills/organise/scripts/organise.py",
+      "source_sha256": "b274b3e681273af5e1cf8c7a546a0e8d656ec5f95a848160cf0d210935b438dc",
+      "staged_bytes": 16906,
+      "staged_sha256": "b274b3e681273af5e1cf8c7a546a0e8d656ec5f95a848160cf0d210935b438dc",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/problem-solving/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/problem-solving/SKILL.md",
+      "source_sha256": "fa32c8120055ab690bf8a621b353621872d470b60b2d603b8ebc7197627817b5",
+      "staged_bytes": 2007,
+      "staged_sha256": "fa32c8120055ab690bf8a621b353621872d470b60b2d603b8ebc7197627817b5",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/problem-solving/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/problem-solving/agents/openai.yaml",
+      "source_sha256": "695e1095dcbf43d166714b0671fd3d998ac934d1be685c59ee9f55072aa1badb",
+      "staged_bytes": 281,
+      "staged_sha256": "695e1095dcbf43d166714b0671fd3d998ac934d1be685c59ee9f55072aa1badb",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/problem-solving/references/root-cause.md",
+      "source_ref": "repository-authoring/bb8/skills/problem-solving/references/root-cause.md",
+      "source_sha256": "b326235e7d2ea4587c873dbc69c9827b11ea06a5428b3d9c99b0e78cf19c091a",
+      "staged_bytes": 1582,
+      "staged_sha256": "b326235e7d2ea4587c873dbc69c9827b11ea06a5428b3d9c99b0e78cf19c091a",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/problem-solving/references/seven-step.md",
+      "source_ref": "repository-authoring/bb8/skills/problem-solving/references/seven-step.md",
+      "source_sha256": "6e0080631cb0ac988e951b98869c357ccf2cf37e2ccdd8d25e919f98912c3b8a",
+      "staged_bytes": 1579,
+      "staged_sha256": "6e0080631cb0ac988e951b98869c357ccf2cf37e2ccdd8d25e919f98912c3b8a",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/product-design/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/product-design/SKILL.md",
+      "source_sha256": "1cce5f34d86b73b95095920910bfa9af60a75018e522bcff8a20cc3975d1aa98",
+      "staged_bytes": 1268,
+      "staged_sha256": "1cce5f34d86b73b95095920910bfa9af60a75018e522bcff8a20cc3975d1aa98",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/product-design/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/product-design/agents/openai.yaml",
+      "source_sha256": "f4dd2688b167fb5747f34356a23eee92c7e1eb84e552e3336a19440b61c06abd",
+      "staged_bytes": 269,
+      "staged_sha256": "f4dd2688b167fb5747f34356a23eee92c7e1eb84e552e3336a19440b61c06abd",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/product-discovery/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/product-discovery/SKILL.md",
+      "source_sha256": "b8bfc7d762d9e3712955b7899166f4c6a78b246dcee9c35e2dba00d3bed82701",
+      "staged_bytes": 1493,
+      "staged_sha256": "b8bfc7d762d9e3712955b7899166f4c6a78b246dcee9c35e2dba00d3bed82701",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/product-discovery/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/product-discovery/agents/openai.yaml",
+      "source_sha256": "96cb61f7c615f8258c24b5ea08aa3dfec2d23453773e885f679d3024a8e872a5",
+      "staged_bytes": 271,
+      "staged_sha256": "96cb61f7c615f8258c24b5ea08aa3dfec2d23453773e885f679d3024a8e872a5",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/product-strategy/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/product-strategy/SKILL.md",
+      "source_sha256": "1532b09c58ddc33865015cd6ab88a7861ccbb9ff3d9ed72c0aa5bdcbd63d1530",
+      "staged_bytes": 1461,
+      "staged_sha256": "1532b09c58ddc33865015cd6ab88a7861ccbb9ff3d9ed72c0aa5bdcbd63d1530",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/product-strategy/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/product-strategy/agents/openai.yaml",
+      "source_sha256": "4e29d3d4ac246bbd1149aca6d38cfbcaad71245f249901839c2d0a5865e7b6a0",
+      "staged_bytes": 265,
+      "staged_sha256": "4e29d3d4ac246bbd1149aca6d38cfbcaad71245f249901839c2d0a5865e7b6a0",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/strategic-storytelling/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/strategic-storytelling/SKILL.md",
+      "source_sha256": "5dd8613d15717fe4ec5e736e7eab4ded1b76920583a228e8c6553dc0608c1005",
+      "staged_bytes": 3582,
+      "staged_sha256": "5dd8613d15717fe4ec5e736e7eab4ded1b76920583a228e8c6553dc0608c1005",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/strategic-storytelling/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/strategic-storytelling/agents/openai.yaml",
+      "source_sha256": "ede98e863106766645fc4a98aeaaff75b08f043afe3dc4d3658af7be0afb848a",
+      "staged_bytes": 312,
+      "staged_sha256": "ede98e863106766645fc4a98aeaaff75b08f043afe3dc4d3658af7be0afb848a",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/strategic-storytelling/references/deliverables.md",
+      "source_ref": "repository-authoring/bb8/skills/strategic-storytelling/references/deliverables.md",
+      "source_sha256": "f2de53189fd522cc32547d23ec05cc809b9361e37b807ba07c9af9703a1c0929",
+      "staged_bytes": 2608,
+      "staged_sha256": "f2de53189fd522cc32547d23ec05cc809b9361e37b807ba07c9af9703a1c0929",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/strategic-storytelling/references/framework.md",
+      "source_ref": "repository-authoring/bb8/skills/strategic-storytelling/references/framework.md",
+      "source_sha256": "97ece056de7cd1758fe73241a10aa28112be164739d94ed3113c41b9f1e209d5",
+      "staged_bytes": 5848,
+      "staged_sha256": "97ece056de7cd1758fe73241a10aa28112be164739d94ed3113c41b9f1e209d5",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/transcript-insights-tofu/SKILL.md",
+      "source_ref": "repository-authoring/bb8/skills/transcript-insights-tofu/SKILL.md",
+      "source_sha256": "5d998c04e184e9fac776eddcd8c711e44a75229176bb61c219750c1fa7333573",
+      "staged_bytes": 2069,
+      "staged_sha256": "5d998c04e184e9fac776eddcd8c711e44a75229176bb61c219750c1fa7333573",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/transcript-insights-tofu/agents/openai.yaml",
+      "source_ref": "repository-authoring/bb8/skills/transcript-insights-tofu/agents/openai.yaml",
+      "source_sha256": "b53ea4529b1e1d2096485b1783883f792100bc13f90c54aee0589ef5ee987f69",
+      "staged_bytes": 296,
+      "staged_sha256": "b53ea4529b1e1d2096485b1783883f792100bc13f90c54aee0589ef5ee987f69",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/transcript-insights-tofu/references/findings-rubric.md",
+      "source_ref": "repository-authoring/bb8/skills/transcript-insights-tofu/references/findings-rubric.md",
+      "source_sha256": "54cfa9b60f94c3c476f430a20ef2a506a8c1f8cbf7a7c0f1bd45891e279ef88c",
+      "staged_bytes": 1524,
+      "staged_sha256": "54cfa9b60f94c3c476f430a20ef2a506a8c1f8cbf7a7c0f1bd45891e279ef88c",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/skills/transcript-insights-tofu/references/pipeline.md",
+      "source_ref": "repository-authoring/bb8/skills/transcript-insights-tofu/references/pipeline.md",
+      "source_sha256": "a4d7a124fcd72b0f88e71c46ee704fb94d7410f0a467bac84e336854bb491e61",
+      "staged_bytes": 1642,
+      "staged_sha256": "a4d7a124fcd72b0f88e71c46ee704fb94d7410f0a467bac84e336854bb491e61",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "bb8/snapshot.py",
+      "source_ref": "repository-authoring/bb8/snapshot.py",
+      "source_sha256": "be04eb2adce2e3fcd0f0c219efb7626e14e4097569e3727ff278a6910e128b99",
+      "staged_bytes": 8564,
+      "staged_sha256": "be04eb2adce2e3fcd0f0c219efb7626e14e4097569e3727ff278a6910e128b99",
+      "treatment": "repository_handoff_addition",
+      "workstream": "bb8"
+    },
+    {
+      "destination": "context-index/catalog.json",
+      "previous_source_ref": "repository-authoring/context-index/catalog.json",
+      "previous_staged_sha256": "4987c0d2a6c64e967f6ae4679fe823998830783c67365fae2a5faf952b21d9ab",
+      "source_ref": "repository-authoring/context-index/catalog.json",
+      "source_sha256": "d0dabeddaffa4e8c34476fc5995a0c21360435aa5c09dff51d45824162ee089c",
+      "staged_bytes": 66398,
+      "staged_sha256": "d0dabeddaffa4e8c34476fc5995a0c21360435aa5c09dff51d45824162ee089c",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "context-index"
+    },
+    {
+      "destination": "context-index/chunks.jsonl",
+      "previous_source_ref": "repository-authoring/context-index/chunks.jsonl",
+      "previous_staged_sha256": "2ef4005f6c3cbd3ae6fbb029ac3aae48582da781beea394e044e4a76c8bc2894",
+      "source_ref": "repository-authoring/context-index/chunks.jsonl",
+      "source_sha256": "20db1ce540ce50bc17b59cc908caafedd0e7792ced0755ef371c0999ed446e2a",
+      "staged_bytes": 276218,
+      "staged_sha256": "20db1ce540ce50bc17b59cc908caafedd0e7792ced0755ef371c0999ed446e2a",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "context-index"
+    },
+    {
+      "destination": "docs/ARCHITECTURE.md",
+      "previous_source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/ARCHITECTURE.md",
+      "previous_staged_sha256": "007aabb617c841c926a30b8b13007ff69d7d9d4d3b0e76926c03e957d94a3de2",
+      "source_ref": "repository-authoring/docs/ARCHITECTURE.md",
+      "source_sha256": "b9f592d3a1f9f17af1fa500d1a5de6a228c52d0a0956e4eca35e5b2ed02dfb51",
+      "staged_bytes": 2524,
+      "staged_sha256": "b9f592d3a1f9f17af1fa500d1a5de6a228c52d0a0956e4eca35e5b2ed02dfb51",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/ARTIFACT_POLICY.md",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/ARTIFACT_POLICY.md",
+      "source_sha256": "8811afd5da13dec0e66db70768de88e302ae2b287966535623afb44f531ef022",
+      "staged_bytes": 2486,
+      "staged_sha256": "8811afd5da13dec0e66db70768de88e302ae2b287966535623afb44f531ef022",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "docs/DECISIONS.md",
+      "previous_source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/DECISIONS.md",
+      "previous_staged_sha256": "b19b233579f7c433a6c3a0fd69adbe2a2b0ec27e5d22460b582c84814e7d6801",
+      "source_ref": "repository-authoring/docs/DECISIONS.md",
+      "source_sha256": "03489bbef6a98aac743d4d5215463439624b11ded75bfce31dff23b25cb2d378",
+      "staged_bytes": 1657,
+      "staged_sha256": "03489bbef6a98aac743d4d5215463439624b11ded75bfce31dff23b25cb2d378",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/PUBLICATION_PLAN.md",
+      "previous_source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/PUBLICATION_PLAN.md",
+      "previous_staged_sha256": "15feaacad4081cfa6a77fb41227daf2c2770759454e7ec282d646ef61f7db01b",
+      "source_ref": "repository-authoring/docs/PUBLICATION_PLAN.md",
+      "source_sha256": "81d03e7e537ead9ce93cd1282e31714cd9c6a4dfabea8ff92f9fc9adb42034d5",
+      "staged_bytes": 1743,
+      "staged_sha256": "81d03e7e537ead9ce93cd1282e31714cd9c6a4dfabea8ff92f9fc9adb42034d5",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/SETUP.md",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/SETUP.md",
+      "source_sha256": "35ef9621b90f293b8d7dc6d5f9ff95c7348b9126eba926be20fa0d80480053eb",
+      "staged_bytes": 3583,
+      "staged_sha256": "35ef9621b90f293b8d7dc6d5f9ff95c7348b9126eba926be20fa0d80480053eb",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "docs/WORKSTREAMS.md",
+      "previous_source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/WORKSTREAMS.md",
+      "previous_staged_sha256": "f2fd89c8f98fc96e4c5d5ae3c3286fd23dc8c32097afdb91b647fb1e1b40079b",
+      "source_ref": "repository-authoring/docs/WORKSTREAMS.md",
+      "source_sha256": "3844f10ef987d115b86f321c868d64c87a8250583e1d0398e18533552b0de575",
+      "staged_bytes": 2805,
+      "staged_sha256": "3844f10ef987d115b86f321c868d64c87a8250583e1d0398e18533552b0de575",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/context/GLOSSARY.md",
+      "source_ref": "repository-authoring/docs/context/GLOSSARY.md",
+      "source_sha256": "d033acc83f859acfd4598fa4e64f88f9fbf58f281db5e0b38290cdca27cc20b3",
+      "staged_bytes": 3459,
+      "staged_sha256": "d033acc83f859acfd4598fa4e64f88f9fbf58f281db5e0b38290cdca27cc20b3",
+      "treatment": "repository_handoff_addition",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/context/LATEST_RUN.md",
+      "source_ref": "repository-authoring/docs/context/LATEST_RUN.md",
+      "source_sha256": "276962d42104401f3bfd6f79357cd7fb154e9a51b4458b01fda02dbb65b70da1",
+      "staged_bytes": 5838,
+      "staged_sha256": "276962d42104401f3bfd6f79357cd7fb154e9a51b4458b01fda02dbb65b70da1",
+      "treatment": "repository_handoff_addition",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/context/QUESTIONS.md",
+      "source_ref": "repository-authoring/docs/context/QUESTIONS.md",
+      "source_sha256": "508d20506d39050c7dd99b958726d81d6d6c494ffc30e7a1093ee83466649ee6",
+      "staged_bytes": 2876,
+      "staged_sha256": "508d20506d39050c7dd99b958726d81d6d6c494ffc30e7a1093ee83466649ee6",
+      "treatment": "repository_handoff_addition",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/context/README.md",
+      "source_ref": "repository-authoring/docs/context/README.md",
+      "source_sha256": "f6dbc78b6a66071f92cb9a261c54d99cd9653394ff9b889834d14c7d2553755f",
+      "staged_bytes": 3805,
+      "staged_sha256": "f6dbc78b6a66071f92cb9a261c54d99cd9653394ff9b889834d14c7d2553755f",
+      "treatment": "repository_handoff_addition",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/context/SESSION_MAP.md",
+      "previous_source_ref": "repository-authoring/docs/context/SESSION_MAP.md",
+      "previous_staged_sha256": "78973bfd6c856c5bb5ca5f233713360c62d17fdb10aabe2f7697b4acf2aca72b",
+      "source_ref": "repository-authoring/docs/context/SESSION_MAP.md",
+      "source_sha256": "a54362fccfa77adea120fa4d77174d27d316688d4449b340c568c63dbdd54800",
+      "staged_bytes": 8130,
+      "staged_sha256": "a54362fccfa77adea120fa4d77174d27d316688d4449b340c568c63dbdd54800",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/research/HISTORY.md",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/research/HISTORY.md",
+      "source_sha256": "b1cfdf81f247c2f5996ff5b78516e5c493266ac75fe5fd01cff9946168a0b9f7",
+      "staged_bytes": 4002,
+      "staged_sha256": "b1cfdf81f247c2f5996ff5b78516e5c493266ac75fe5fd01cff9946168a0b9f7",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "docs/research/SOURCE_INDEX.json",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/docs/research/SOURCE_INDEX.json",
+      "source_sha256": "3b847102d52b75a250e343c7a3213ccf60f7162ca7a1c20c66dc2c8a11c6b64e",
+      "staged_bytes": 3046,
+      "staged_sha256": "3b847102d52b75a250e343c7a3213ccf60f7162ca7a1c20c66dc2c8a11c6b64e",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "drafts/frontend/README.md",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/drafts/frontend/README.md",
+      "source_sha256": "4c65cfe4948fc87ed7456e4256e817ec85812da7caf43553be50cb567d6bdd4c",
+      "staged_bytes": 755,
+      "staged_sha256": "4c65cfe4948fc87ed7456e4256e817ec85812da7caf43553be50cb567d6bdd4c",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "drafts/frontend/SPEC.md",
+      "source_ref": "orchestrator-workspace/work/frontend-observatory/SPEC.md",
+      "source_sha256": "897fdcc902e599473a386b0157849adbd81fc6232be3624b857801582b0cd08e",
+      "staged_bytes": 8425,
+      "staged_sha256": "897fdcc902e599473a386b0157849adbd81fc6232be3624b857801582b0cd08e",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "frontend-draft"
+    },
+    {
+      "destination": "drafts/frontend/early-workflow-alternatives.html",
+      "source_ref": "orchestrator-workspace/work/trustkernel-observability.html",
+      "source_sha256": "cb81506db7d7ed22dab54d3c2ac0ddafac490e7b0269e39e583f80477131f3d2",
+      "staged_bytes": 16728,
+      "staged_sha256": "cb81506db7d7ed22dab54d3c2ac0ddafac490e7b0269e39e583f80477131f3d2",
+      "treatment": "unchanged",
+      "workstream": "frontend-draft"
+    },
+    {
+      "destination": "drafts/frontend/observatory.template.html",
+      "source_ref": "orchestrator-workspace/work/frontend-observatory/observatory.template.html",
+      "source_sha256": "7ffd64e014c0e65ca5317bbeeb2256895262ccefc53b583223ae8a7517585abe",
+      "staged_bytes": 24133,
+      "staged_sha256": "7ffd64e014c0e65ca5317bbeeb2256895262ccefc53b583223ae8a7517585abe",
+      "treatment": "unchanged",
+      "workstream": "frontend-draft"
+    },
+    {
+      "destination": "examples/synthetic/expected-loop.json",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/examples/synthetic/expected-loop.json",
+      "source_sha256": "305cfc17d02829504b8862dd2962eb7fce63ad5fcd31c145f505ee16ee4e38a1",
+      "staged_bytes": 375,
+      "staged_sha256": "305cfc17d02829504b8862dd2962eb7fce63ad5fcd31c145f505ee16ee4e38a1",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "explorations/evidence-workflows/WORKFLOWS.md",
+      "source_ref": "desktop-project/explorations/evidence-workflows/WORKFLOWS.md",
+      "source_sha256": "74222663f3e1f8a8de5f816e3aea0a3d9466a5d648b1ab9d215561c8ce2aa85c",
+      "staged_bytes": 26003,
+      "staged_sha256": "74222663f3e1f8a8de5f816e3aea0a3d9466a5d648b1ab9d215561c8ce2aa85c",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "evidence-workflows"
+    },
+    {
+      "destination": "explorations/evidence-workflows/inspect_cases.py",
+      "source_ref": "desktop-project/explorations/evidence-workflows/inspect_cases.py",
+      "source_sha256": "e16e734ed480f4ecef386a468d464ffb8f246c54790c2b5d5015aa42fb4a8d13",
+      "staged_bytes": 11311,
+      "staged_sha256": "e16e734ed480f4ecef386a468d464ffb8f246c54790c2b5d5015aa42fb4a8d13",
+      "treatment": "unchanged",
+      "workstream": "evidence-workflows"
+    },
+    {
+      "destination": "explorations/evidence-workflows/validate_cases.py",
+      "source_ref": "desktop-project/explorations/evidence-workflows/validate_cases.py",
+      "source_sha256": "066edade2e5a1f6d4be5816f85ed5f130ecc325c2050c316f6e1669533e814a1",
+      "staged_bytes": 5866,
+      "staged_sha256": "066edade2e5a1f6d4be5816f85ed5f130ecc325c2050c316f6e1669533e814a1",
+      "treatment": "unchanged",
+      "workstream": "evidence-workflows"
+    },
+    {
+      "destination": "explorations/rules/CHECK_CONTRACTS.md",
+      "source_ref": "desktop-project/explorations/rules/CHECK_CONTRACTS.md",
+      "source_sha256": "e5f94ccf5f32e41a02bbbc3bc4ca05e91dab19ed1ced3c74ca1faa5262a89470",
+      "staged_bytes": 14202,
+      "staged_sha256": "e5f94ccf5f32e41a02bbbc3bc4ca05e91dab19ed1ced3c74ca1faa5262a89470",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "rules"
+    },
+    {
+      "destination": "explorations/rules/SEMANTICS.md",
+      "source_ref": "desktop-project/explorations/rules/SEMANTICS.md",
+      "source_sha256": "346ad0f8544d4c47fbd21a0263dab310e35644aa5da5dd9f67107571bebd6bc2",
+      "staged_bytes": 20596,
+      "staged_sha256": "b0635fa8aa54924142e358a81bb0f6e718c5d2275c5a9c7b17404cce43adf325",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "rules"
+    },
+    {
+      "destination": "explorations/rules/contract-v0.2/CONTRACT.md",
+      "source_ref": "desktop-project/explorations/rules/contract-v0.2/CONTRACT.md",
+      "source_sha256": "a6f1eb234ccc40afbb426f94289e29f970ed6231fda73cb5230bb676be50aa4a",
+      "staged_bytes": 6646,
+      "staged_sha256": "7fb014e1a93431711a786d06fac1e84f8a4a363d41362317e91e0a61c7f46552",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "historical-scoped-findings"
+    },
+    {
+      "destination": "explorations/rules/contract-v0.2/RECONCILIATION.md",
+      "source_ref": "desktop-project/explorations/rules/contract-v0.2/RECONCILIATION.md",
+      "source_sha256": "b67e222e7f6d8690c6b3f337ca6735f5a3f7289d88c1917ba0f73a75fa0753ab",
+      "staged_bytes": 4783,
+      "staged_sha256": "b67e222e7f6d8690c6b3f337ca6735f5a3f7289d88c1917ba0f73a75fa0753ab",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "historical-scoped-findings"
+    },
+    {
+      "destination": "explorations/rules/contract-v0.2/case-registry.json",
+      "source_ref": "desktop-project/explorations/rules/contract-v0.2/case-registry.json",
+      "source_sha256": "d17189538676a64101448414159a76a7018bae44814047924ba99d8ae95fbcd8",
+      "staged_bytes": 4399,
+      "staged_sha256": "d17189538676a64101448414159a76a7018bae44814047924ba99d8ae95fbcd8",
+      "treatment": "unchanged",
+      "workstream": "historical-scoped-findings"
+    },
+    {
+      "destination": "explorations/rules/contract-v0.2/finding-envelope.schema.json",
+      "source_ref": "desktop-project/explorations/rules/contract-v0.2/finding-envelope.schema.json",
+      "source_sha256": "6aac2313fcd221fc737165c7f446c05eee66e8434018b1e8922ef76e98940021",
+      "staged_bytes": 3112,
+      "staged_sha256": "6aac2313fcd221fc737165c7f446c05eee66e8434018b1e8922ef76e98940021",
+      "treatment": "unchanged",
+      "workstream": "historical-scoped-findings"
+    },
+    {
+      "destination": "explorations/rules/contract-v0.2/finding_packets.py",
+      "source_ref": "desktop-project/explorations/rules/contract-v0.2/finding_packets.py",
+      "source_sha256": "2c9623eb55b9fbe1c99c22efb64f16651d09110f62a8d04c4a976fa392fbac32",
+      "staged_bytes": 49366,
+      "staged_sha256": "2c9623eb55b9fbe1c99c22efb64f16651d09110f62a8d04c4a976fa392fbac32",
+      "treatment": "unchanged",
+      "workstream": "historical-scoped-findings"
+    },
+    {
+      "destination": "explorations/rules/contract-v0.2/mappings.json",
+      "source_ref": "desktop-project/explorations/rules/contract-v0.2/mappings.json",
+      "source_sha256": "10d8d04b3bd9b15d5bda4121d9cf0bec8bf74ccd891258e1f3a07aa5ed9f932d",
+      "staged_bytes": 2114,
+      "staged_sha256": "10d8d04b3bd9b15d5bda4121d9cf0bec8bf74ccd891258e1f3a07aa5ed9f932d",
+      "treatment": "unchanged",
+      "workstream": "historical-scoped-findings"
+    },
+    {
+      "destination": "explorations/rules/contract-v0.2/test_findings.py",
+      "source_ref": "desktop-project/explorations/rules/contract-v0.2/test_findings.py",
+      "source_sha256": "b2dcb74a3c34d8a9f980f2d2719138b211f22446447be8f594ebe6fb226c65cb",
+      "staged_bytes": 13902,
+      "staged_sha256": "b2dcb74a3c34d8a9f980f2d2719138b211f22446447be8f594ebe6fb226c65cb",
+      "treatment": "unchanged",
+      "workstream": "historical-scoped-findings"
+    },
+    {
+      "destination": "explorations/rules/local_demo.py",
+      "source_ref": "desktop-project/explorations/rules/local_demo.py",
+      "source_sha256": "8c0f2f5240f401fefd167ae5de0c370e20ebafb0dcbb35035e0af706b9446bc4",
+      "staged_bytes": 8994,
+      "staged_sha256": "8c0f2f5240f401fefd167ae5de0c370e20ebafb0dcbb35035e0af706b9446bc4",
+      "treatment": "unchanged",
+      "workstream": "rules"
+    },
+    {
+      "destination": "explorations/rules/source_packet.py",
+      "source_ref": "desktop-project/explorations/rules/source_packet.py",
+      "source_sha256": "e576e02d508479d396e4a1b3fdf793509f4d3eb12f202f54455e2d02c6d555f0",
+      "staged_bytes": 10412,
+      "staged_sha256": "e576e02d508479d396e4a1b3fdf793509f4d3eb12f202f54455e2d02c6d555f0",
+      "treatment": "unchanged",
+      "workstream": "rules"
+    },
+    {
+      "destination": "explorations/rules/test-vectors.json",
+      "source_ref": "desktop-project/explorations/rules/test-vectors.json",
+      "source_sha256": "3ae3b3f990b635dc08b476172db610dccc527ade1fd5dd6bb93b07a4448d1543",
+      "staged_bytes": 9330,
+      "staged_sha256": "3ae3b3f990b635dc08b476172db610dccc527ade1fd5dd6bb93b07a4448d1543",
+      "treatment": "unchanged",
+      "workstream": "rules"
+    },
+    {
+      "destination": "explorations/sponsor-fit/Sponsor-Fit-Feasibility.md",
+      "source_ref": "desktop-project/explorations/sponsor-fit/Sponsor-Fit-Feasibility.md",
+      "source_sha256": "c61d2eb83f60d0d4908caa671fe30e11293a58b2bc5a3f506cfc0bb83089cc07",
+      "staged_bytes": 25136,
+      "staged_sha256": "c61d2eb83f60d0d4908caa671fe30e11293a58b2bc5a3f506cfc0bb83089cc07",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "sponsor-fit"
+    },
+    {
+      "destination": "explorations/sponsor-fit/sources.json",
+      "source_ref": "desktop-project/explorations/sponsor-fit/sources.json",
+      "source_sha256": "ef20eb74858517c1da9f2b917de7ed55b454c4ed91b390a5a1a496791a520d96",
+      "staged_bytes": 5416,
+      "staged_sha256": "ef20eb74858517c1da9f2b917de7ed55b454c4ed91b390a5a1a496791a520d96",
+      "treatment": "unchanged",
+      "workstream": "sponsor-fit"
+    },
+    {
+      "destination": "fixtures/eth_synthetic_v1.json",
+      "source_ref": "desktop-project/fixtures/eth_synthetic_v1.json",
+      "source_sha256": "79089ac3359b33ccce05ae7888d10dd1cc655be95291d02e805a39ecd4b38fe6",
+      "staged_bytes": 2218,
+      "staged_sha256": "79089ac3359b33ccce05ae7888d10dd1cc655be95291d02e805a39ecd4b38fe6",
+      "treatment": "unchanged",
+      "workstream": "fixtures"
+    },
+    {
+      "destination": "live_experiment/ARM.md",
+      "source_ref": "desktop-project/live_experiment/ARM.md",
+      "source_sha256": "8dd9f7579650e8bf48d9b2c8934f662ae474f0bd86fcb3dc7719d60eb93175ba",
+      "staged_bytes": 11010,
+      "staged_sha256": "8dd9f7579650e8bf48d9b2c8934f662ae474f0bd86fcb3dc7719d60eb93175ba",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/REVIEW.md",
+      "source_ref": "desktop-project/live_experiment/REVIEW.md",
+      "source_sha256": "4b15ca2819b01dfe363a571804ca7fa5f33fe7c0b7f9bf1c0c778c6ff28703d4",
+      "staged_bytes": 9265,
+      "staged_sha256": "4b15ca2819b01dfe363a571804ca7fa5f33fe7c0b7f9bf1c0c778c6ff28703d4",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/SOURCES.md",
+      "source_ref": "desktop-project/live_experiment/SOURCES.md",
+      "source_sha256": "57d846ab5f959bdd6fbb2c09e47b1d16d8a8e4bf23a2c7be1393ee62d93a84c6",
+      "staged_bytes": 10971,
+      "staged_sha256": "57d846ab5f959bdd6fbb2c09e47b1d16d8a8e4bf23a2c7be1393ee62d93a84c6",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/__init__.py",
+      "source_ref": "desktop-project/live_experiment/__init__.py",
+      "source_sha256": "07577075ac39f96127ba6505e30165a025692c7443a992f8d07735d906b9461f",
+      "staged_bytes": 79,
+      "staged_sha256": "07577075ac39f96127ba6505e30165a025692c7443a992f8d07735d906b9461f",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/arm.py",
+      "source_ref": "desktop-project/live_experiment/arm.py",
+      "source_sha256": "3aaa83ee3e03744702cf71010ce2a9ca8b87f191e62aa5541b0832709b5bcf28",
+      "staged_bytes": 15066,
+      "staged_sha256": "3aaa83ee3e03744702cf71010ce2a9ca8b87f191e62aa5541b0832709b5bcf28",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/preflight.py",
+      "source_ref": "desktop-project/live_experiment/preflight.py",
+      "source_sha256": "3842ab184dd78c153365ca7ddf900e58defc88c8894f8162dfbdec442697ef10",
+      "staged_bytes": 2268,
+      "staged_sha256": "3842ab184dd78c153365ca7ddf900e58defc88c8894f8162dfbdec442697ef10",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/preservation.py",
+      "source_ref": "desktop-project/live_experiment/preservation.py",
+      "source_sha256": "6b20582c5c59db85b93b417aea386a3137a03a58786d90e1e847cd595b9b1b75",
+      "staged_bytes": 2937,
+      "staged_sha256": "6b20582c5c59db85b93b417aea386a3137a03a58786d90e1e847cd595b9b1b75",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/review.py",
+      "source_ref": "desktop-project/live_experiment/review.py",
+      "source_sha256": "4cee88d87383031257d7aec60ff9b5d2401f255b2104588d43ee81f970e8088e",
+      "staged_bytes": 32653,
+      "staged_sha256": "4cee88d87383031257d7aec60ff9b5d2401f255b2104588d43ee81f970e8088e",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/safety.py",
+      "source_ref": "desktop-project/live_experiment/safety.py",
+      "source_sha256": "d3901374ff2de29df9d47b737cc067e0957e7e977d936d89ead62636001e9fae",
+      "staged_bytes": 2476,
+      "staged_sha256": "d3901374ff2de29df9d47b737cc067e0957e7e977d936d89ead62636001e9fae",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/source_http.py",
+      "source_ref": "desktop-project/live_experiment/source_http.py",
+      "source_sha256": "66ae99f9331d5bf66d5c2a16b7b40068f3bbaee97f312b2506a72ab8713d32d7",
+      "staged_bytes": 10675,
+      "staged_sha256": "66ae99f9331d5bf66d5c2a16b7b40068f3bbaee97f312b2506a72ab8713d32d7",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/sources.py",
+      "source_ref": "desktop-project/live_experiment/sources.py",
+      "source_sha256": "589a90887cf434a5f208c67d698d57f1ba124479c7c6b8fb88e6c81409db92ff",
+      "staged_bytes": 15058,
+      "staged_sha256": "589a90887cf434a5f208c67d698d57f1ba124479c7c6b8fb88e6c81409db92ff",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/tests/test_arm.py",
+      "source_ref": "desktop-project/live_experiment/tests/test_arm.py",
+      "source_sha256": "b20bbc2be40a4fa22a184f1c1e1482d65d5a78ceeca063d7a70a8aa1de1ade82",
+      "staged_bytes": 18328,
+      "staged_sha256": "b20bbc2be40a4fa22a184f1c1e1482d65d5a78ceeca063d7a70a8aa1de1ade82",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/tests/test_review.py",
+      "source_ref": "desktop-project/live_experiment/tests/test_review.py",
+      "source_sha256": "a81272eae83c75af46812a94036f8a98e7c352667910c9415eaf88a53fdf0905",
+      "staged_bytes": 15689,
+      "staged_sha256": "a81272eae83c75af46812a94036f8a98e7c352667910c9415eaf88a53fdf0905",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/tests/test_safety.py",
+      "source_ref": "desktop-project/live_experiment/tests/test_safety.py",
+      "source_sha256": "8bfb83e49ee2e3b73dc680be824d2944e9b2a702dfea5b641e4a05fa17bd520d",
+      "staged_bytes": 1558,
+      "staged_sha256": "8bfb83e49ee2e3b73dc680be824d2944e9b2a702dfea5b641e4a05fa17bd520d",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/tests/test_sources.py",
+      "source_ref": "desktop-project/live_experiment/tests/test_sources.py",
+      "source_sha256": "8dc2d5f83975180f1088ab281f2308da96e5214754ed82a9588e0f2c7d940574",
+      "staged_bytes": 9539,
+      "staged_sha256": "8dc2d5f83975180f1088ab281f2308da96e5214754ed82a9588e0f2c7d940574",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/tests/test_window.py",
+      "source_ref": "desktop-project/live_experiment/tests/test_window.py",
+      "source_sha256": "5bc29c62837f8377b7deccea38d301533775f124d9157c5e1c42f3dd4baa3e87",
+      "staged_bytes": 3326,
+      "staged_sha256": "5bc29c62837f8377b7deccea38d301533775f124d9157c5e1c42f3dd4baa3e87",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_experiment/window.py",
+      "source_ref": "desktop-project/live_experiment/window.py",
+      "source_sha256": "acf78ea49f2af1a5e90eec319c1c5d50b2f5e25103be206deffc34eba4675235",
+      "staged_bytes": 10992,
+      "staged_sha256": "acf78ea49f2af1a5e90eec319c1c5d50b2f5e25103be206deffc34eba4675235",
+      "treatment": "unchanged",
+      "workstream": "live_experiment"
+    },
+    {
+      "destination": "live_verification/LEDGER.md",
+      "source_ref": "desktop-project/live_verification/LEDGER.md",
+      "source_sha256": "20cd46cc304874603501c78d78b50315ff351a1c4f1b46e4b16ec6d15a625a50",
+      "staged_bytes": 7415,
+      "staged_sha256": "20cd46cc304874603501c78d78b50315ff351a1c4f1b46e4b16ec6d15a625a50",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/RULES_POLICY.md",
+      "source_ref": "desktop-project/live_verification/RULES_POLICY.md",
+      "source_sha256": "1dc6f3bf1791facd4feceb344f1cbea16c8a20e02482e6b9eacbd94f74585583",
+      "staged_bytes": 8784,
+      "staged_sha256": "1dc6f3bf1791facd4feceb344f1cbea16c8a20e02482e6b9eacbd94f74585583",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/__init__.py",
+      "source_ref": "desktop-project/live_verification/__init__.py",
+      "source_sha256": "ebba34a1c649d3f416a44e4ecdccb0e85e91f3a2341f93a14db3b0593e68ca4a",
+      "staged_bytes": 75,
+      "staged_sha256": "ebba34a1c649d3f416a44e4ecdccb0e85e91f3a2341f93a14db3b0593e68ca4a",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/ledger.py",
+      "source_ref": "desktop-project/live_verification/ledger.py",
+      "source_sha256": "044e70a1d4b45adecb253f6ae3c6c693337c8ec295e9f2b00419a66780a1672c",
+      "staged_bytes": 16410,
+      "staged_sha256": "044e70a1d4b45adecb253f6ae3c6c693337c8ec295e9f2b00419a66780a1672c",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/ledger.schema.json",
+      "source_ref": "desktop-project/live_verification/ledger.schema.json",
+      "source_sha256": "ba4abf2927dfe0af93090f93bfdc127d3861876923809087a4efb15e78124746",
+      "staged_bytes": 673,
+      "staged_sha256": "ba4abf2927dfe0af93090f93bfdc127d3861876923809087a4efb15e78124746",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/ledger_corpus.py",
+      "source_ref": "desktop-project/live_verification/ledger_corpus.py",
+      "source_sha256": "b4ce70b07fe3fc314f9bdd04016eb964dc9d866f920cd473a78787dee8217228",
+      "staged_bytes": 22709,
+      "staged_sha256": "b4ce70b07fe3fc314f9bdd04016eb964dc9d866f920cd473a78787dee8217228",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/ledger_extract.py",
+      "source_ref": "desktop-project/live_verification/ledger_extract.py",
+      "source_sha256": "af8ba7093c42ae99a26a3383170605ddbd95966f35f91be9e1086f6bc0b7491d",
+      "staged_bytes": 11196,
+      "staged_sha256": "af8ba7093c42ae99a26a3383170605ddbd95966f35f91be9e1086f6bc0b7491d",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/preservation.py",
+      "source_ref": "desktop-project/live_verification/preservation.py",
+      "source_sha256": "e170f9e76d1ae5b95b612a91472c5b932e994f310c1a091bc2a202fc3f2a5adb",
+      "staged_bytes": 1074,
+      "staged_sha256": "e170f9e76d1ae5b95b612a91472c5b932e994f310c1a091bc2a202fc3f2a5adb",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/rules.py",
+      "source_ref": "desktop-project/live_verification/rules.py",
+      "source_sha256": "d5e9b14353d95a8e687e194df32e6157de2fd4179bdbc5a927863253a91fe025",
+      "staged_bytes": 42079,
+      "staged_sha256": "d5e9b14353d95a8e687e194df32e6157de2fd4179bdbc5a927863253a91fe025",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/rules_checks.py",
+      "source_ref": "desktop-project/live_verification/rules_checks.py",
+      "source_sha256": "1c4aee2e17fc56ad4fbce17ebe835f8e0bde906d2e50289749e995c1a816a875",
+      "staged_bytes": 7900,
+      "staged_sha256": "1c4aee2e17fc56ad4fbce17ebe835f8e0bde906d2e50289749e995c1a816a875",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/runner.py",
+      "source_ref": "desktop-project/live_verification/runner.py",
+      "source_sha256": "b61916e63a08adf342175573d985ed92527c58c0429f6d002d77b5bc12091f39",
+      "staged_bytes": 6977,
+      "staged_sha256": "b61916e63a08adf342175573d985ed92527c58c0429f6d002d77b5bc12091f39",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/tests/test_ledger.py",
+      "source_ref": "desktop-project/live_verification/tests/test_ledger.py",
+      "source_sha256": "7f7b282b63834646bfaf276951bdbc0ff225c0495c0a1af648f9047b12acbfaa",
+      "staged_bytes": 16032,
+      "staged_sha256": "7f7b282b63834646bfaf276951bdbc0ff225c0495c0a1af648f9047b12acbfaa",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "live_verification/tests/test_rules.py",
+      "source_ref": "desktop-project/live_verification/tests/test_rules.py",
+      "source_sha256": "3f1e4c6297baa397ae6aa4427beaca1c0c4873b7b33329df7764b74e4ae84d88",
+      "staged_bytes": 18336,
+      "staged_sha256": "3f1e4c6297baa397ae6aa4427beaca1c0c4873b7b33329df7764b74e4ae84d88",
+      "treatment": "unchanged",
+      "workstream": "live_verification"
+    },
+    {
+      "destination": "procedural_loop/ADAPTERS.md",
+      "source_ref": "desktop-project/procedural_loop/ADAPTERS.md",
+      "source_sha256": "676168a59a5f3d5c685d2b273aa4f5f7d0265062842e9c280b5f68ff7b254127",
+      "staged_bytes": 8476,
+      "staged_sha256": "676168a59a5f3d5c685d2b273aa4f5f7d0265062842e9c280b5f68ff7b254127",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/CONTRACT.md",
+      "source_ref": "desktop-project/procedural_loop/CONTRACT.md",
+      "source_sha256": "7f55c77d09d2f2270914e0b5571a311e0d1e60fbf4c49111645cec97fc85aca5",
+      "staged_bytes": 10833,
+      "staged_sha256": "7f55c77d09d2f2270914e0b5571a311e0d1e60fbf4c49111645cec97fc85aca5",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/POLICY.md",
+      "source_ref": "desktop-project/procedural_loop/POLICY.md",
+      "source_sha256": "fda3e9e4723c5e4e595754cab89ac41e9adad772e805a0cb5798c77ae335958d",
+      "staged_bytes": 11055,
+      "staged_sha256": "fda3e9e4723c5e4e595754cab89ac41e9adad772e805a0cb5798c77ae335958d",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/__init__.py",
+      "source_ref": "desktop-project/procedural_loop/__init__.py",
+      "source_sha256": "afd92418eecb2456549439f56854ecc0d013ea52346d42142e268359dfa6c2d6",
+      "staged_bytes": 84,
+      "staged_sha256": "afd92418eecb2456549439f56854ecc0d013ea52346d42142e268359dfa6c2d6",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/adapters.py",
+      "source_ref": "desktop-project/procedural_loop/adapters.py",
+      "source_sha256": "5b29d1baa77f6c7e9a5a270947e4bc3db6b487705f5f86f6a578f150b8d92bcf",
+      "staged_bytes": 17965,
+      "staged_sha256": "5b29d1baa77f6c7e9a5a270947e4bc3db6b487705f5f86f6a578f150b8d92bcf",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/contract.schema.json",
+      "source_ref": "desktop-project/procedural_loop/contract.schema.json",
+      "source_sha256": "db3845266d6543d6dfa71a2bd3d2d7d2993d3d9d12e0c6e49a6226ba6190f8b6",
+      "staged_bytes": 5354,
+      "staged_sha256": "db3845266d6543d6dfa71a2bd3d2d7d2993d3d9d12e0c6e49a6226ba6190f8b6",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/contracts.py",
+      "source_ref": "desktop-project/procedural_loop/contracts.py",
+      "source_sha256": "d0cebecff3c39f8573576e0341b0bca08a2abae6f1c51b6fe6b185af448ccd61",
+      "staged_bytes": 11528,
+      "staged_sha256": "d0cebecff3c39f8573576e0341b0bca08a2abae6f1c51b6fe6b185af448ccd61",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/fixtures/multi_handoff_v1.json",
+      "source_ref": "desktop-project/procedural_loop/fixtures/multi_handoff_v1.json",
+      "source_sha256": "c6ce692f2e709741f672585a0466dc9bf5021597ba789626b10f4208954ef856",
+      "staged_bytes": 2525,
+      "staged_sha256": "c6ce692f2e709741f672585a0466dc9bf5021597ba789626b10f4208954ef856",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/fixtures/single_command_v1.json",
+      "source_ref": "desktop-project/procedural_loop/fixtures/single_command_v1.json",
+      "source_sha256": "5096726be96376c19a37f27e8618bb923e477eed02b6728b4703bdeb8b4d5174",
+      "staged_bytes": 2242,
+      "staged_sha256": "5096726be96376c19a37f27e8618bb923e477eed02b6728b4703bdeb8b4d5174",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/preservation.py",
+      "source_ref": "desktop-project/procedural_loop/preservation.py",
+      "source_sha256": "6d4742245638907029d9b1b9d6ae8938c3c29fe71bae36639835c76f7ed40701",
+      "staged_bytes": 1044,
+      "staged_sha256": "6d4742245638907029d9b1b9d6ae8938c3c29fe71bae36639835c76f7ed40701",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/recording.py",
+      "source_ref": "desktop-project/procedural_loop/recording.py",
+      "source_sha256": "519d45d580cd8133d41e3014b6518016783900f61d50b3925302b411cf834afc",
+      "staged_bytes": 4919,
+      "staged_sha256": "519d45d580cd8133d41e3014b6518016783900f61d50b3925302b411cf834afc",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/runner.py",
+      "source_ref": "desktop-project/procedural_loop/runner.py",
+      "source_sha256": "f93503477502324160dc04e7572bf93686dccd7a0c05af40043f1d05d1e617ec",
+      "staged_bytes": 11421,
+      "staged_sha256": "f93503477502324160dc04e7572bf93686dccd7a0c05af40043f1d05d1e617ec",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/tests/test_adapters.py",
+      "source_ref": "desktop-project/procedural_loop/tests/test_adapters.py",
+      "source_sha256": "bd9a5496b730cd10eb0cbb47766cda2156f8750166aea0a6c116adb8dffd02f8",
+      "staged_bytes": 11976,
+      "staged_sha256": "bd9a5496b730cd10eb0cbb47766cda2156f8750166aea0a6c116adb8dffd02f8",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/tests/test_contract.py",
+      "source_ref": "desktop-project/procedural_loop/tests/test_contract.py",
+      "source_sha256": "e65df85bc6238bc39b61fb5ed8a6426c9f5975de859a18beca871bd30a9e84c8",
+      "staged_bytes": 13163,
+      "staged_sha256": "e65df85bc6238bc39b61fb5ed8a6426c9f5975de859a18beca871bd30a9e84c8",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/tests/test_integration.py",
+      "source_ref": "desktop-project/procedural_loop/tests/test_integration.py",
+      "source_sha256": "f9ed88dbac7e09183f7776a316c3792fa896709acafddb6404b39f45311d773f",
+      "staged_bytes": 3492,
+      "staged_sha256": "f9ed88dbac7e09183f7776a316c3792fa896709acafddb6404b39f45311d773f",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/tests/test_recording.py",
+      "source_ref": "desktop-project/procedural_loop/tests/test_recording.py",
+      "source_sha256": "47c8ad268a92c134973a5862f17624f4e48de43e151fa93d99ab81ff5b8ca317",
+      "staged_bytes": 2270,
+      "staged_sha256": "47c8ad268a92c134973a5862f17624f4e48de43e151fa93d99ab81ff5b8ca317",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/tests/test_verifier.py",
+      "source_ref": "desktop-project/procedural_loop/tests/test_verifier.py",
+      "source_sha256": "1d25b1915227da80baf7f52c3a84d1db91fdaf4b9b1d15563b903854661b948b",
+      "staged_bytes": 15814,
+      "staged_sha256": "1d25b1915227da80baf7f52c3a84d1db91fdaf4b9b1d15563b903854661b948b",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "procedural_loop/verifier.py",
+      "source_ref": "desktop-project/procedural_loop/verifier.py",
+      "source_sha256": "3a5e9a60885566734792c186935c0f893995de398dfe35bc9c7390a90f05a371",
+      "staged_bytes": 20141,
+      "staged_sha256": "3a5e9a60885566734792c186935c0f893995de398dfe35bc9c7390a90f05a371",
+      "treatment": "unchanged",
+      "workstream": "procedural_loop"
+    },
+    {
+      "destination": "recorded_loop/POLICY.md",
+      "source_ref": "desktop-project/recorded_loop/POLICY.md",
+      "source_sha256": "742bcec9f35c2b5c9d3e813724a954500ccd4576b4ed4d73cae03356afdd946b",
+      "staged_bytes": 9425,
+      "staged_sha256": "742bcec9f35c2b5c9d3e813724a954500ccd4576b4ed4d73cae03356afdd946b",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/SOURCE_ADAPTER.md",
+      "source_ref": "desktop-project/recorded_loop/SOURCE_ADAPTER.md",
+      "source_sha256": "c6869d499bcc29d206bedbccaf54cd86c77bf40a8f7af0d298ddf6eca72f5e05",
+      "staged_bytes": 10032,
+      "staged_sha256": "c6869d499bcc29d206bedbccaf54cd86c77bf40a8f7af0d298ddf6eca72f5e05",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/__init__.py",
+      "source_ref": "desktop-project/recorded_loop/__init__.py",
+      "source_sha256": "9789216c2803e6e862b5c42d93c754a30eea9b7c359a0c07b1f27b4ce5ec6f72",
+      "staged_bytes": 77,
+      "staged_sha256": "9789216c2803e6e862b5c42d93c754a30eea9b7c359a0c07b1f27b4ce5ec6f72",
+      "treatment": "unchanged",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/audit.py",
+      "source_ref": "desktop-project/recorded_loop/audit.py",
+      "source_sha256": "52da134ea2cdb51b5facd79cfc245a8e1c01267fdf6f56c0a89b6c923ed18267",
+      "staged_bytes": 2923,
+      "staged_sha256": "52da134ea2cdb51b5facd79cfc245a8e1c01267fdf6f56c0a89b6c923ed18267",
+      "treatment": "unchanged",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/preservation.py",
+      "source_ref": "desktop-project/recorded_loop/preservation.py",
+      "source_sha256": "84f88ef0194133920412cf4c33fd7b6f622070e0bc1c2d578dfaa9f6da84f1b9",
+      "staged_bytes": 1310,
+      "staged_sha256": "84f88ef0194133920412cf4c33fd7b6f622070e0bc1c2d578dfaa9f6da84f1b9",
+      "treatment": "unchanged",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/runner.py",
+      "source_ref": "desktop-project/recorded_loop/runner.py",
+      "source_sha256": "72f0302d34e275fb0ee851e599152c572626d38147781f0b7a975def0f72623e",
+      "staged_bytes": 10626,
+      "staged_sha256": "72f0302d34e275fb0ee851e599152c572626d38147781f0b7a975def0f72623e",
+      "treatment": "unchanged",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/source_adapter.py",
+      "source_ref": "desktop-project/recorded_loop/source_adapter.py",
+      "source_sha256": "4ab970c9ebd03699aa2f59f49c0a71cd8f2a2d796a8d27388ddfe41a22b99b9a",
+      "staged_bytes": 27412,
+      "staged_sha256": "4ab970c9ebd03699aa2f59f49c0a71cd8f2a2d796a8d27388ddfe41a22b99b9a",
+      "treatment": "unchanged",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/tests/test_integration.py",
+      "source_ref": "desktop-project/recorded_loop/tests/test_integration.py",
+      "source_sha256": "e0ccac3a4ac4a0bbd94ef2da8e7999344d048c29d5872c038e1416742a8acf89",
+      "staged_bytes": 3282,
+      "staged_sha256": "e0ccac3a4ac4a0bbd94ef2da8e7999344d048c29d5872c038e1416742a8acf89",
+      "treatment": "unchanged",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/tests/test_source_adapter.py",
+      "source_ref": "desktop-project/recorded_loop/tests/test_source_adapter.py",
+      "source_sha256": "74625a962c1dd1fd9ca4c84bb3b2162f01b2a790232459a11dafc6c3c89439b1",
+      "staged_bytes": 7118,
+      "staged_sha256": "74625a962c1dd1fd9ca4c84bb3b2162f01b2a790232459a11dafc6c3c89439b1",
+      "treatment": "unchanged",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/tests/test_verifier.py",
+      "source_ref": "desktop-project/recorded_loop/tests/test_verifier.py",
+      "source_sha256": "b98f3a029dfe228400f95f1846d7f0b19090c75a39def257f775152206edc7ad",
+      "staged_bytes": 13364,
+      "staged_sha256": "b98f3a029dfe228400f95f1846d7f0b19090c75a39def257f775152206edc7ad",
+      "treatment": "unchanged",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "recorded_loop/verifier.py",
+      "source_ref": "desktop-project/recorded_loop/verifier.py",
+      "source_sha256": "9187997dfa538f301513d043d610352b7cb149922757b40e25cb8adcdba9ef8f",
+      "staged_bytes": 23420,
+      "staged_sha256": "9187997dfa538f301513d043d610352b7cb149922757b40e25cb8adcdba9ef8f",
+      "treatment": "unchanged",
+      "workstream": "recorded_loop"
+    },
+    {
+      "destination": "requirements.lock.txt",
+      "source_ref": "desktop-project/requirements.lock.txt",
+      "source_sha256": "8d920c358c9baeef0f23c33b41f846d93ad67996878f402ae97ad8a86fa1528d",
+      "staged_bytes": 1699,
+      "staged_sha256": "8d920c358c9baeef0f23c33b41f846d93ad67996878f402ae97ad8a86fa1528d",
+      "treatment": "unchanged",
+      "workstream": "setup-provenance"
+    },
+    {
+      "destination": "tests/test_bb8_snapshot.py",
+      "source_ref": "repository-authoring/tests/test_bb8_snapshot.py",
+      "source_sha256": "20aecc116f4f9c36409eab40f2331dcbafc2bd3c4b5d5059d2879d39e8a63fa3",
+      "staged_bytes": 5276,
+      "staged_sha256": "20aecc116f4f9c36409eab40f2331dcbafc2bd3c4b5d5059d2879d39e8a63fa3",
+      "treatment": "repository_handoff_addition",
+      "workstream": "tests"
+    },
+    {
+      "destination": "tests/test_context_index.py",
+      "previous_source_ref": "repository-authoring/tests/test_context_index.py",
+      "previous_staged_sha256": "79afb0c949fc511503f4ba9b6b09fadcbb26813294bb0999b75a6e2ebebc3fac",
+      "source_ref": "repository-authoring/tests/test_context_index.py",
+      "source_sha256": "963143a7e6d56e82663e34c1a0b55fcd8f4eba59642ccdbd065ca2bec833cc10",
+      "staged_bytes": 14454,
+      "staged_sha256": "963143a7e6d56e82663e34c1a0b55fcd8f4eba59642ccdbd065ca2bec833cc10",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "tests"
+    },
+    {
+      "destination": "tests/test_contracts.py",
+      "source_ref": "desktop-project/tests/test_contracts.py",
+      "source_sha256": "615f672610dd9a7f6931ed4af03e9b8042508f30f1095bc523eb8e3656567bc0",
+      "staged_bytes": 16804,
+      "staged_sha256": "615f672610dd9a7f6931ed4af03e9b8042508f30f1095bc523eb8e3656567bc0",
+      "treatment": "unchanged",
+      "workstream": "historical-runtime-tests"
+    },
+    {
+      "destination": "third_party/NOTICE.md",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/third_party/NOTICE.md",
+      "source_sha256": "622de6bf541fe9e351b0187c831d9bdf709c3afe4a1d366f2a505278c654cb2c",
+      "staged_bytes": 1109,
+      "staged_sha256": "622de6bf541fe9e351b0187c831d9bdf709c3afe4a1d366f2a505278c654cb2c",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "third_party/TradingAgents/LICENSE",
+      "source_ref": "desktop-project/upstream/TradingAgents/LICENSE",
+      "source_sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6",
+      "staged_bytes": 11558,
+      "staged_sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6",
+      "treatment": "unchanged",
+      "workstream": "third-party-license"
+    },
+    {
+      "destination": "tools/check_export.py",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/tools/check_export.py",
+      "source_sha256": "a6b20a3f3b5c8d045214dbe19606ee3dddaec86751bb272270913f704358ab82",
+      "staged_bytes": 2429,
+      "staged_sha256": "a6b20a3f3b5c8d045214dbe19606ee3dddaec86751bb272270913f704358ab82",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "tools/context_index.py",
+      "previous_source_ref": "repository-authoring/tools/context_index.py",
+      "previous_staged_sha256": "7a9f71fb290dd2674994f0b7f95b14479634c0453d33cf2e755f4c92e365abf2",
+      "source_ref": "repository-authoring/tools/context_index.py",
+      "source_sha256": "6d2f8bbac5698aa90dd8c5df33bf1310aafa2c04f329a5f0bd523614e9d2462f",
+      "staged_bytes": 22607,
+      "staged_sha256": "6d2f8bbac5698aa90dd8c5df33bf1310aafa2c04f329a5f0bd523614e9d2462f",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "tools"
+    },
+    {
+      "destination": "tools/inspect_live_ledger.py",
+      "source_ref": "orchestrator-workspace/outputs/inspect-live-ledger.py",
+      "source_sha256": "28a9f778324a5051ade5b176dba612eedf9d6fea018ae2a12dda49ad64fe89e7",
+      "staged_bytes": 3239,
+      "staged_sha256": "28a9f778324a5051ade5b176dba612eedf9d6fea018ae2a12dda49ad64fe89e7",
+      "treatment": "unchanged",
+      "workstream": "live-verification-read-only-inspector"
+    },
+    {
+      "destination": "tools/offline_demo.py",
+      "source_ref": "orchestrator-workspace/work/repository-prep/templates/tools/offline_demo.py",
+      "source_sha256": "30df225766e429b0538e3d465852f4a8a2702c77ff038dd18b541851afe9922e",
+      "staged_bytes": 1917,
+      "staged_sha256": "30df225766e429b0538e3d465852f4a8a2702c77ff038dd18b541851afe9922e",
+      "treatment": "unchanged",
+      "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "tools/update_repository_manifest.py",
+      "source_ref": "repository-authoring/tools/update_repository_manifest.py",
+      "source_sha256": "f3f9a1eb9212a03f256930c7cdcd821c674936ac80af9ebb857d78ef4f7faaf4",
+      "staged_bytes": 6446,
+      "staged_sha256": "f3f9a1eb9212a03f256930c7cdcd821c674936ac80af9ebb857d78ef4f7faaf4",
+      "treatment": "repository_handoff_addition",
+      "workstream": "tools"
+    },
+    {
+      "destination": "trustkernel/__init__.py",
+      "source_ref": "desktop-project/trustkernel/__init__.py",
+      "source_sha256": "9d7bbf0b150671f50d438dd81be62d183014a4b9377c97c2a18094d29a825712",
+      "staged_bytes": 359,
+      "staged_sha256": "9d7bbf0b150671f50d438dd81be62d183014a4b9377c97c2a18094d29a825712",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/analysis.py",
+      "source_ref": "desktop-project/trustkernel/analysis.py",
+      "source_sha256": "f78a5aadd2f66d71227f90f307a87ebd4cd117058e71f4db4c49cb9a15cb0afb",
+      "staged_bytes": 9137,
+      "staged_sha256": "f78a5aadd2f66d71227f90f307a87ebd4cd117058e71f4db4c49cb9a15cb0afb",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/billing.py",
+      "source_ref": "desktop-project/trustkernel/billing.py",
+      "source_sha256": "d70e94e6cd536471b2f6149dfe02189df67bb9589285edc83c9e4c450d200840",
+      "staged_bytes": 1229,
+      "staged_sha256": "d70e94e6cd536471b2f6149dfe02189df67bb9589285edc83c9e4c450d200840",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/experiment.py",
+      "source_ref": "desktop-project/trustkernel/experiment.py",
+      "source_sha256": "12fda706a8995973dc1438551834860c4281aa90cb9a2799d5b659003b7a3d37",
+      "staged_bytes": 6596,
+      "staged_sha256": "12fda706a8995973dc1438551834860c4281aa90cb9a2799d5b659003b7a3d37",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/reconcile_budget.py",
+      "source_ref": "desktop-project/trustkernel/reconcile_budget.py",
+      "source_sha256": "fb18ef2dc0a4537ff9a964e556d58d04fc06831eedc421e4104b11a5fe089be5",
+      "staged_bytes": 4044,
+      "staged_sha256": "fb18ef2dc0a4537ff9a964e556d58d04fc06831eedc421e4104b11a5fe089be5",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/replay.py",
+      "source_ref": "desktop-project/trustkernel/replay.py",
+      "source_sha256": "49aaa31b485e742a40203281325e9575b22a750b04ee489df9d92900d2ce8712",
+      "staged_bytes": 2034,
+      "staged_sha256": "49aaa31b485e742a40203281325e9575b22a750b04ee489df9d92900d2ce8712",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/report.py",
+      "source_ref": "desktop-project/trustkernel/report.py",
+      "source_sha256": "9bf753f51b67196e62f0cb376af99b4ac5fc41b524b9c2eb0516966908befa43",
+      "staged_bytes": 3179,
+      "staged_sha256": "9bf753f51b67196e62f0cb376af99b4ac5fc41b524b9c2eb0516966908befa43",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/runner.py",
+      "source_ref": "desktop-project/trustkernel/runner.py",
+      "source_sha256": "da2e930886a81c284729a78707106056f74f0919f99105e3c01354971ff36123",
+      "staged_bytes": 8878,
+      "staged_sha256": "da2e930886a81c284729a78707106056f74f0919f99105e3c01354971ff36123",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/safety.py",
+      "source_ref": "desktop-project/trustkernel/safety.py",
+      "source_sha256": "bf088ef2735107d2b150949f6f0769e456382d7719c120c421dda156881dce72",
+      "staged_bytes": 7432,
+      "staged_sha256": "bf088ef2735107d2b150949f6f0769e456382d7719c120c421dda156881dce72",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/scripted.py",
+      "source_ref": "desktop-project/trustkernel/scripted.py",
+      "source_sha256": "e604ed9e7f4513a4cfe3227ee3935ef445e4e0b31f2394ed17692b1657f9fbd9",
+      "staged_bytes": 2583,
+      "staged_sha256": "e604ed9e7f4513a4cfe3227ee3935ef445e4e0b31f2394ed17692b1657f9fbd9",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/trace.py",
+      "source_ref": "desktop-project/trustkernel/trace.py",
+      "source_sha256": "39ac91e1e717962704244e76f6b7d1b3a9fa274baf6df01a7a465c2afc2eb9f9",
+      "staged_bytes": 7790,
+      "staged_sha256": "39ac91e1e717962704244e76f6b7d1b3a9fa274baf6df01a7a465c2afc2eb9f9",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/viewer.py",
+      "source_ref": "desktop-project/trustkernel/viewer.py",
+      "source_sha256": "7eb66efa5e524e1cdc23d43bbce6da45c22d38703f79be70a5eb0ac1c7890da5",
+      "staged_bytes": 6693,
+      "staged_sha256": "7eb66efa5e524e1cdc23d43bbce6da45c22d38703f79be70a5eb0ac1c7890da5",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "trustkernel/window.py",
+      "source_ref": "desktop-project/trustkernel/window.py",
+      "source_sha256": "02c366d8dffb080e6dbd5f6047ef32b42260d9824b29f352cd27c22769e16c36",
+      "staged_bytes": 5923,
+      "staged_sha256": "02c366d8dffb080e6dbd5f6047ef32b42260d9824b29f352cd27c22769e16c36",
+      "treatment": "unchanged",
+      "workstream": "trustkernel"
+    },
+    {
+      "destination": "verification/CONTRACT.md",
+      "source_ref": "desktop-project/verification/CONTRACT.md",
+      "source_sha256": "71f9e79bcc449f7630c52de9d90e0d06e6046b54d95078cd2e3b1be5987e3271",
+      "staged_bytes": 8223,
+      "staged_sha256": "71f9e79bcc449f7630c52de9d90e0d06e6046b54d95078cd2e3b1be5987e3271",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/EXPANSION_CONTRACT.md",
+      "source_ref": "desktop-project/verification/EXPANSION_CONTRACT.md",
+      "source_sha256": "4d08fdaf7110f1c9e033738b25078c7ca2991b40c1017286754c10d16ddad705",
+      "staged_bytes": 8170,
+      "staged_sha256": "4d08fdaf7110f1c9e033738b25078c7ca2991b40c1017286754c10d16ddad705",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/REFINEMENT_CONTRACT.md",
+      "source_ref": "desktop-project/verification/REFINEMENT_CONTRACT.md",
+      "source_sha256": "2df2ea5266b47a6f0685f51c60e64892e1bc895c503a9250bc1e4b508df6a055",
+      "staged_bytes": 8691,
+      "staged_sha256": "2df2ea5266b47a6f0685f51c60e64892e1bc895c503a9250bc1e4b508df6a055",
+      "treatment": "scrub_local_doc_paths",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/__init__.py",
+      "source_ref": "desktop-project/verification/__init__.py",
+      "source_sha256": "2f2ae79d320038350c36ff867c1bdd58f4096219d23861888256647931859914",
+      "staged_bytes": 80,
+      "staged_sha256": "2f2ae79d320038350c36ff867c1bdd58f4096219d23861888256647931859914",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/corpus.py",
+      "source_ref": "desktop-project/verification/corpus.py",
+      "source_sha256": "3c283674595ce5ba72b493ccbc7b6634c08e15e78a0d2d1896008574d2ef2de4",
+      "staged_bytes": 7906,
+      "staged_sha256": "3c283674595ce5ba72b493ccbc7b6634c08e15e78a0d2d1896008574d2ef2de4",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/expanded-schema.json",
+      "source_ref": "desktop-project/verification/expanded-schema.json",
+      "source_sha256": "4771efc36e7ac1b73d01c50d328ec1c3736088e488f28d6f6c38bb17c41bf3a5",
+      "staged_bytes": 36517,
+      "staged_sha256": "4771efc36e7ac1b73d01c50d328ec1c3736088e488f28d6f6c38bb17c41bf3a5",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/expanded.py",
+      "source_ref": "desktop-project/verification/expanded.py",
+      "source_sha256": "8cf6997697c16080183875324beb7224a1fbddeaefc0f2ab7e9d4b60ffa162c7",
+      "staged_bytes": 24658,
+      "staged_sha256": "8cf6997697c16080183875324beb7224a1fbddeaefc0f2ab7e9d4b60ffa162c7",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/expanded_query.py",
+      "source_ref": "desktop-project/verification/expanded_query.py",
+      "source_sha256": "e14495597b1e2ecc9888416b4a53252a48055a3f0038eae0bf2765914c4ede28",
+      "staged_bytes": 4146,
+      "staged_sha256": "e14495597b1e2ecc9888416b4a53252a48055a3f0038eae0bf2765914c4ede28",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/ledger.py",
+      "source_ref": "desktop-project/verification/ledger.py",
+      "source_sha256": "ab314ac418957ed08335c474c33523f3e03b63a323c38baf3d73de889de6fe81",
+      "staged_bytes": 54650,
+      "staged_sha256": "ab314ac418957ed08335c474c33523f3e03b63a323c38baf3d73de889de6fe81",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/processing.py",
+      "source_ref": "desktop-project/verification/processing.py",
+      "source_sha256": "21cd47825241e4dcf87920425465ead263fb43419e07bc19b5c95cbb0259db4b",
+      "staged_bytes": 8839,
+      "staged_sha256": "21cd47825241e4dcf87920425465ead263fb43419e07bc19b5c95cbb0259db4b",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/query.py",
+      "source_ref": "desktop-project/verification/query.py",
+      "source_sha256": "a2d2fcb3c9197a034bf85f4c0c520fb2fda9d0d1956205e7429bd6330fa7ad53",
+      "staged_bytes": 5511,
+      "staged_sha256": "a2d2fcb3c9197a034bf85f4c0c520fb2fda9d0d1956205e7429bd6330fa7ad53",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/refine_rules.py",
+      "source_ref": "desktop-project/verification/refine_rules.py",
+      "source_sha256": "1b74cb5b0eeff03a540c7eeb6829e74da26ec8572926ae3756a97d8cd1ed1844",
+      "staged_bytes": 14584,
+      "staged_sha256": "1b74cb5b0eeff03a540c7eeb6829e74da26ec8572926ae3756a97d8cd1ed1844",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/refined-schema.json",
+      "source_ref": "desktop-project/verification/refined-schema.json",
+      "source_sha256": "3422bd8f14bc951fa7e2b42a63931207b29572e57f36852f4cbad06de3454233",
+      "staged_bytes": 51138,
+      "staged_sha256": "3422bd8f14bc951fa7e2b42a63931207b29572e57f36852f4cbad06de3454233",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/refined.py",
+      "source_ref": "desktop-project/verification/refined.py",
+      "source_sha256": "678fd6483fa577f265f6a27af2e6e34c3032b3b3710894c9020e292cac2a8f59",
+      "staged_bytes": 37264,
+      "staged_sha256": "678fd6483fa577f265f6a27af2e6e34c3032b3b3710894c9020e292cac2a8f59",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/refined_query.py",
+      "source_ref": "desktop-project/verification/refined_query.py",
+      "source_sha256": "ea22b1254e7b1b18f38d84f5c0af78c1218064e6165a7f96e4a3a8aeca4e6c04",
+      "staged_bytes": 5253,
+      "staged_sha256": "ea22b1254e7b1b18f38d84f5c0af78c1218064e6165a7f96e4a3a8aeca4e6c04",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/refinement_annotations.json",
+      "source_ref": "desktop-project/verification/refinement_annotations.json",
+      "source_sha256": "f6f788f0c3280a2ec057ba93210990bbcfe456bd09adecf312f7a24f69dcbcb9",
+      "staged_bytes": 1453,
+      "staged_sha256": "f6f788f0c3280a2ec057ba93210990bbcfe456bd09adecf312f7a24f69dcbcb9",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/refinement_rules.json",
+      "source_ref": "desktop-project/verification/refinement_rules.json",
+      "source_sha256": "9aa42f76e5c3000d548aaf73f99a55d5ade68ad39064a6f0950a2972b9482bee",
+      "staged_bytes": 3767,
+      "staged_sha256": "9aa42f76e5c3000d548aaf73f99a55d5ade68ad39064a6f0950a2972b9482bee",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/schema.json",
+      "source_ref": "desktop-project/verification/schema.json",
+      "source_sha256": "84f387521042d65437e55a49f694d194e9c38cc5d8f13e1331d88038397216ba",
+      "staged_bytes": 21842,
+      "staged_sha256": "84f387521042d65437e55a49f694d194e9c38cc5d8f13e1331d88038397216ba",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/selections.py",
+      "source_ref": "desktop-project/verification/selections.py",
+      "source_sha256": "4d1d9d7276bfd6dd1f4cc70cd63f74a4a1c0849a23034645a748fa1f6dd6e765",
+      "staged_bytes": 9353,
+      "staged_sha256": "4d1d9d7276bfd6dd1f4cc70cd63f74a4a1c0849a23034645a748fa1f6dd6e765",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/tests/__init__.py",
+      "source_ref": "desktop-project/verification/tests/__init__.py",
+      "source_sha256": "12dbe5dac66388a9869cdce07c005df270fc9b9447abf1398489a614d09f0821",
+      "staged_bytes": 67,
+      "staged_sha256": "12dbe5dac66388a9869cdce07c005df270fc9b9447abf1398489a614d09f0821",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/tests/test_expanded.py",
+      "source_ref": "desktop-project/verification/tests/test_expanded.py",
+      "source_sha256": "26e13a1d4a52b9483454a046b00099ebd397f5392682cfd84c7320e61dff55c8",
+      "staged_bytes": 10140,
+      "staged_sha256": "26e13a1d4a52b9483454a046b00099ebd397f5392682cfd84c7320e61dff55c8",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/tests/test_ledger.py",
+      "source_ref": "desktop-project/verification/tests/test_ledger.py",
+      "source_sha256": "57d2261ef6f1da390a84429dbce190bcde922714c5ee5948f2e8ca6cadc96271",
+      "staged_bytes": 17132,
+      "staged_sha256": "57d2261ef6f1da390a84429dbce190bcde922714c5ee5948f2e8ca6cadc96271",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    },
+    {
+      "destination": "verification/tests/test_refined.py",
+      "source_ref": "desktop-project/verification/tests/test_refined.py",
+      "source_sha256": "894ed3401152db41c28c8274df85e4622a387f76e210edf795cbcf395bf21276",
+      "staged_bytes": 14819,
+      "staged_sha256": "894ed3401152db41c28c8274df85e4622a387f76e210edf795cbcf395bf21276",
+      "treatment": "unchanged",
+      "workstream": "verification"
+    }
+  ],
+  "index_manifest_cycle_exclusion": "PACKAGING_MANIFEST.json",
+  "new_code_license": "PENDING_USER_CHOICE",
+  "private_raw_evidence_included": false,
+  "profile": "trustkernel-repository-handoff-1",
+  "reviewed_test_fixture_matches": [
+    {
+      "line": 294,
+      "match_sha256": "fbddae166ead16d1dd67736b19403ab1ac0095e344f663573848af911a7ce273",
+      "path": "live_experiment/tests/test_arm.py",
+      "reason": "Reviewed literal in test_api_transport_denies_non_native_requests_before_io; explicit negative URL-userinfo input, never sent.",
+      "rule": "credential_url"
+    },
+    {
+      "line": 105,
+      "match_sha256": "093866188144b0216fb125431572e8ac2df8980dfeeb6ebeb3d9f3987d1e4c1d",
+      "path": "live_experiment/tests/test_sources.py",
+      "reason": "Reviewed literal in test_url_capture_never_records_keys_crumb_or_userinfo; fake userinfo redaction fixture.",
+      "rule": "credential_url"
+    },
+    {
+      "line": 167,
+      "match_sha256": "fbddae166ead16d1dd67736b19403ab1ac0095e344f663573848af911a7ce273",
+      "path": "live_experiment/tests/test_sources.py",
+      "reason": "Reviewed literal in test_runtime_log_sanitizer_scrubs_yahoo_crumb_and_keys; example-domain dummy diagnostic.",
+      "rule": "credential_url"
+    },
+    {
+      "line": 57,
+      "match_sha256": "7ddcba9e3e77c3b73ed526aa78b7b1219560d13715c1c1bfa6e4556b15e7096b",
+      "path": "tests/test_contracts.py",
+      "reason": "Reviewed literal in test_redaction_nested_and_free_text; reserved example.test redaction fixture.",
+      "rule": "credential_url"
+    },
+    {
+      "line": 14,
+      "match_sha256": "b9f44d4003eb7edaa205eeed6549e5b1e7acda967aebcef8c689d6762a785524",
+      "path": "tools/check_export.py",
+      "reason": "Reviewed scanner regex literal /Users pattern, not a real user path; exact line/hash only.",
+      "rule": "machine_specific_user_path"
+    },
+    {
+      "line": 306,
+      "match_sha256": "a24e481a95046f51b98207eda7a676dcbb9f78fa46472a3c3baac15aff6b0622",
+      "path": "live_experiment/tests/test_arm.py",
+      "reason": "Reviewed placeholder in test_normalized_model_payload_configuration_without_invoke; model construction only, no invocation.",
+      "rule": "assigned_credential_literal"
+    },
+    {
+      "line": 48,
+      "match_sha256": "f419b9c8b66e7dcc71794c2dd3deae84cd84b850a16e0f4d87e7ff2e6f13fbe1",
+      "path": "tests/test_contracts.py",
+      "reason": "Reviewed placeholder in test_real_responses_shape_normalized_without_network; offline transport/shape test.",
+      "rule": "assigned_credential_literal"
+    },
+    {
+      "line": 234,
+      "match_sha256": "f419b9c8b66e7dcc71794c2dd3deae84cd84b850a16e0f4d87e7ff2e6f13fbe1",
+      "path": "tests/test_contracts.py",
+      "reason": "Reviewed placeholder in test_installed_sdk_responses_request_configuration_without_network; request configuration only.",
+      "rule": "assigned_credential_literal"
+    }
+  ],
+  "status": "REVIEWED_REPOSITORY_CONTENT",
+  "upstream_commit": "c4544913a14ed3df5f1ed7b9e8483270ce20682a",
+  "upstream_license": "Apache-2.0"
+}

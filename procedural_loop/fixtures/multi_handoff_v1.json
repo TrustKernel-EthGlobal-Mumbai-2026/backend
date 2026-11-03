@@ -1,0 +1,63 @@
+{
+  "fixture_id": "procedural-evolving-quote-v1",
+  "fixture_format": "multi-agent-steps/1",
+  "authorship": "TrustKernel authored deterministic test; not historical or live market data",
+  "entity": "ETH-USD",
+  "unit": "USD",
+  "source_id": "synthetic-quote-feed",
+  "source_schedule": [
+    {
+      "step_id": "multi-source-v1",
+      "agent": "quote-researcher",
+      "kind": "agent.tool_observation",
+      "available_at": "2026-11-02T00:00:00Z",
+      "observation": {
+        "observation_id": "synthetic-quote-v1",
+        "version": "1",
+        "observed_at": "2026-11-02T00:00:00Z",
+        "amount": "2540",
+        "body": "Synthetic ETH-USD quote: 2540 USD at 2026-11-02T00:00:00Z. Authored test data."
+      }
+    },
+    {
+      "step_id": "multi-source-v2",
+      "agent": "quote-researcher",
+      "kind": "agent.tool_observation",
+      "available_at": "2026-11-02T00:01:00Z",
+      "observation": {
+        "observation_id": "synthetic-quote-v2",
+        "version": "2",
+        "observed_at": "2026-11-02T00:01:00Z",
+        "supersedes": "synthetic-quote-v1",
+        "amount": "2560",
+        "body": "Synthetic ETH-USD quote: 2560 USD at 2026-11-02T00:01:00Z. Authored test data."
+      }
+    }
+  ],
+  "proposal_template": {
+    "actor_id": "paper-planner",
+    "kind": "agent.paper_proposal",
+    "action": "REVIEW_ONLY",
+    "claim_predicate": "observed_quote",
+    "dependency_scope": "The authored quote assertion is the complete material dependency for this fixture's narrow paper proposal."
+  },
+  "handoff_template": {
+    "from_actor": "quote-researcher",
+    "to_actor": "quote-analyst",
+    "proposal_actor": "paper-planner",
+    "kind": "agent.handoff",
+    "links": "researcher observation -> analyst extraction -> planner paper proposal; links are fixture-authored, not inferred from text"
+  },
+  "test_parameters": {
+    "max_age_seconds": 60,
+    "freshness_boundary": "eligible only while decision_as_of - source_observed_at < max_age_seconds",
+    "initial_use_at": "2026-11-02T00:00:30Z",
+    "reuse_at": "2026-11-02T00:01:01Z",
+    "refresh_at": "2026-11-02T00:01:05Z"
+  },
+  "coverage": {
+    "complete_within_declared_fixture_scope": true,
+    "observed_topology": "scripted researcher -> analyst -> paper planner",
+    "capture_limits": ["No actual multi-agent/model execution", "No private reasoning", "No real trade or framework enforcement", "Declared handoff links are authored test events", "Scheduled source data are revealed to the consumer only on explicit reads"]
+  }
+}

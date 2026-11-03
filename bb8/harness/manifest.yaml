@@ -1,0 +1,39 @@
+schema_version: 1
+name: "bb8"
+version: "0.2.0"
+description: "Portable local-first executive thinking partner and capability router."
+entrypoints:
+  system_prompt: "./system-prompt.md"
+  routing_contract: "./routing-contract.md"
+  capability_registry: "./capability-registry.yaml"
+  skill_catalog: "./skill-catalog.md"
+  plan_template: "./plan-template.md"
+host_contract:
+  inputs:
+    - "user_request"
+    - "conversation_context"
+    - "available_capabilities"
+    - "tool_permissions"
+    - "workspace_context"
+  optional_inputs:
+    - "retrieved_knowledge"
+    - "existing_plan"
+  outputs:
+    - "clarifying_questions"
+    - "mission_plan"
+    - "capability_route"
+    - "execution_result"
+    - "continuation_handoff"
+portability:
+  local_first: true
+  vendor_neutral_core: true
+  rebuildable_index: true
+  interface_specific_adapters: true
+approval_boundaries:
+  external_communication: "explicit"
+  publish_or_deploy: "explicit"
+  spend_money: "explicit"
+  material_deletion: "explicit"
+  production_change: "explicit"
+  source_ingestion_write: "after_run_plan_approval"
+  curated_knowledge_write: "explicit"

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Experiment Design"
+  short_description: "Design tests that reduce uncertainty"
+  brand_color: "#A23B72"
+  default_prompt: "Use $experiment-design to design the smallest test that can change this decision."
+policy:
+  allow_implicit_invocation: true

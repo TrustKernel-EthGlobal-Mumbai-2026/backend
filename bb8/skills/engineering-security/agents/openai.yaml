@@ -1,0 +1,7 @@
+interface:
+  display_name: "Engineering Security"
+  short_description: "Threat-model and harden authorized systems"
+  brand_color: "#34495E"
+  default_prompt: "Use $engineering-security to threat-model this authorized system and prioritize mitigations."
+policy:
+  allow_implicit_invocation: true

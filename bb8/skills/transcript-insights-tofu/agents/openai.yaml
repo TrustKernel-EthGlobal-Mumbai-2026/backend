@@ -1,0 +1,7 @@
+interface:
+  display_name: "Transcript Insights TOFU"
+  short_description: "Turn transcripts into traceable findings"
+  brand_color: "#7A4E2D"
+  default_prompt: "Use $transcript-insights-tofu to reconstruct context and develop evidence-backed findings."
+policy:
+  allow_implicit_invocation: true

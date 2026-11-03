@@ -1,0 +1,36 @@
+name: Offline checks
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Major refs match the inspected pinned upstream CI; not a newest-version claim.
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Procedural mechanism tests
+        run: python -S -B -m unittest discover -s procedural_loop/tests -v
+      - name: Live ledger and rules tests on temporary authored inputs
+        run: python -S -B -m unittest discover -s live_verification/tests -v
+      - name: Repository context and BB8 snapshot tests
+        run: |
+          python -S -B -m unittest discover -s tests -p test_context_index.py -v
+          python -S -B -m unittest discover -s tests -p test_bb8_snapshot.py -v
+          python -S -B bb8/snapshot.py verify
+      - name: Build and verify repository context index
+        run: |
+          python -S -B tools/context_index.py build
+          python -S -B tools/context_index.py check
+          git diff --exit-code -- context-index/catalog.json context-index/chunks.jsonl
+          python -S -B tools/context_index.py search "snapshot omission" --limit 5
+      - name: Portable synthetic runtime demonstration
+        run: python -S -B tools/offline_demo.py --output .local-runs/ci-demo
+      - name: Verify exported file hashes and credential-pattern policy
+        run: python -S -B tools/check_export.py

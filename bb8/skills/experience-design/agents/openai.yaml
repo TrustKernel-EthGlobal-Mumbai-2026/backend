@@ -1,0 +1,7 @@
+interface:
+  display_name: "Experience Design"
+  short_description: "Design coherent end-to-end experiences"
+  brand_color: "#A23B72"
+  default_prompt: "Use $experience-design to design the end-to-end experience and its critical states."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,58 @@
+{
+  "fixture_id": "procedural-evolving-quote-v1",
+  "fixture_format": "single-command-records/1",
+  "authorship": "TrustKernel authored deterministic test; not historical or live market data",
+  "entity": "ETH-USD",
+  "unit": "USD",
+  "source_id": "synthetic-quote-feed",
+  "source_schedule": [
+    {
+      "event_id": "single-source-v1",
+      "actor_id": "command-host",
+      "command_id": "quote-read-v1",
+      "kind": "command.result",
+      "available_at": "2026-11-02T00:00:00Z",
+      "result": {
+        "observation_id": "synthetic-quote-v1",
+        "source_version": "1",
+        "source_observed_at": "2026-11-02T00:00:00Z",
+        "value": "2540",
+        "text": "Synthetic ETH-USD quote: 2540 USD at 2026-11-02T00:00:00Z. Authored test data."
+      }
+    },
+    {
+      "event_id": "single-source-v2",
+      "actor_id": "command-host",
+      "command_id": "quote-read-v2",
+      "kind": "command.result",
+      "available_at": "2026-11-02T00:01:00Z",
+      "result": {
+        "observation_id": "synthetic-quote-v2",
+        "source_version": "2",
+        "source_observed_at": "2026-11-02T00:01:00Z",
+        "supersedes": "synthetic-quote-v1",
+        "value": "2560",
+        "text": "Synthetic ETH-USD quote: 2560 USD at 2026-11-02T00:01:00Z. Authored test data."
+      }
+    }
+  ],
+  "proposal_template": {
+    "actor_id": "command-host",
+    "kind": "command.paper_proposal",
+    "action": "REVIEW_ONLY",
+    "claim_predicate": "observed_quote",
+    "dependency_scope": "The authored quote assertion is the complete material dependency for this fixture's narrow paper proposal."
+  },
+  "test_parameters": {
+    "max_age_seconds": 60,
+    "freshness_boundary": "eligible only while decision_as_of - source_observed_at < max_age_seconds",
+    "initial_use_at": "2026-11-02T00:00:30Z",
+    "reuse_at": "2026-11-02T00:01:01Z",
+    "refresh_at": "2026-11-02T00:01:05Z"
+  },
+  "coverage": {
+    "complete_within_declared_fixture_scope": true,
+    "observed_topology": "single scripted host",
+    "capture_limits": ["No actual Claude/command plugin execution", "No private reasoning or model calls", "No real trade or framework enforcement", "Scheduled source data are revealed to the consumer only on explicit reads"]
+  }
+}

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Deep Research"
+  short_description: "Evidence-led research and synthesis"
+  brand_color: "#275D7A"
+  default_prompt: "Use $deep-research to investigate this question and produce a sourced synthesis."
+policy:
+  allow_implicit_invocation: true

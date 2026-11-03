@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"urn:trustkernel:live-ledger:1.0.0",
+  "title":"Canonical live-ledger row envelope; table fields specified in LEDGER.md",
+  "type":"object",
+  "required":["id","table","run_id","refs"],
+  "properties":{
+    "id":{"type":"string","pattern":"^[a-z_]+:[0-9a-f]{64}$"},
+    "table":{"enum":["artifacts","runs","events","calls","texts","outputs","reports","sources","exposures","passages","candidates","relations","urls","atoms","unresolved","decisions"]},
+    "run_id":{"type":["string","null"]},
+    "refs":{"type":"array","uniqueItems":true,"items":{"type":"string"}}
+  },
+  "additionalProperties":true
+}

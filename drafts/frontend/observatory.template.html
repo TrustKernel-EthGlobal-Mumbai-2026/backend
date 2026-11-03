@@ -1,0 +1,174 @@
+<div id="tk-observatory" aria-label="TrustKernel system observatory">
+ <div class="o-shell">
+  <header class="o-header"><strong>TrustKernel</strong><span>Systems / TradingAgents / ETH research</span><span class="o-state">Recorded replay</span></header>
+  <section class="o-heading"><div><p class="o-kicker">SYSTEM OBSERVABILITY</p><h2>ETH research</h2><p class="o-outcome"></p></div><div class="o-run-meta"></div></section>
+  <section class="o-oversight" aria-label="TrustKernel oversight state">
+   <div class="o-oversight-title"><strong>How TrustKernel watched this run</strong><span>Observation only · synthetic market fixture</span></div>
+   <div class="o-rail">
+    <button class="cursor-interaction" type="button" data-inspect="observation"><span>01 · Observe</span><strong>Execution recorded</strong><small>Source-linked activity</small></button>
+    <button class="cursor-interaction" type="button" data-inspect="finding"><span>02 · Assess</span><strong>Checked afterwards</strong><small>Retrospective local checks</small></button>
+    <button class="cursor-interaction" type="button" data-inspect="feedback"><span>03 · Notify agent</span><strong>Feedback disabled</strong><small>No finding delivered</small></button>
+    <button class="cursor-interaction" type="button" data-inspect="enforcement"><span>04 · Enforce</span><strong>No recorded intervention</strong><small>From TrustKernel findings</small></button>
+   </div>
+  </section>
+  <div class="o-workspace">
+   <main>
+    <div class="o-section-heading"><h3>What happened under the surface</h3><span class="o-graph-mode">Measured input transfers</span></div>
+    <div class="o-graph"><svg role="img" aria-label="Exact originating output text found in the selected later input"></svg><div class="o-stages"></div></div>
+    <p class="o-edge-note"></p>
+    <details class="o-edge-list"><summary>Read the connections</summary><ul></ul></details>
+    <section class="o-evidence"><div class="o-section-heading"><h3>Evidence around this step</h3><span>Input presence ≠ reliance</span></div><div class="o-evidence-items"></div></section>
+   </main>
+   <aside class="o-sidebar">
+    <section class="o-attention"><h3>What needs your attention</h3>
+     <button class="cursor-interaction o-attention-item" type="button" data-inspect="finding"><span class="o-badge">Protocol finding</span><strong>Required snapshot not retrieved</strong><small>Open the check and its limits →</small></button>
+     <button class="cursor-interaction o-attention-item" type="button" data-inspect="lineage"><span class="o-badge o-neutral">Provenance observation</span><strong>Two news feeds, one declared origin</strong><small>Inspect the source family →</small></button>
+     <button class="cursor-interaction o-attention-item" type="button" data-inspect="unresolved"><span class="o-badge o-neutral">Extraction unfinished</span><strong>Some meaning remains unresolved</strong><small class="o-queue-label"></small></button>
+    </section>
+    <section class="o-inspector" aria-live="polite"><p class="o-inspector-kind"></p><h3 class="o-inspector-title"></h3><p class="o-inspector-summary"></p><dl class="o-fields"></dl><details class="o-raw"><summary>Exact recorded content</summary><pre></pre></details></section>
+   </aside>
+  </div>
+  <footer><span class="o-build"></span><span>No tools or agents are re-executed here.</span></footer>
+ </div>
+ <script type="application/json" id="tk-observatory-data">__SNAPSHOT__</script>
+</div>
+<style>
+#tk-observatory { color-scheme:light dark; --o-bg:light-dark(#f6f8f9,#10171d); --o-panel:light-dark(#ffffff,#18232d); --o-chrome:light-dark(#edf2f4,#14202a); --o-text:light-dark(#172f3c,#e1ebf1); --o-muted:light-dark(#536875,#afc0cb); --o-line:light-dark(#cfdae1,#3a4f5d); --o-brand:light-dark(#185b60,#9dd7d6); --o-selected:light-dark(#e1f0ee,#203e42); --o-warning:light-dark(#805715,#e6c582); --o-warning-bg:light-dark(#fcf3df,#332c1e); --o-font:system-ui,sans-serif; --o-base:14px; --o-small:12px; --o-title:26px; --o-space:8px; --o-radius:8px; color:var(--o-text); font:var(--o-base)/1.5 var(--o-font); }
+#tk-observatory * { box-sizing:border-box; }
+#tk-observatory .o-shell { background:var(--o-bg); border:1px solid var(--o-line); border-radius:var(--o-radius); }
+#tk-observatory p,#tk-observatory h2,#tk-observatory h3 { margin:0; }
+#tk-observatory strong,#tk-observatory h2,#tk-observatory h3 { font-weight:500; }
+#tk-observatory h2 { font-size:var(--o-title); margin:calc(var(--o-space)/2) 0; }
+#tk-observatory h3 { font-size:var(--o-base); }
+#tk-observatory button { color:var(--o-text); font:inherit; }
+#tk-observatory button:focus-visible { outline:3px solid var(--o-brand); outline-offset:3px; }
+#tk-observatory .o-header { background:var(--o-chrome); display:flex; align-items:center; flex-wrap:wrap; gap:calc(var(--o-space)*2); padding:calc(var(--o-space)*2) calc(var(--o-space)*3); border-bottom:1px solid var(--o-line); }
+#tk-observatory .o-header>span { font-size:var(--o-small); color:var(--o-muted); }
+#tk-observatory .o-state { margin-left:auto; }
+#tk-observatory .o-heading { display:flex; flex-wrap:wrap; gap:calc(var(--o-space)*2); justify-content:space-between; padding:calc(var(--o-space)*3); }
+#tk-observatory .o-kicker,#tk-observatory .o-run-meta,#tk-observatory .o-section-heading>span,#tk-observatory .o-edge-note,#tk-observatory .o-edge-list,#tk-observatory footer { font-size:var(--o-small); color:var(--o-muted); }
+#tk-observatory .o-kicker { letter-spacing:.08em; }
+#tk-observatory .o-run-meta { overflow-wrap:anywhere; }
+#tk-observatory .o-oversight { margin:0 calc(var(--o-space)*3) calc(var(--o-space)*3); }
+#tk-observatory .o-oversight-title { display:flex; flex-wrap:wrap; gap:var(--o-space); align-items:baseline; margin-bottom:var(--o-space); }
+#tk-observatory .o-oversight-title>span { color:var(--o-muted); font-size:var(--o-small); }
+#tk-observatory .o-rail { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); background:var(--o-chrome); border:1px solid var(--o-line); border-radius:var(--o-radius); }
+#tk-observatory .o-rail button { background:transparent; border:0; padding:calc(var(--o-space)*1.5); text-align:left; }
+#tk-observatory .o-rail button+button { border-left:1px solid var(--o-line); }
+#tk-observatory .o-rail span,#tk-observatory small { display:block; font-size:var(--o-small); color:var(--o-muted); }
+#tk-observatory .o-rail strong { display:block; margin:calc(var(--o-space)/2) 0; }
+#tk-observatory .o-workspace { display:grid; grid-template-columns:minmax(0,1fr) 290px; gap:calc(var(--o-space)*3); padding:0 calc(var(--o-space)*3) calc(var(--o-space)*3); }
+#tk-observatory main,#tk-observatory aside { min-width:0; }
+#tk-observatory .o-section-heading { display:flex; flex-wrap:wrap; gap:var(--o-space); justify-content:space-between; align-items:baseline; margin-bottom:var(--o-space); }
+#tk-observatory .o-graph { position:relative; }
+#tk-observatory .o-graph>svg { position:absolute; width:100%; height:100%; pointer-events:none; }
+#tk-observatory .o-stages { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(4,minmax(76px,auto)); gap:calc(var(--o-space)*2.5) calc(var(--o-space)*2); padding:var(--o-space) 0; position:relative; }
+#tk-observatory .o-stage { min-width:0; background:var(--o-panel); border:1px solid var(--o-line); border-radius:var(--o-radius); padding:var(--o-space); text-align:left; align-self:center; z-index:1; overflow-wrap:anywhere; }
+#tk-observatory .o-stage strong { display:block; }
+#tk-observatory .o-stage[aria-pressed=true] { background:var(--o-selected); border:2px solid var(--o-brand); }
+#tk-observatory .o-stage[data-connected=true] { border-color:var(--o-brand); }
+#tk-observatory .o-stage[data-position="0"] { grid-area:1/1; }
+#tk-observatory .o-stage[data-position="1"] { grid-area:4/1; }
+#tk-observatory .o-stage[data-position="2"] { grid-area:1/2; }
+#tk-observatory .o-stage[data-position="3"] { grid-area:2/2; }
+#tk-observatory .o-stage[data-position="4"] { grid-area:3/2; }
+#tk-observatory .o-stage[data-position="5"] { grid-area:4/2; }
+#tk-observatory .o-stage[data-position="6"] { grid-area:1/3; }
+#tk-observatory .o-stage[data-position="7"] { grid-area:2/3; }
+#tk-observatory .o-stage[data-position="8"] { grid-area:3/3; }
+#tk-observatory .o-stage[data-position="9"] { grid-area:4/4; }
+#tk-observatory .o-stage-note { color:var(--o-warning); }
+#tk-observatory .o-edge-list { margin:var(--o-space) 0 calc(var(--o-space)*3); }
+#tk-observatory .o-evidence { border-top:1px solid var(--o-line); padding-top:calc(var(--o-space)*2); }
+#tk-observatory .o-evidence-items { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--o-space); }
+#tk-observatory .o-evidence-items button { background:var(--o-panel); border:1px solid var(--o-line); border-radius:var(--o-radius); padding:var(--o-space); text-align:left; overflow-wrap:anywhere; }
+#tk-observatory .o-attention { margin-bottom:calc(var(--o-space)*2); }
+#tk-observatory .o-attention>h3 { margin-bottom:var(--o-space); }
+#tk-observatory .o-attention-item { display:block; width:100%; border:0; border-left:2px solid var(--o-line); background:transparent; text-align:left; padding:var(--o-space) calc(var(--o-space)*1.5); margin-bottom:var(--o-space); }
+#tk-observatory .o-attention-item:first-of-type { border-color:var(--o-warning); }
+#tk-observatory .o-attention-item strong { display:block; margin:calc(var(--o-space)/2) 0; }
+#tk-observatory .o-badge { color:var(--o-warning); background:var(--o-warning-bg); font-size:var(--o-small); padding:2px 5px; border-radius:4px; }
+#tk-observatory .o-neutral { background:var(--o-chrome); color:var(--o-muted); }
+#tk-observatory .o-inspector { background:var(--o-panel); border:1px solid var(--o-line); border-radius:var(--o-radius); padding:calc(var(--o-space)*1.5); overflow-wrap:anywhere; }
+#tk-observatory .o-inspector-kind { font-size:var(--o-small); color:var(--o-muted); margin-bottom:var(--o-space); }
+#tk-observatory .o-inspector-title { margin-bottom:var(--o-space); }
+#tk-observatory .o-inspector-summary { margin:var(--o-space) 0; white-space:pre-wrap; }
+#tk-observatory .o-fields { display:block; margin:var(--o-space) 0; font-size:var(--o-small); }
+#tk-observatory dt { color:var(--o-muted); margin-top:var(--o-space); }
+#tk-observatory dd { margin:0; }
+#tk-observatory .o-raw { border-top:1px solid var(--o-line); padding-top:var(--o-space); font-size:var(--o-small); }
+#tk-observatory pre { white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font:inherit; margin-bottom:0; }
+#tk-observatory footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:var(--o-space); padding:calc(var(--o-space)*2) calc(var(--o-space)*3); border-top:1px solid var(--o-line); overflow-wrap:anywhere; }
+#tk-observatory .o-showrefs { overflow-wrap:anywhere; }
+#tk-observatory.o-hide-refs .o-record-id { display:none; }
+@media(max-width:850px) { #tk-observatory .o-workspace { grid-template-columns:1fr; } #tk-observatory .o-sidebar { display:grid; grid-template-columns:1fr 1fr; gap:calc(var(--o-space)*2); align-items:start; } }
+@media(max-width:540px) { #tk-observatory .o-rail { grid-template-columns:repeat(2,minmax(0,1fr)); } #tk-observatory .o-rail button:nth-child(3) { border-left:0; } #tk-observatory .o-rail button:nth-child(n+3) { border-top:1px solid var(--o-line); } #tk-observatory .o-stages { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:none; } #tk-observatory .o-stage[data-position] { grid-area:auto; align-self:stretch; } #tk-observatory .o-sidebar { grid-template-columns:1fr; } #tk-observatory .o-header,#tk-observatory .o-heading,#tk-observatory footer { padding:calc(var(--o-space)*2); } #tk-observatory .o-oversight { margin-left:calc(var(--o-space)*2); margin-right:calc(var(--o-space)*2); } #tk-observatory .o-workspace { padding-left:calc(var(--o-space)*2); padding-right:calc(var(--o-space)*2); } }
+@media(pointer:coarse) { #tk-observatory button { min-height:44px; } }
+</style>
+<script>
+(() => {
+ const root=document.getElementById('tk-observatory');let data;
+ try{data=JSON.parse(root.querySelector('#tk-observatory-data').textContent);if(!data.sources?.length)throw Error('No sources');}catch(e){root.textContent='Recorded snapshot unavailable. No substitute data has been generated.';root.setAttribute('role','alert');return;}
+ const sources=data.sources,byId=Object.fromEntries(sources.map(s=>[s.id,s]));
+ const evidenceNames={E_PRICE:'Price observations',E_INDICATOR:'Requested indicators',E_NEWS:'News note',E_GLOBAL:'Global news digest',E_SNAPSHOT:'Market snapshot',E_MACRO:'Macro context',E_PREDICTION:'Prediction markets'};
+ const saved=window.openai?.widgetState?.modelContent;
+ const savedValid=saved?.kind==='tk-system-observatory';
+ const savedEvidence=savedValid&&data.evidence.some(e=>e.evidence_key===saved.evidence)?saved.evidence:null;
+ const state={stage:savedValid&&byId[saved.stage]?saved.stage:sources.at(-1).id,inspect:savedValid&&(['stage','finding','lineage','unresolved','observation','feedback','enforcement'].includes(saved.inspect)||saved.inspect==='evidence'&&savedEvidence)?saved.inspect:'stage',evidence:savedEvidence,showRefs:false};
+ const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const time=s=>new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Calcutta',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(s))+' IST';
+ function persist(){window.openai?.setWidgetState?.({modelContent:{kind:'tk-system-observatory',stage:state.stage,inspect:state.inspect,evidence:state.evidence},privateContent:null})?.catch(()=>{});}
+ root.querySelector('.o-run-meta').innerHTML=escape(data.run.model)+' · '+escape(data.config.effort)+' effort<br>30 Oct 2026 · '+escape(data.run.run_id);
+ root.querySelector('.o-outcome').textContent=/\*\*Rating\*\*:\s*Hold/i.test(sources.at(-1).text)?'Recorded outcome: Hold · paper recommendation':'Recorded outcome available in Portfolio Manager output';
+ root.querySelector('.o-build').textContent='Snapshot '+data.build_id+' · source-linked, read only';
+ root.querySelector('.o-stages').innerHTML=sources.map((s,i)=>'<button type="button" class="o-stage cursor-interaction" data-stage="'+s.id+'" data-position="'+i+'"><small>'+time(s.asserted_at)+'</small><strong>'+escape(s.actor)+'</strong><small>Output #'+s.output_seq+'</small>'+(i===0?'<small class="o-stage-note">Protocol finding</small>':'')+'</button>').join('');
+ root.querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>{state.stage=b.dataset.stage;state.inspect='stage';render();persist();}));
+ root.querySelectorAll('[data-inspect]').forEach(b=>b.addEventListener('click',()=>{state.inspect=b.dataset.inspect;if(state.inspect==='finding')state.stage=sources[0].id;if(state.inspect==='lineage')state.stage=sources[1].id;render();persist();}));
+ function inspector(kind,title,summary,fields,raw){
+  root.querySelector('.o-inspector-kind').textContent=kind;root.querySelector('.o-inspector-title').textContent=title;root.querySelector('.o-inspector-summary').textContent=summary;
+  root.querySelector('.o-fields').innerHTML=fields.map(([k,v])=>'<dt'+(k==='Record ID'?' class="o-record-id"':'')+'>'+escape(k)+'</dt><dd'+(k==='Record ID'?' class="o-record-id"':'')+'>'+escape(v)+'</dd>').join('');
+  const r=root.querySelector('.o-raw');r.hidden=!raw;r.querySelector('pre').textContent=raw||'';
+ }
+ function excerpt(s){const i=s.text.indexOf('**Investment Thesis**');const t=i>=0?s.text.slice(i):s.text;const p=t.split('\n\n').find(x=>x.length>70)||t;return p.length>450?p.slice(0,450)+'\n[Excerpt ends; exact full output below]':p;}
+ function showInspector(s){
+  const mode=state.inspect;
+  if(mode==='stage')inspector('RECORDED ACTIVITY',s.actor,excerpt(s),[['When',time(s.asserted_at)+' · output #'+s.output_seq],['Input scope','Recorded call input #'+s.input_seq],['Source',s.pointer+' · '+s.origin_method],['Interpretation','Visible output only; claims and dependencies remain provisional.'],['Record ID',s.id]],s.text);
+  else if(mode==='finding'){
+   const c=data.protocol[0];inspector('TRUSTKERNEL · RETROSPECTIVE CHECK','Required snapshot not retrieved','The recorded instruction required a snapshot before the market report. The preceding retrieval was not found. This is a protocol failure; the CSV can independently support numbers.',[['Result',c.result+' · bounded protocol check'],['Target','Market Analyst input #67 / report #69'],['Method',c.method],['Assessment timing',data.assessment_timing],['Finding sent to agent','No. Feedback was disabled in this run.'],['Observed intervention','None from this finding; no corrected decision is claimed.'],['Record ID',c.id]],JSON.stringify(c,null,2));
+  }else if(mode==='lineage'){
+   const items=data.evidence.filter(e=>['E_NEWS','E_GLOBAL'].includes(e.evidence_key));inspector('PROVENANCE OBSERVATION','Two feeds share one origin','The news note and global digest declare the same root. Repetition is visible; independent corroboration is not established.',[['Sources',items.map(e=>e.evidence_key).join(' + ')],['Declared root',items[0].root_source_id],['Provider',items[0].provider],['What this establishes','Recorded source-family identity, not factual truth.'],['Agent intervention','No TrustKernel notification or action recorded.']],items.map(e=>e.evidence_key+'\n'+e.content).join('\n\n'));
+  }else if(mode==='evidence'){
+   const e=data.evidence.find(e=>e.evidence_key===state.evidence),seen=s.evidence.filter(x=>x.evidence_key===e.evidence_key);
+   inspector('EVIDENCE SNAPSHOT',evidenceNames[e.evidence_key],e.content_status==='NO_DATA'?'The fixture returned no data. Missingness is not zero and not a factual contradiction.':'Recorded fixture content. Presence does not prove use, citation or sufficient support.',[['Run availability','Available in the fixed fixture'],['Run retrieval',e.retrieved_in_run?'Recorded':'No recorded retrieval'],['Selected input',seen.length?'Exact content match recorded ('+[...new Set(seen.map(x=>x.mode))].join(', ')+')':'No full exact-content match measured; partial/paraphrased delivery unmeasured.'],['Citation / relevance','Not established by this evidence inventory'],['Source',e.pointer],['Record ID',e.id]],e.content);
+  }else if(mode==='unresolved')inspector('EXTRACTION COVERAGE',s.actor+' · interpretation unfinished',s.queue_count+' queue records for this source. Multiple records may describe one candidate. This is neither an error rate nor a verified-claim count.',[['Candidate grains',s.candidate_counts.map(x=>x.candidate_kind+': '+x.n).join('; ')],['What remains open','Compound meaning, subjects, predicates, conditions and other normalization fields.'],['Graph policy','No inferred SUPPORTS or DEPENDS_ON edges.'],['Record ID',s.id]],null);
+  else if(mode==='observation')inspector('TRUSTKERNEL · OBSERVE','Look inside recorded execution','Stage outputs, input references and exact text-transfer occurrences are inspectable. The selected graph shows visible records, not hidden reasoning.',[['Run',data.run.run_id],['Captured origins',sources.length+' stage outputs in this run'],['Snapshot identity',data.build_id],['Canonical hash',data.canonical_sha256],['Coverage limit','Semantic extraction remains incomplete; exact transfer matching excludes paraphrases.']],null);
+  else if(mode==='feedback')inspector('TRUSTKERNEL · NOTIFY','Agent feedback was disabled','These local findings were not inserted into the agent workflow. A later check must not look like an intervention the agent experienced.',[['Recorded config','trustkernel_feedback = false'],['Delivery','No finding delivery recorded'],['Response','No response to TrustKernel feedback can be attributed']],null);
+  else inspector('TRUSTKERNEL · ENFORCE','No recorded TrustKernel intervention','This snapshot demonstrates observation and retrospective inspection. It does not demonstrate a verifier blocking, pausing or revising the running system.',[['Control authority','No enforcement from these findings is recorded'],['Future mode','Live notification or policy enforcement would need explicit integration and event records.'],['Current scope','Read-only research recording; no trades or signatures.']],null);
+ }
+ function render(){
+  const s=byId[state.stage],incoming=data.edges.filter(e=>e.target_id===s.id),parents=new Set(incoming.map(e=>e.source_id));
+  root.classList.toggle('o-hide-refs',!state.showRefs);
+  root.querySelectorAll('[data-stage]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.stage===s.id));b.dataset.connected=String(parents.has(b.dataset.stage));});
+  root.querySelector('.o-edge-note').textContent=incoming.length?'Arrows: originating output text found in '+s.actor+' input #'+s.input_seq+'. Transfer does not establish reliance or logical support.':'No prior originating output matched in this selected input. Evidence/tool content is inspected separately below.';
+  root.querySelector('.o-edge-list ul').innerHTML=incoming.length?incoming.map(e=>'<li>'+escape(byId[e.source_id].actor)+' → '+escape(s.actor)+' · exact text present in input #'+s.input_seq+'</li>').join(''):'<li>No measured prior-output transfer in this call.</li>';
+  root.querySelector('.o-evidence-items').innerHTML=data.evidence.map(e=>{const seen=s.evidence.some(x=>x.evidence_key===e.evidence_key);return '<button type="button" class="cursor-interaction" data-evidence="'+e.evidence_key+'"><strong>'+escape(evidenceNames[e.evidence_key])+'</strong><small>'+(seen?'Matched in selected input':e.retrieved_in_run?'Retrieved in run · full match not measured here':'Available · not retrieved in run')+'</small><small>'+escape(e.content_status)+'</small></button>';}).join('');
+  root.querySelectorAll('[data-evidence]').forEach(b=>b.addEventListener('click',()=>{state.evidence=b.dataset.evidence;state.inspect='evidence';showInspector(s);persist();}));
+  root.querySelector('.o-queue-label').textContent='Inspect '+s.actor+' coverage →';showInspector(s);requestAnimationFrame(draw);
+ }
+ function draw(){
+  const graph=root.querySelector('.o-graph'),svg=graph.querySelector('svg'),box=graph.getBoundingClientRect();if(!box.width)return;svg.setAttribute('viewBox','0 0 '+box.width+' '+box.height);svg.replaceChildren();
+  const ns='http://www.w3.org/2000/svg',make=(tag,a)=>{const e=document.createElementNS(ns,tag);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));return e;};
+  const defs=make('defs',{}),marker=make('marker',{id:'o-arrow',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:5,markerHeight:5,orient:'auto'});marker.append(make('path',{d:'M0 0 L10 5 L0 10 Z',fill:'var(--o-brand)'}));defs.append(marker);svg.append(defs);
+  const narrow=box.width<460;
+  data.edges.filter(e=>e.target_id===state.stage).forEach(e=>{
+   const a=root.querySelector('[data-stage="'+e.source_id+'"]').getBoundingClientRect(),b=root.querySelector('[data-stage="'+e.target_id+'"]').getBoundingClientRect();
+   const x1=(narrow?a.left+a.width/2:a.right)-box.left,y1=(narrow?a.bottom:a.top+a.height/2)-box.top,x2=(narrow?b.left+b.width/2:b.left)-box.left,y2=(narrow?b.top:b.top+b.height/2)-box.top;
+   const path='M'+x1+' '+y1+' C'+(narrow?x1:(x1+x2)/2)+' '+(narrow?(y1+y2)/2:y1)+' '+(narrow?x2:(x1+x2)/2)+' '+(narrow?(y1+y2)/2:y2)+' '+x2+' '+y2;
+   svg.append(make('path',{d:path,stroke:'var(--o-brand)','stroke-width':1.3,fill:'none','marker-end':'url(#o-arrow)'}));
+  });
+ }
+ render();new ResizeObserver(draw).observe(root.querySelector('.o-graph'));
+ window.addEventListener('openai:set_globals',e=>{const s=e.detail?.globals?.widgetState?.modelContent;if(s?.kind==='tk-system-observatory'&&byId[s.stage]){state.stage=s.stage;state.evidence=data.evidence.some(x=>x.evidence_key===s.evidence)?s.evidence:null;state.inspect=['stage','finding','lineage','unresolved','observation','feedback','enforcement'].includes(s.inspect)||s.inspect==='evidence'&&state.evidence?s.inspect:'stage';render();}});
+ if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:render});tweak.addToggle(state,'showRefs',{label:'Show full record IDs'});}
+})();
+</script>

@@ -1,0 +1,141 @@
+{
+  "status": "official-public-documentation-review-not-eligibility-confirmation",
+  "checked_on": "2026-10-30",
+  "timezone": "Asia/Calcutta",
+  "date_caveat": "Access date is not publication date. Null displayed_update means no dependable update date recorded from retrieved text.",
+  "sources": [
+    {
+      "id": "S01",
+      "url": "https://ethglobal.com/rules",
+      "purpose": "General pre-existing-work and Continuity requirements",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S02",
+      "url": "https://ethglobal.com/events/mumbai/sponsor",
+      "purpose": "Official 5-7 November 2026 event dates; exact coding window not established",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S03",
+      "url": "https://ethglobal.com/events/mumbai/prizes",
+      "purpose": "Combined prize terms; three-pick reference is not independent portal verification",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S04",
+      "url": "https://ethglobal.com/events/mumbai/prizes/chainlink",
+      "purpose": "CRE qualifying simulation and meaningful use; separate CCIP state-change requirement",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S05",
+      "url": "https://ethglobal.com/events/mumbai/prizes/arkiv",
+      "purpose": "Distinct from-scratch and existing-project tracks; actual writes/reads; submission files",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S06",
+      "url": "https://ethglobal.com/events/mumbai/prizes/0g",
+      "purpose": "iAI spend/inference and submission requirements; existing-0G-project Continuity route",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S07",
+      "url": "https://docs.chain.link/cre/guides/operations/simulating-workflows",
+      "purpose": "Account/authentication, RPC/HTTP calls, local WASM, explicit broadcast behavior",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S08",
+      "url": "https://docs.chain.link/cre/getting-started/cli-installation/windows",
+      "purpose": "Native Windows installation path; account/authentication needed",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S09",
+      "url": "https://docs.arkiv.network/",
+      "purpose": "Current Tiramisu network ID and RPC documentation",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S10",
+      "url": "https://docs.arkiv.network/start-here/installation/",
+      "purpose": "WalletClient mutation versus keyless PublicClient read and expiration example",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S11",
+      "url": "https://docs.0g.ai/developer-hub/building-on-0g/compute-network/router/overview",
+      "purpose": "API-key Router, separate environments and Direct accounting",
+      "displayed_update": "2026-09-02",
+      "access_status": "opened"
+    },
+    {
+      "id": "S12",
+      "url": "https://docs.0g.ai/developer-hub/building-on-0g/compute-network/router/models",
+      "purpose": "Capability support varies; public catalog and provider labels",
+      "displayed_update": "2026-09-02",
+      "access_status": "opened"
+    },
+    {
+      "id": "S13",
+      "url": "https://docs.0g.ai/developer-hub/building-on-0g/compute-network/router/account/deposits",
+      "purpose": "Normal Router wallet deposit, rates and usage; event-credit bridge unestablished",
+      "displayed_update": "2026-09-02",
+      "access_status": "opened"
+    },
+    {
+      "id": "S14",
+      "url": "https://pc.0g.ai/",
+      "purpose": "Standard, Verified and Private guarantees differ; sponsor claims not independently validated",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S15",
+      "url": "https://pc.0g.ai/models",
+      "purpose": "Public text-model catalog and capability/trust badges, not tested requests",
+      "displayed_update": null,
+      "access_status": "opened"
+    },
+    {
+      "id": "S16",
+      "url": "https://iai.finance/docs",
+      "purpose": "Historical credit/minting context; no action required or authorized",
+      "displayed_update": null,
+      "access_status": "opened-not-needed-for-decision"
+    },
+    {
+      "id": "S17",
+      "url": "https://ethglobal.com/events/mumbai",
+      "purpose": "Exact event kickoff/cutoff not retrieved",
+      "displayed_update": null,
+      "access_status": "failed-repeated-timeout-or-500"
+    },
+    {
+      "id": "S18",
+      "url": "https://docs.chain.link/cre/getting-started/part-3-reading-onchain-value.md",
+      "purpose": "Tutorial variant could not be retrieved; no inference drawn from absent body",
+      "displayed_update": null,
+      "access_status": "failed-tool-access"
+    },
+    {
+      "id": "S19",
+      "url": "https://docs.chain.link/cre/guides/workflow/using-http-client/get-request.md",
+      "purpose": "Tutorial variant could not be retrieved; simulation guide supports feasibility only",
+      "displayed_update": null,
+      "access_status": "failed-tool-access"
+    }
+  ]
+}

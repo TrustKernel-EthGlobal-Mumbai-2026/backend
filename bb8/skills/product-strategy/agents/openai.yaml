@@ -1,0 +1,7 @@
+interface:
+  display_name: "Product Strategy"
+  short_description: "Frame choices and product bets"
+  brand_color: "#A23B72"
+  default_prompt: "Use $product-strategy to frame the choices, tradeoffs, and product bets here."
+policy:
+  allow_implicit_invocation: true

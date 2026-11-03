@@ -1,0 +1,7 @@
+interface:
+  display_name: "Strategic Storytelling"
+  short_description: "Trace features through experience to purpose"
+  brand_color: "#6B4E9B"
+  default_prompt: "Use $strategic-storytelling to map this initiative from purpose to features and audit the reverse story."
+policy:
+  allow_implicit_invocation: true

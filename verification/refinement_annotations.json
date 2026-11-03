@@ -1,0 +1,27 @@
+{
+  "annotation_version": "1.0.0",
+  "author": "Codex worker",
+  "status": "provisional_interpretation_not_independent_gold",
+  "annotations": [
+    {
+      "id": "A-SOL-P0-THIN-EVIDENCE",
+      "run_id": "sol-0530a9827c2c",
+      "from_type": "final_trade_decision",
+      "from_quote": "the evidence is too thin to support a directional allocation change",
+      "to_type": "investment_plan",
+      "to_quote": "Missing fundamentals, macro data, all seven technical indicators, and a verified current market snapshot leave the evidence too thin for a directional allocation change.",
+      "relation": "proposed_semantic_premise",
+      "interpretation": "The decision's stated thin-evidence rationale may refer to the investment plan's enumerated evidence limitations. This does not prove sufficiency, factual support or private reliance."
+    },
+    {
+      "id": "A-TERRA-P0-THIN-EVIDENCE",
+      "run_id": "terra-2f66dbe7f15d",
+      "from_type": "final_trade_decision",
+      "from_quote": "The evidence is too thin for a directional call, rather than merely conflicted.",
+      "to_type": "investment_plan",
+      "to_quote": "The evidence is too thin for a directional call.",
+      "relation": "proposed_semantic_premise",
+      "interpretation": "Candidate connection to the investment plan's evidence limitation, kept as an authored interpretation even where part of the wording matches. No support or reliance verdict follows."
+    }
+  ]
+}

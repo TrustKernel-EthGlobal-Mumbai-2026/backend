@@ -1,0 +1,7 @@
+interface:
+  display_name: "Engineering Implementation"
+  short_description: "Plan and sequence technical delivery"
+  brand_color: "#34495E"
+  default_prompt: "Use $engineering-implementation to create a repository-grounded delivery plan."
+policy:
+  allow_implicit_invocation: true

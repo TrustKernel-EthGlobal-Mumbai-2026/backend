@@ -1,0 +1,7 @@
+interface:
+  display_name: "Organise"
+  short_description: "Build and maintain durable local knowledge"
+  brand_color: "#E58B2A"
+  default_prompt: "Use $organise to review and ingest today's Downloads into my local knowledge base."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,12 @@
+{
+  "scope": "authored synthetic procedure only; expected outcomes, not precomputed runtime findings",
+  "shapes": ["single", "multi"],
+  "initial_clearance": true,
+  "expired_clearance": false,
+  "refreshed_clearance": true,
+  "old_clearance_reuse_rejected": true,
+  "distorted_extract_rejected": true,
+  "model_calls": 0,
+  "network_calls": 0,
+  "trade_execution": false
+}

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Product Discovery"
+  short_description: "Find needs and product opportunities"
+  brand_color: "#A23B72"
+  default_prompt: "Use $product-discovery to map this problem space before we select solutions."
+policy:
+  allow_implicit_invocation: true

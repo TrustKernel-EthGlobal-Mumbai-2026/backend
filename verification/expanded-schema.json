@@ -1,0 +1,1908 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trustkernel:expanded-ledger:2.0.0",
+  "$defs": {
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "artifacts"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "path": {
+          "type": [
+            "string"
+          ]
+        },
+        "sha256": {
+          "type": [
+            "string"
+          ]
+        },
+        "bytes": {
+          "type": [
+            "integer"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "additionalProperties": false
+    },
+    "runs": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "runs"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "artifact_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "pair_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "arm": {
+          "type": [
+            "string"
+          ]
+        },
+        "model": {
+          "type": [
+            "string"
+          ]
+        },
+        "fixture_hash": {
+          "type": [
+            "string"
+          ]
+        },
+        "config_hash": {
+          "type": [
+            "string"
+          ]
+        },
+        "session_config_hash": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "artifact_id",
+        "run_id",
+        "pair_id",
+        "arm",
+        "model",
+        "fixture_hash",
+        "config_hash",
+        "session_config_hash"
+      ],
+      "additionalProperties": false
+    },
+    "events": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "events"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "artifact_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "seq": {
+          "type": [
+            "integer"
+          ]
+        },
+        "event_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "timestamp": {
+          "type": [
+            "string"
+          ]
+        },
+        "kind": {
+          "type": [
+            "string"
+          ]
+        },
+        "span_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "parent_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "event_hash": {
+          "type": [
+            "string"
+          ]
+        },
+        "raw": {}
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "artifact_id",
+        "run_id",
+        "seq",
+        "event_id",
+        "timestamp",
+        "kind",
+        "span_id",
+        "parent_id",
+        "event_hash",
+        "raw"
+      ],
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "evidence"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "artifact_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "pointer": {
+          "type": [
+            "string"
+          ]
+        },
+        "fixture_hash": {
+          "type": [
+            "string"
+          ]
+        },
+        "evidence_key": {
+          "type": [
+            "string"
+          ]
+        },
+        "tool": {
+          "type": [
+            "string"
+          ]
+        },
+        "item_hash": {
+          "type": [
+            "string"
+          ]
+        },
+        "content": {
+          "type": [
+            "string"
+          ]
+        },
+        "content_status": {
+          "enum": [
+            "CONTENT",
+            "ERROR",
+            "NO_DATA",
+            "PARTIAL"
+          ]
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "root_source_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider": {
+          "type": [
+            "string"
+          ]
+        },
+        "scope": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "artifact_id",
+        "pointer",
+        "fixture_hash",
+        "evidence_key",
+        "tool",
+        "item_hash",
+        "content",
+        "content_status",
+        "observed_at",
+        "source_id",
+        "root_source_id",
+        "provider",
+        "scope"
+      ],
+      "additionalProperties": false
+    },
+    "availability": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "availability"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "evidence_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "event_id": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "run_id",
+        "evidence_id",
+        "event_id"
+      ],
+      "additionalProperties": false
+    },
+    "retrievals": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "retrievals"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "evidence_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "event_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "request": {}
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "run_id",
+        "evidence_id",
+        "event_id",
+        "request"
+      ],
+      "additionalProperties": false
+    },
+    "calls": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "calls"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "span_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "actor": {
+          "type": [
+            "string"
+          ]
+        },
+        "start_event_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "end_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "error_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "error"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "run_id",
+        "span_id",
+        "actor",
+        "start_event_id",
+        "end_event_id",
+        "error_event_id",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "texts": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "texts"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "artifact_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pointer": {
+          "type": [
+            "string"
+          ]
+        },
+        "transform": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": [
+            "string"
+          ]
+        },
+        "sha256": {
+          "type": [
+            "string"
+          ]
+        },
+        "role": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "artifact_id",
+        "event_id",
+        "pointer",
+        "transform",
+        "text",
+        "sha256",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "exposures": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "exposures"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "call_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "text_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "evidence_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "report_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer"
+          ]
+        },
+        "quote": {
+          "type": [
+            "string"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "decoded_envelope_presence",
+            "decoded_tool_result_lineage",
+            "exact_evidence_text_in_message",
+            "exact_prior_report"
+          ]
+        },
+        "provenance": {}
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "call_id",
+        "text_id",
+        "evidence_id",
+        "report_id",
+        "start",
+        "end",
+        "quote",
+        "mode",
+        "provenance"
+      ],
+      "additionalProperties": false
+    },
+    "mentions": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "mentions"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "report_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "evidence_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer"
+          ]
+        },
+        "quote": {
+          "type": [
+            "string"
+          ]
+        },
+        "form": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "report_id",
+        "evidence_id",
+        "start",
+        "end",
+        "quote",
+        "form"
+      ],
+      "additionalProperties": false
+    },
+    "reports": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "reports"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "field": {
+          "type": [
+            "string"
+          ]
+        },
+        "text_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "call_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "origin_method": {
+          "type": [
+            "string"
+          ]
+        },
+        "origin_pointer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "origin_args": {}
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "run_id",
+        "field",
+        "text_id",
+        "call_id",
+        "output_event_id",
+        "origin_method",
+        "origin_pointer",
+        "origin_args"
+      ],
+      "additionalProperties": false
+    },
+    "propositions": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "propositions"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "entity": {
+          "type": [
+            "string"
+          ]
+        },
+        "predicate": {
+          "type": [
+            "string"
+          ]
+        },
+        "value": {},
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid_time": {},
+        "scope": {
+          "type": [
+            "string"
+          ]
+        },
+        "modality": {
+          "type": [
+            "string"
+          ]
+        },
+        "assumptions": {},
+        "identity_status": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "entity",
+        "predicate",
+        "value",
+        "unit",
+        "valid_time",
+        "scope",
+        "modality",
+        "assumptions",
+        "identity_status"
+      ],
+      "additionalProperties": false
+    },
+    "assertions": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "assertions"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "report_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "proposition_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "call_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asserted_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer"
+          ]
+        },
+        "quote": {
+          "type": [
+            "string"
+          ]
+        },
+        "rule_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "annotation_status": {
+          "enum": [
+            "worker_candidate_awaiting_independent_adjudication"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "run_id",
+        "report_id",
+        "proposition_id",
+        "call_id",
+        "actor",
+        "output_event_id",
+        "asserted_at",
+        "start",
+        "end",
+        "quote",
+        "rule_id",
+        "annotation_status"
+      ],
+      "additionalProperties": false
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "links"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "assertion_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "evidence_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "report_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "relation": {
+          "type": [
+            "string"
+          ]
+        },
+        "status": {
+          "enum": [
+            "agent-asserted",
+            "extractor-proposed",
+            "verified"
+          ]
+        },
+        "basis": {
+          "type": [
+            "string"
+          ]
+        },
+        "mention_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "assertion_id",
+        "evidence_id",
+        "report_id",
+        "relation",
+        "status",
+        "basis",
+        "mention_id"
+      ],
+      "additionalProperties": false
+    },
+    "checks": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "checks"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.1.0"
+        },
+        "normalization_version": {
+          "const": "1.1.0"
+        },
+        "extraction_version": {
+          "const": "1.0.0"
+        },
+        "subject_table": {
+          "type": [
+            "string"
+          ]
+        },
+        "subject_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "category": {
+          "type": [
+            "string"
+          ]
+        },
+        "method": {
+          "type": [
+            "string"
+          ]
+        },
+        "result": {
+          "type": [
+            "string"
+          ]
+        },
+        "details": {}
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "subject_table",
+        "subject_id",
+        "category",
+        "method",
+        "result",
+        "details"
+      ],
+      "additionalProperties": false
+    },
+    "sources_v2": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "sources_v2"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "normalization_version": {
+          "const": "2.0.0"
+        },
+        "extraction_version": {
+          "const": "2.0.0"
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "actor": {
+          "type": [
+            "string"
+          ]
+        },
+        "stage": {
+          "type": [
+            "string"
+          ]
+        },
+        "source_type": {
+          "type": [
+            "string"
+          ]
+        },
+        "report_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "call_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "output_event_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "anchor_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "pointer": {
+          "type": [
+            "string"
+          ]
+        },
+        "text": {
+          "type": [
+            "string"
+          ]
+        },
+        "sha256": {
+          "type": [
+            "string"
+          ]
+        },
+        "content_group": {
+          "type": [
+            "string"
+          ]
+        },
+        "origin_method": {
+          "type": [
+            "string"
+          ]
+        },
+        "origin_pointer": {
+          "type": [
+            "string"
+          ]
+        },
+        "input_seq": {
+          "type": [
+            "integer"
+          ]
+        },
+        "output_seq": {
+          "type": [
+            "integer"
+          ]
+        },
+        "asserted_at": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "run_id",
+        "actor",
+        "stage",
+        "source_type",
+        "report_id",
+        "call_id",
+        "output_event_id",
+        "anchor_event_id",
+        "artifact_id",
+        "pointer",
+        "text",
+        "sha256",
+        "content_group",
+        "origin_method",
+        "origin_pointer",
+        "input_seq",
+        "output_seq",
+        "asserted_at"
+      ],
+      "additionalProperties": false
+    },
+    "outputs_v2": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "outputs_v2"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "normalization_version": {
+          "const": "2.0.0"
+        },
+        "extraction_version": {
+          "const": "2.0.0"
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "actor": {
+          "type": [
+            "string"
+          ]
+        },
+        "event_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "pointer": {
+          "type": [
+            "string"
+          ]
+        },
+        "source_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "disposition": {
+          "type": [
+            "string"
+          ]
+        },
+        "details": {}
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "run_id",
+        "actor",
+        "event_id",
+        "pointer",
+        "source_id",
+        "disposition",
+        "details"
+      ],
+      "additionalProperties": false
+    },
+    "appearances_v2": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "appearances_v2"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "normalization_version": {
+          "const": "2.0.0"
+        },
+        "extraction_version": {
+          "const": "2.0.0"
+        },
+        "source_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "run_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "artifact_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pointer": {
+          "type": [
+            "string"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer"
+          ]
+        },
+        "appearance_type": {
+          "type": [
+            "string"
+          ]
+        },
+        "container_kind": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "source_id",
+        "run_id",
+        "artifact_id",
+        "event_id",
+        "pointer",
+        "start",
+        "end",
+        "appearance_type",
+        "container_kind"
+      ],
+      "additionalProperties": false
+    },
+    "passages_v2": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "passages_v2"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "normalization_version": {
+          "const": "2.0.0"
+        },
+        "extraction_version": {
+          "const": "2.0.0"
+        },
+        "source_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer"
+          ]
+        },
+        "text": {
+          "type": [
+            "string"
+          ]
+        },
+        "disposition": {
+          "enum": [
+            "background_structural_material",
+            "candidate_assertion",
+            "conditional_guidance_hypothesis",
+            "question",
+            "unprocessed_material",
+            "unresolved_interpretation"
+          ]
+        },
+        "tags": {},
+        "rule": {
+          "type": [
+            "string"
+          ]
+        },
+        "heading": {
+          "type": [
+            "string"
+          ]
+        },
+        "context_start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "context_end": {
+          "type": [
+            "integer"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "source_id",
+        "start",
+        "end",
+        "text",
+        "disposition",
+        "tags",
+        "rule",
+        "heading",
+        "context_start",
+        "context_end"
+      ],
+      "additionalProperties": false
+    },
+    "propositions_v2": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "propositions_v2"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "normalization_version": {
+          "const": "2.0.0"
+        },
+        "extraction_version": {
+          "const": "2.0.0"
+        },
+        "source_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "normalization": {},
+        "context": {},
+        "identity_status": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "source_id",
+        "normalization",
+        "context",
+        "identity_status"
+      ],
+      "additionalProperties": false
+    },
+    "candidates_v2": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "candidates_v2"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "normalization_version": {
+          "const": "2.0.0"
+        },
+        "extraction_version": {
+          "const": "2.0.0"
+        },
+        "source_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "passage_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "proposition_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "parent_candidate_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer"
+          ]
+        },
+        "quote": {
+          "type": [
+            "string"
+          ]
+        },
+        "candidate_kind": {
+          "type": [
+            "string"
+          ]
+        },
+        "atomization_status": {
+          "type": [
+            "string"
+          ]
+        },
+        "method": {
+          "type": [
+            "string"
+          ]
+        },
+        "provisional_status": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "source_id",
+        "passage_id",
+        "proposition_id",
+        "parent_candidate_id",
+        "start",
+        "end",
+        "quote",
+        "candidate_kind",
+        "atomization_status",
+        "method",
+        "provisional_status"
+      ],
+      "additionalProperties": false
+    },
+    "references_v2": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "references_v2"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "normalization_version": {
+          "const": "2.0.0"
+        },
+        "extraction_version": {
+          "const": "2.0.0"
+        },
+        "source_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "passage_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "evidence_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer"
+          ]
+        },
+        "quote": {
+          "type": [
+            "string"
+          ]
+        },
+        "form": {
+          "type": [
+            "string"
+          ]
+        },
+        "attachment": {
+          "type": [
+            "string"
+          ]
+        },
+        "status": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "source_id",
+        "passage_id",
+        "evidence_id",
+        "start",
+        "end",
+        "quote",
+        "form",
+        "attachment",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "relations_v2": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "relations_v2"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "normalization_version": {
+          "const": "2.0.0"
+        },
+        "extraction_version": {
+          "const": "2.0.0"
+        },
+        "candidate_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "source_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer"
+          ]
+        },
+        "quote": {
+          "type": [
+            "string"
+          ]
+        },
+        "cue_start": {
+          "type": [
+            "integer"
+          ]
+        },
+        "cue_end": {
+          "type": [
+            "integer"
+          ]
+        },
+        "relation": {
+          "type": [
+            "string"
+          ]
+        },
+        "scope_status": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "candidate_id",
+        "source_id",
+        "start",
+        "end",
+        "quote",
+        "cue_start",
+        "cue_end",
+        "relation",
+        "scope_status"
+      ],
+      "additionalProperties": false
+    },
+    "queue_v2": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "const": "queue_v2"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "normalization_version": {
+          "const": "2.0.0"
+        },
+        "extraction_version": {
+          "const": "2.0.0"
+        },
+        "source_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "passage_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "candidate_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string"
+          ]
+        },
+        "unresolved_fields": {}
+      },
+      "required": [
+        "table",
+        "id",
+        "schema_version",
+        "normalization_version",
+        "extraction_version",
+        "source_id",
+        "passage_id",
+        "candidate_id",
+        "reason",
+        "unresolved_fields"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/artifacts"
+    },
+    {
+      "$ref": "#/$defs/runs"
+    },
+    {
+      "$ref": "#/$defs/events"
+    },
+    {
+      "$ref": "#/$defs/evidence"
+    },
+    {
+      "$ref": "#/$defs/availability"
+    },
+    {
+      "$ref": "#/$defs/retrievals"
+    },
+    {
+      "$ref": "#/$defs/calls"
+    },
+    {
+      "$ref": "#/$defs/texts"
+    },
+    {
+      "$ref": "#/$defs/exposures"
+    },
+    {
+      "$ref": "#/$defs/mentions"
+    },
+    {
+      "$ref": "#/$defs/reports"
+    },
+    {
+      "$ref": "#/$defs/propositions"
+    },
+    {
+      "$ref": "#/$defs/assertions"
+    },
+    {
+      "$ref": "#/$defs/links"
+    },
+    {
+      "$ref": "#/$defs/checks"
+    },
+    {
+      "$ref": "#/$defs/sources_v2"
+    },
+    {
+      "$ref": "#/$defs/outputs_v2"
+    },
+    {
+      "$ref": "#/$defs/appearances_v2"
+    },
+    {
+      "$ref": "#/$defs/passages_v2"
+    },
+    {
+      "$ref": "#/$defs/propositions_v2"
+    },
+    {
+      "$ref": "#/$defs/candidates_v2"
+    },
+    {
+      "$ref": "#/$defs/references_v2"
+    },
+    {
+      "$ref": "#/$defs/relations_v2"
+    },
+    {
+      "$ref": "#/$defs/queue_v2"
+    }
+  ]
+}

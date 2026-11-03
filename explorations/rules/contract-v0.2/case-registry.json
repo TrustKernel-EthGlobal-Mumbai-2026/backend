@@ -1,0 +1,58 @@
+{
+  "version": "0.2.0",
+  "author": "Codex verification semantics lane",
+  "status": "provisional_authored_case_selection_and_policy_not_independent_gold",
+  "cases": {
+    "snapshot_protocol": {
+      "run_id": "sol-0530a9827c2c",
+      "source_type": "market_report",
+      "quote": "The required `get_verified_market_snapshot` result was **not retrieved**, and no tool rounds remain.",
+      "instruction": "Before writing the final report, call get_verified_market_snapshot for this ticker and the current date, and treat it as the source of truth for any exact OHLCV, price-level, or indicator-value claim. If another tool's output conflicts with the verified snapshot, flag the discrepancy rather than inventing a reconciled number. Do not claim historical validation, support/resistance bounces, or exact percentage moves unless they are directly supported by tool output with concrete dates and prices.",
+      "tool_name": "get_verified_market_snapshot",
+      "evidence_key": "E_SNAPSHOT",
+      "obligation": "Invoke before completing this market report; invocation/retrieval/delivery remain distinct.",
+      "precedence_policy": "Protocol only in this assessment; no universal factual precedence is selected."
+    },
+    "sol_price_relation": {
+      "selector": {"run_id": "sol-0530a9827c2c", "rule_id": "market.close_below_previous"},
+      "quote": "closes below both its opening price and the preceding session’s close",
+      "entity": "ETH-USD", "unit": "USD", "valid_date": "2026-10-28", "previous_date": "2026-10-27",
+      "evidence_key": "E_PRICE", "relation": "Close[2026-10-28] < Open[2026-10-28] AND Close[2026-10-28] < Close[2026-10-27]",
+      "assumptions": ["Last and preceding sessions refer to the final two supplied fixture rows, based on full report context.", "The inherited parent proposition names close_below_previous_close; this authored refinement also checks the explicit opening-price conjunct retained in its quote."]
+    },
+    "news_roots": {
+      "selector": {"run_id": "sol-0530a9827c2c", "rule_id": "news.duplicate"},
+      "quote": "The global-news digest repeats that same allegation; it is **not independent confirmation**.",
+      "evidence_keys": ["E_NEWS", "E_GLOBAL"],
+      "independence_obligation": "Distinct original root reporting for the alleged demand event; same known declared root fails this obligation."
+    },
+    "prediction_missing": {
+      "selector": {"run_id": "sol-0530a9827c2c", "rule_id": "news.prediction_missing"},
+      "quote": "The Fed-rate-cut prediction-market query returned no evidence.",
+      "evidence_key": "E_PREDICTION",
+      "expected_content": "No prediction-market evidence supplied in this synthetic snapshot.",
+      "probability_value": null,
+      "note": "There is no selected zero-probability assertion. The scalar-conversion companion asks applicability on this actual missingness observation; no model claim is invented."
+    },
+    "conditional_hold": {
+      "clause_id": "clauses_v3:35c63dd88f36f46a3d69e908acbdc57e9af4dbb1a85f77440934f9e2b5919e67",
+      "quote": "maintain exposure only if it fits established concentration, liquidity and loss limits using verified prices.",
+      "required_inputs": ["actual_holdings", "established_limits", "objectives", "horizon", "condition_reference_resolution"],
+      "available_policy_inputs": {},
+      "note": "Prefix invested and local only-if remain conditional context; nested scope and coreference unresolved."
+    },
+    "semicolon_regression": {
+      "earlier_clause_id": "clauses_v3:176d233fb08b61d8a843441328fcbbfde9b58011b789f8a84a615a22063e4ae6",
+      "later_clause_id": "clauses_v3:fc8d1a25da965c82065b00d3ba2af11a7a8683207dd54668c0450154c9236eac",
+      "expected_antecedent": "uninvested",
+      "note": "R035 structural invariant, not semantic correctness of the action list; earlier branch has no typed condition."
+    },
+    "reason_roles": {
+      "positive_clause_id": "clauses_v3:b5ca4dc3f2cd2ea94ab126b1f378d769376593a6ef6a7742163c76b77f4e3dbf",
+      "rejected_clause_id": "clauses_v3:2840d987bd92bd0c77d9e7c1ad9b8c58a933ffa64c117fab27775e48ad64a2b5",
+      "positive_marker": "because", "rejected_marker": "not because",
+      "sufficiency_rule": null,
+      "note": "These are stated versus rejected author-rationale roles. Neither is accepted factual support, private reliance, or a proven logical cause."
+    }
+  }
+}

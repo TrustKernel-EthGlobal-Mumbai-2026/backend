@@ -1,0 +1,7 @@
+interface:
+  display_name: "Engineering"
+  short_description: "Route work to an engineering specialist"
+  brand_color: "#34495E"
+  default_prompt: "Use $engineering to route and coordinate this software-development mission."
+policy:
+  allow_implicit_invocation: false

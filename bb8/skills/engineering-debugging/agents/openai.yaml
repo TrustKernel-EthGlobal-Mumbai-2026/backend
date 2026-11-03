@@ -1,0 +1,7 @@
+interface:
+  display_name: "Engineering Debugging"
+  short_description: "Find root causes and verify fixes"
+  brand_color: "#34495E"
+  default_prompt: "Use $engineering-debugging to reproduce this failure and isolate its root cause."
+policy:
+  allow_implicit_invocation: true

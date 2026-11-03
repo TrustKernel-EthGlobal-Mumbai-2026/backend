@@ -1,0 +1,7 @@
+interface:
+  display_name: "Problem Solving"
+  short_description: "Structure ambiguity and diagnose causes"
+  brand_color: "#9A5B13"
+  default_prompt: "Use $problem-solving to structure this problem, test causes, and identify unblockers."
+policy:
+  allow_implicit_invocation: true

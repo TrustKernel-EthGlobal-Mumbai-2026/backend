@@ -1,0 +1,7 @@
+interface:
+  display_name: "BB8"
+  short_description: "Executive thinking partner and navigator"
+  brand_color: "#E58B2A"
+  default_prompt: "Use $bb8 to question, frame, and plan this mission before acting."
+policy:
+  allow_implicit_invocation: true
