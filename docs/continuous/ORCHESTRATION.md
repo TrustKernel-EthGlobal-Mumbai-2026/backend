@@ -1,6 +1,6 @@
 # Continuous verification: active orchestration
 
-Updated: 5 November 2026. Status: A/B review gates accepted; C/D integrating the actual local backend.
+Updated: 5 November 2026. Status: all four scoped code gates accepted; durable authored demo and final combined review pending.
 Owner approved parallel work in separate chats, coordinated by the existing
 orchestrator chat. This file is the repository's current coordination record.
 The earlier [architecture proposal](../CONTINUOUS_VERIFICATION_PLAN.md) supplies
@@ -95,7 +95,7 @@ of scope; retain stable graph/event IDs and a cursor-based read contract.
 |---|---|---|---|
 | A | ACCEPTED FOR SCOPED OFFLINE INTEGRATION | [PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2), corrected `e088970` / contract0.2: orchestrator independently reran all29 tests and original false-PASS control now rejects | B/C/D bind exact accepted API; A stays available for concrete integration defects |
 | B | STORED SERVICE ACCEPTED FOR SCOPED LOCAL INTEGRATION | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3), `251b3b0`: orchestrator independently reran78 tests (A29+B49); reviewed source imported here | C/D bind actual backend; B stays available for concrete integration defects; semantic readiness remains false |
-| C | CAPTURE REPAIR ACCEPTED / SERVICE BINDING REQUESTED | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), corrected `9478a61`: orchestrator reran13 generic tests and original ambiguous-return negative control | Integrate actual B receipts/checkpoints/resolve_view and test bounded feedback/revision/recheck; native/actual-model scope remains explicit |
+| C | PERSISTED/NATIVE SEAM ACCEPTED | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), `1e4e8bd`: orchestrator independently reran100 tests with exact pinned native source/dependencies; base95 generic PASS, native class skipped | Durable authored demo and final shared review pending; no full GraphSetup or actual-model behavior claim |
 | D | PERSISTED TRANSPORT PARITY ACCEPTED | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5), `02a9568`: orchestrator independently reran100 tests with official MCP; base98 PASS/2 explicit MCP skips | Exact A/B dependencies; SDK/injected CLI/stdio MCP verified over actual local stored core; standalone/default host setup remains deferred |
 
 The orchestrator updates states after actual chat snapshots and artifact review.
@@ -185,6 +185,18 @@ Exact owned files are imported here and optional MCP CI is registered. Standalon
 default commands still fail unavailable without trusted service injection;
 arbitrary host installation, daemon lifecycle and actual-model response are not
 claimed. C's final persisted/native loop and durable authored demo remain pending.
+
+Final C core review: `1e4e8bd367508b99588f11f43534de32c84d28eb` was inspected
+and independently exercised from immutable files with exact accepted A/B bytes.
+Cached native environment runs all100 A/B/C tests successfully; base Python runs
+95 generic tests successfully and explicitly skips the native class (five cases
+not exercised there). The test verifies exact pinned source before executing
+selected AST functions with real LangGraph/ToolNode and authored responses.
+Normal tool delivery reaches revision/recheck; capped ambiguous text remains
+INCONCLUSIVE. Original failure and unready checkpoints survive persistence.
+C owns an in-process serialized service worker for SQLite thread affinity; it
+is not a durable background scheduler or full GraphSetup integration. Exact core
+owned files are imported here; durable demo and combined checkout review follow.
 
 ## Draft PR descriptions
 

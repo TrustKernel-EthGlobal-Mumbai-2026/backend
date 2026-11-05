@@ -18,6 +18,8 @@ TrustKernel exists to catch agent decisions that depend on stale evidence, fault
 
 **Persisted transport parity accepted:** D source `02a9568` is integrated after independent reruns of100 tests with official MCP1.30.0 (base Python98 PASS/2 explicit MCP skips). SDK, trusted injected CLI and real stdio MCP preserve actual stored results, errors, foreign-reference denial and pinned reads. Standalone CLI/server defaults still return unavailable until a trusted host supplies the configured service. The optional MCP CI job uses `requirements-mcp.txt`; no model/source API or sampling is involved. C's final persisted/native feedback cycle remains under review.
 
+**Persisted/native feedback gate accepted:** C source `1e4e8bd` independently passes100 tests with cached native dependencies and the exact upstream pin (A29+B49+C22). It exercises real LangGraph ToolNode and exact pinned function subsets with authored responses: initial omission FAIL, captured delivery/input, revised report and scoped recheck; capped wrap-up remains INCONCLUSIVE when provenance is ambiguous. Original failures survive reopen and semantic readiness remains false. Exact C files are integrated here. Full GraphSetup, durable host-scheduler resume and actual model behavior remain unproven; a durable authored demo and final combined review are being completed.
+
 The repository handoff is published. The [initial offline CI run](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/actions/runs/41722496087) passed on a fresh GitHub checkout, including BB8 verification and rebuilding/checking the committed context index. This is repository/mechanism validation, not another agent experiment.
 
 | Workstream | What exists now | Boundary / next action |
