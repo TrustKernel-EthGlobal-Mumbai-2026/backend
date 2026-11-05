@@ -1,0 +1,1181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trustkernel:continuous-verification:0.2",
+  "title": "Continuous verification candidate contract",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/event"
+    },
+    {
+      "$ref": "#/$defs/checkpoint"
+    },
+    {
+      "$ref": "#/$defs/request"
+    },
+    {
+      "$ref": "#/$defs/policy"
+    },
+    {
+      "$ref": "#/$defs/result"
+    }
+  ],
+  "$defs": {
+    "event": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "continuous-verification-0.2"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stream_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "event_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "event_type": {
+          "type": "string",
+          "enum": [
+            "source",
+            "tool_result",
+            "model_input",
+            "report",
+            "checkpoint_observation",
+            "feedback_delivery",
+            "feedback_inclusion",
+            "feedback_acknowledgement",
+            "correction",
+            "observation"
+          ]
+        },
+        "producer": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "instrumented",
+                "cooperative",
+                "reviewer"
+              ]
+            },
+            "adapter_version": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "adapter_version"
+          ],
+          "additionalProperties": false
+        },
+        "occurred_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "recorded_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "parents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "content": {
+          "type": "string"
+        },
+        "content_digest": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "origin": {
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "json_pointer": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "span": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "redaction_profile": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "uri",
+            "json_pointer",
+            "span",
+            "redaction_profile"
+          ],
+          "additionalProperties": false
+        },
+        "payload": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "contract_version",
+        "run_id",
+        "stream_id",
+        "event_id",
+        "sequence",
+        "event_type",
+        "producer",
+        "occurred_at",
+        "observed_at",
+        "recorded_at",
+        "parents",
+        "content",
+        "content_digest",
+        "origin",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "payload_source": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "valid_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "retrieved_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OK",
+            "NO_DATA",
+            "ERROR",
+            "UNKNOWN"
+          ]
+        }
+      },
+      "required": [
+        "source_id",
+        "source_version",
+        "valid_at",
+        "retrieved_at",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "payload_tool_result": {
+      "type": "object",
+      "properties": {
+        "call_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tool_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "SUCCESS",
+            "ERROR",
+            "UNKNOWN"
+          ]
+        }
+      },
+      "required": [
+        "call_id",
+        "tool_name",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "payload_model_input": {
+      "type": "object",
+      "properties": {
+        "input_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "report_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "report_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "included_event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "boundary": {
+          "type": "string",
+          "enum": [
+            "ASSEMBLED",
+            "UNKNOWN"
+          ]
+        }
+      },
+      "required": [
+        "input_id",
+        "report_id",
+        "report_revision",
+        "included_event_ids",
+        "boundary"
+      ],
+      "additionalProperties": false
+    },
+    "payload_report": {
+      "type": "object",
+      "properties": {
+        "report_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "report_type": {
+          "type": "string",
+          "enum": [
+            "market",
+            "other"
+          ]
+        },
+        "input_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "OPEN",
+            "CLOSED",
+            "UNKNOWN"
+          ]
+        },
+        "completion": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "TRUNCATED",
+            "ERROR",
+            "UNKNOWN"
+          ]
+        }
+      },
+      "required": [
+        "report_id",
+        "revision",
+        "report_type",
+        "input_event_id",
+        "phase",
+        "completion"
+      ],
+      "additionalProperties": false
+    },
+    "payload_checkpoint_observation": {
+      "type": "object",
+      "properties": {
+        "checkpoint_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requested": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stream_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sequence": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "stream_id",
+              "sequence"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "checkpoint_id",
+        "requested"
+      ],
+      "additionalProperties": false
+    },
+    "payload_feedback_delivery": {
+      "type": "object",
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "assessment_id",
+        "proposal_id",
+        "proposal_revision",
+        "related_event_ids"
+      ],
+      "additionalProperties": false
+    },
+    "payload_feedback_inclusion": {
+      "type": "object",
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "assessment_id",
+        "proposal_id",
+        "proposal_revision",
+        "related_event_ids"
+      ],
+      "additionalProperties": false
+    },
+    "payload_feedback_acknowledgement": {
+      "type": "object",
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "assessment_id",
+        "proposal_id",
+        "proposal_revision",
+        "related_event_ids"
+      ],
+      "additionalProperties": false
+    },
+    "payload_correction": {
+      "type": "object",
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "related_event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "assessment_id",
+        "proposal_id",
+        "proposal_revision",
+        "related_event_ids"
+      ],
+      "additionalProperties": false
+    },
+    "payload_observation": {
+      "type": "object"
+    },
+    "checkpoint": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "continuous-verification-0.2"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checkpoint_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "established_by": {
+          "type": "object",
+          "properties": {
+            "service_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "basis": {
+              "type": "string",
+              "enum": [
+                "SERVICE_ESTABLISHED",
+                "PRODUCER_REPORTED"
+              ]
+            }
+          },
+          "required": [
+            "service_id",
+            "basis"
+          ],
+          "additionalProperties": false
+        },
+        "streams": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stream_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "requested": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "ingested_through": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "projected_through": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "gaps": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              },
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "CAPTURED",
+                        "NOT_CAPTURED",
+                        "UNKNOWN"
+                      ]
+                    },
+                    "basis_event_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "uniqueItems": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "state",
+                    "basis_event_ids"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "stream_id",
+              "requested",
+              "ingested_through",
+              "projected_through",
+              "gaps",
+              "capabilities"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "contract_version",
+        "run_id",
+        "checkpoint_id",
+        "revision",
+        "established_by",
+        "streams",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "continuous-verification-0.2"
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "check_id": {
+                "type": "string",
+                "enum": [
+                  "required_snapshot_before_market_report",
+                  "report_completion"
+                ]
+              },
+              "on_fail": {
+                "type": "string",
+                "enum": [
+                  "ADVISE",
+                  "HOLD",
+                  "RECHECK"
+                ]
+              },
+              "on_inconclusive": {
+                "type": "string",
+                "enum": [
+                  "ADVISE",
+                  "HOLD",
+                  "RECHECK"
+                ]
+              }
+            },
+            "required": [
+              "check_id",
+              "on_fail",
+              "on_inconclusive"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "required_tool": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "contract_version",
+        "policy_id",
+        "version",
+        "checks",
+        "required_tool"
+      ],
+      "additionalProperties": false
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "continuous-verification-0.2"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal": {
+          "type": "object",
+          "properties": {
+            "proposal_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "content": {
+              "type": "string"
+            },
+            "content_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "report_event_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "dependencies": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            },
+            "dependency_completeness": {
+              "type": "string",
+              "enum": [
+                "COMPLETE",
+                "PARTIAL",
+                "UNKNOWN"
+              ]
+            },
+            "report_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "report_revision": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "proposal_id",
+            "revision",
+            "content",
+            "content_digest",
+            "report_event_id",
+            "dependencies",
+            "dependency_completeness",
+            "report_id",
+            "report_revision"
+          ],
+          "additionalProperties": false
+        },
+        "checkpoint": {
+          "type": "object",
+          "properties": {
+            "checkpoint_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            }
+          },
+          "required": [
+            "checkpoint_id",
+            "revision",
+            "digest"
+          ],
+          "additionalProperties": false
+        },
+        "policy": {
+          "type": "object",
+          "properties": {
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "required_snapshot_before_market_report",
+                  "report_completion"
+                ]
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "policy_id",
+            "version",
+            "digest",
+            "checks"
+          ],
+          "additionalProperties": false
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "required_snapshot_before_market_report",
+              "report_completion"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "contract_version",
+        "run_id",
+        "request_id",
+        "proposal",
+        "checkpoint",
+        "policy",
+        "checks"
+      ],
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "continuous-verification-0.2"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_digest": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "proposal_digest": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "checkpoint_digest": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "policy_digest": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "evidence_digest": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        }
+      },
+      "required": [
+        "contract_version",
+        "run_id",
+        "request_id",
+        "request_digest",
+        "proposal_digest",
+        "checkpoint_digest",
+        "policy_digest",
+        "evidence_digest"
+      ],
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "continuous-verification-0.2"
+        },
+        "assessment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ASSESSED",
+            "NOT_READY",
+            "CAPTURE_GAP",
+            "ERROR"
+          ]
+        },
+        "binding": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "contract_version": {
+              "const": "continuous-verification-0.2"
+            },
+            "run_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "request_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "request_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "proposal_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "checkpoint_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "policy_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "evidence_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            }
+          },
+          "required": [
+            "contract_version",
+            "run_id",
+            "request_id",
+            "request_digest",
+            "proposal_digest",
+            "checkpoint_digest",
+            "policy_digest",
+            "evidence_digest"
+          ],
+          "additionalProperties": false
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "check_id": {
+                "type": "string",
+                "enum": [
+                  "required_snapshot_before_market_report",
+                  "report_completion"
+                ]
+              },
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "PASS",
+                  "FAIL",
+                  "INCONCLUSIVE"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "event_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "check_id",
+              "outcome",
+              "reason",
+              "event_ids"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "ADVISE",
+            "HOLD",
+            "RECHECK"
+          ]
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "path",
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "scope": {
+          "const": "declared_checks_at_checkpoint"
+        },
+        "readiness": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "service_established": {
+              "type": "boolean"
+            },
+            "streams": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "stream_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "requested": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "ingested_through": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "projected_through": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "observed_events": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "gaps": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "READY",
+                      "NOT_READY",
+                      "CAPTURE_GAP"
+                    ]
+                  }
+                },
+                "required": [
+                  "stream_id",
+                  "requested",
+                  "ingested_through",
+                  "projected_through",
+                  "observed_events",
+                  "gaps",
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "unresolved_parent_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "service_established",
+            "streams",
+            "unresolved_parent_ids"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "assessment_id",
+        "run_id",
+        "request_id",
+        "status",
+        "binding",
+        "findings",
+        "disposition",
+        "issues",
+        "scope",
+        "readiness"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

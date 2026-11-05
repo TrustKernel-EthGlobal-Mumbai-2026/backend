@@ -1,63 +1,75 @@
 # Expose one verification backend through SDK, CLI and MCP
 
-Lane D. Updated 5 November 2026. Status: TRANSPORT SLICE IMPLEMENTED;
-real-backend integration BLOCKED on orchestrator acceptance and lane B service.
+Lane D. Updated 5 November 2026. Status: ACCEPTED A0.2 VALIDATION BOUND;
+persisted-core parity BLOCKED on reviewed B operation/service interfaces.
 
 Branch: `codex/cli-sdk-mcp`, draft PR base: `codex/continuous-verification`.
 
-Build thin schema-bound SDK, CLI and MCP wrappers with equivalent readiness, scoped findings, errors and read cursors. Test genuine MCP discovery using the official SDK when dependencies are available; label missing integration explicitly. Document harness capture and gating limits. Never substitute canned success for actual verification.
+## Scope and changed files
 
-Owned paths (new paths are proposed, not implemented): continuous_verification/sdk.py, cli.py and mcp_server.py; tests/test_continuous_interfaces.py; docs/continuous/INTERFACES.md.
-
-Dependency gate: Transport design and explicit test doubles can begin now; integrated parity requires lane A contracts and lane B service. Do not implement a second verifier or a homegrown MCP protocol.
-
-## Published transport slice
-
-Changed: `continuous_verification/sdk.py`, `cli.py`, `mcp_server.py`,
+Owned: `continuous_verification/sdk.py`, `cli.py`, `mcp_server.py`,
 `tests/test_continuous_interfaces.py`, `docs/continuous/INTERFACES.md`, this lane
-status and regenerated context/packaging metadata.
+doc and regenerated context/packaging metadata. Shared README/orchestration/CI
+and other lane checkouts remain untouched.
 
-One shared operation dispatcher applies bounded finite JSON and explicit trusted
-operation/run grants. CLI JSON errors/exit classes preserve scoped backend results.
-Official FastMCP provides nine stdio tools with inline JSON, no server-path
-argument, no sampling/model call. Standalone CLI/MCP default to unavailable
-backend; no successful fixture assessment is offered in production invocation.
+The orchestrator accepted A source `e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2`,
+contract `continuous-verification-0.2`, for SCOPED OFFLINE integration. Exact A
+package/contracts/verifier/schema/example/tests/contract-doc dependencies were
+imported from integration commit `29f038f9bd8210cf3793f6a1d0db7acd51e113ff`
+without changes. No A implementation was edited. The earlier candidate rejection
+for causality is historical; accepted A0.2 is no longer a dependency blocker.
 
-Commands/results:
+## Implemented behavior
+
+One shared dispatcher applies bounded finite JSON and explicit trusted
+collect/read/verify/feedback permissions plus run scope. For verify it calls
+accepted A request/result validators and rejects mismatched run/request or
+request/proposal/checkpoint/policy digest bindings. Other operations still need
+B-owned DTO validation. A host-injected ServiceErrorAdapter prepares B's proposed
+typed exception seam using allowlisted codes and fixed public messages; its tests
+are authored doubles, not a reviewed B import. Valid readiness, scoped findings, issues and disposition
+remain structured results; process/transport success is not rule PASS.
+
+CLI emits JSON errors and uses literal local request filenames; MCP takes inline
+JSON and uses official FastMCP stdio, with no server-path resolution or sampling.
+The optional dependency is `mcp>=1.28,<2`. Standalone invocation still returns
+BACKEND_UNAVAILABLE for a valid request. No service factory, fixture-success
+mode, independent verifier or replacement policy/checkpoint schema was invented.
+
+## Commands and evidence
 
 - `py -3.11 -B -m unittest discover -s tests -p test_continuous_interfaces.py -v`:
-  10 passed; 1 explicitly skipped (optional official MCP missing).
-- Isolated test environment, same command with its Python, official `mcp 1.30.0`:
-  11 passed, including actual subprocess stdio initialize/list/invoke for all
-  nine tools with an authored backend and default unavailable backend.
-- JSON CLI subprocess safely handles a temporary filename with spaces and shell
-  metacharacters; no constructed shell command.
-- Portable regression suites: 66 procedural-loop and 35 live-verification tests
-  passed. Context index build/check, packaging manifest generation, export scan
-  and `git diff --check` passed before publishing.
+  15 passed; 1 explicitly skipped because optional MCP is absent.
+- Isolated environment with official `mcp 1.30.0`, same interface suite:
+  16 passed, including real subprocess stdio initialize/list/invoke for all nine
+  operations and verify-schema rejection through the actual protocol.
+- Imported accepted A suites: 10 contract + 19 verifier tests passed.
+- Original transport milestone also passed 66 procedural-loop + 35
+  live-verification regression tests; those unaffected historical modules have
+  not been edited in this follow-up.
+- Context index build/check, packaging generation, export scan and staged diff
+  checks are required before each publication. Imported A files match the exact
+  integration commit (empty source comparison after staging).
 
-These are transport tests. The authored backend is explicitly labeled; mixed
-NOT_READY/FAIL/HOLD results do not constitute a real assessment. Detailed risks,
-acceptance checks, dependency/version declaration and candidate harness limits
-are in [INTERFACES.md](../INTERFACES.md).
+All new inputs are authored examples copied/mutated in memory or temporary host
+files. Verify tests use accepted pure-core result fixtures, including PASS, FAIL,
+NOT_READY, CAPTURE_GAP and causal-cycle ERROR with no binding/PASS. Other operation
+results are explicitly generic transport doubles. These tests do not invoke a
+persisted B service and do not establish actual core/transport parity.
 
-## Gate and next action
+## Remaining gate and next action
 
-A's candidate has pure validation/verification functions; acceptance/pinned API
-has not been relayed. B's inspected storage facade has no verify/checkpoint-success
-operation yet. The provisional `Backend.execute(operation, request)` seam is
-transport scaffolding, not a frozen competing DTO/service contract.
+B's last inspected implemented CaptureService has storage operations only; its
+newer ServiceBackend/Principal/DTO proposal is documented but unreviewed. Await a reviewed
+stored-reference Backend.execute facade, trusted actor/service configuration,
+B-owned DTO validators, typed safe errors, assessment/evidence access checks,
+feedback acknowledgements and stable cursor semantics. The per-operation input/
+result checklist and proposed error mapping are in [INTERFACES.md](../INTERFACES.md).
+SDK run grants do not replace B's authorization of every referenced object.
 
-Orchestrator follow-up: A is explicitly NOT ACCEPTED while a reproduced causal
-ordering/cycle defect is repaired. INTERFACES.md now includes an operation-by-
-operation B input/result checklist and proposed safe error mapping. Those are
-review requests, not accepted schemas or implemented B behavior.
-
-Await orchestrator follow-up with accepted A/B references. Then bind domain
-validation, stored checkpoint/policy/event resolution, scoped reads and cursor
-semantics, and rerun parity over the actual service. No integrated parity or
-harness capture/gate claim is made now. Needed shared work: service factory and
-launchers, optional dependency registration, CI and current-state updates;
-orchestrator owns those files. No other lane checkout has been modified.
-
-Read ../ORCHESTRATION.md and ../../CONTINUOUS_VERIFICATION_PLAN.md before implementation. Update this file with actual changed files, commands, tests, blockers and next action. Keep machine-specific state and full chat transcripts out of the repository. No paid model/provider calls, original-budget mutation, live run, trading, signing or on-chain operation. Do not merge or modify another lane's files.
+Await orchestrator-reviewed B commit/API references, bind the real backend and
+then test persisted SDK/CLI/MCP parity. Needed shared work remains service factory/
+launchers, optional dependency declaration, CI, current-state updates and generated
+metadata conflict resolution. No paid/provider calls, private corpus/history
+rebuild, budget/unknown-hold changes, live experiment, trading, signatures or
+on-chain operations; frontend and independent evaluation remain deferred.

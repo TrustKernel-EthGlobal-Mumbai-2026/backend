@@ -1,4 +1,4 @@
-"""Transport boundary only; domain contracts and the real backend are pending.
+"""Transport boundary bound to accepted verification contract 0.2.
 
 Backend.execute is a provisional seam, not an accepted service interface. It
 must validate domain schemas and enforce object ownership before accessing data.
@@ -6,6 +6,11 @@ must validate domain schemas and enforce object ownership before accessing data.
 from dataclasses import dataclass
 import json
 from typing import Any, Protocol
+
+from .contracts import (
+    ContractError, digest, validate_request as validate_verify_request,
+    validate_result as validate_verify_result,
+)
 
 
 OPERATIONS = {
@@ -30,6 +35,40 @@ class Backend(Protocol):
     def execute(self, operation: str, request: dict[str, Any]) -> dict[str, Any]:
         """Validate A's schema, authorize referenced objects, invoke B's core."""
         ...
+
+
+_SAFE_SERVICE_ERRORS = {
+    "INVALID_REQUEST": "Service request is invalid.",
+    "FORBIDDEN": "Service operation or object is not permitted.",
+    "NOT_FOUND": "Requested service object was not found.",
+    "CONFLICT": "Service identity or content conflict.",
+    "INVALID_CURSOR": "Event cursor is invalid for this request.",
+    "UNSUPPORTED_OPERATION": "Service operation is not supported.",
+    "BACKEND_UNAVAILABLE": "Service is unavailable.",
+}
+
+
+class ServiceErrorAdapter:
+    """Prepare B's proposed typed-error seam without importing unreviewed B.
+
+    A trusted host supplies the exact service exception class, never model JSON.
+    Public messages are fixed here; raw messages/issues are not serialized. This
+    adapter does not create a service, configure coverage or validate B's DTOs.
+    """
+
+    def __init__(self, backend: Backend, error_type: type[Exception]):
+        if not isinstance(error_type, type) or not issubclass(error_type, Exception):
+            raise TypeError("Expected a trusted service exception class.")
+        self.backend, self.error_type = backend, error_type
+
+    def execute(self, operation: str, request: dict[str, Any]) -> dict[str, Any]:
+        try:
+            return self.backend.execute(operation, request)
+        except self.error_type as error:
+            code = getattr(error, "code", None)
+            if type(code) is str and code in _SAFE_SERVICE_ERRORS:
+                raise InterfaceError(code, _SAFE_SERVICE_ERRORS[code]) from None
+            raise InterfaceError("BACKEND_ERROR", "Backend operation failed.") from None
 
 
 @dataclass(frozen=True)
@@ -112,6 +151,11 @@ class Client:
             if operation not in OPERATIONS:
                 raise InterfaceError("UNKNOWN_OPERATION", "Unknown operation.")
             value = validate_request(request)
+            if operation == "verify":
+                try:
+                    validate_verify_request(value)
+                except ContractError:
+                    raise InterfaceError("INVALID_REQUEST", "Verification request violates contract 0.2.") from None
             if self.backend is None:
                 raise InterfaceError("BACKEND_UNAVAILABLE", "No real backend has been configured.")
             if OPERATIONS[operation] not in self.access.permissions:
@@ -125,6 +169,21 @@ class Client:
                 raise InterfaceError("BACKEND_ERROR", "Backend returned invalid JSON.") from None
             if not isinstance(result, dict):
                 raise InterfaceError("BACKEND_ERROR", "Backend returned an invalid result.")
+            if operation == "verify":
+                try:
+                    validate_verify_result(result)
+                except ContractError:
+                    raise InterfaceError("BACKEND_ERROR", "Verification result violates contract 0.2.") from None
+                if result["run_id"] != value["run_id"] or result["request_id"] != value["request_id"]:
+                    raise InterfaceError("BACKEND_ERROR", "Verification result scope mismatch.")
+                binding = result["binding"]
+                if binding is not None and any(binding[key] != expected for key, expected in (
+                    ("request_digest", digest(value)),
+                    ("proposal_digest", digest(value["proposal"])),
+                    ("checkpoint_digest", value["checkpoint"]["digest"]),
+                    ("policy_digest", value["policy"]["digest"]),
+                )):
+                    raise InterfaceError("BACKEND_ERROR", "Verification result binding mismatch.")
             return {"ok": True, "result": result}
         except InterfaceError as error:
             return failure(error)
