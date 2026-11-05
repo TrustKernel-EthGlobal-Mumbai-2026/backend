@@ -127,25 +127,35 @@ class HostEventCapture:
             parents=[] if input_event_id is None else [input_event_id])
 
     def assembled_native_input(self, messages, *, report_id, report_revision):
-        """Observe an actual native assembled input, including pinned wrap-up text.
+        """Observe actual assembly; only intact ToolMessages identify call origins.
 
-        Only separately observed matching tool returns become included refs.
-        This method is for the live input-assembly seam, not log reconstruction.
+        Flattened marker text has no call identity, even with a unique body/name
+        match. Without separately instrumented transformation lineage it makes
+        linkage UNKNOWN. Preserve raw input and any independently proven refs;
+        do not let withheld links become a false omission FAIL or a false PASS.
+        This method accepts host-observed messages, never reconstructed logs.
         """
-        included = []
+        included, uncertain = [], False
         for message in messages:
-            for call_id, (_, event) in self.tool_returns.items():
-                content = message.get("content")
-                if not isinstance(content, str):
-                    content = canonical_json(content)
-                direct = (message.get("type") == "tool" and message.get("tool_call_id") == call_id
-                          and self.redact(content) == event["content"])
-                flattened = (message.get("type") == "human" and self.redact(content) ==
-                             f"[{event['payload']['tool_name']} returned]" + "\n" + event["content"])
-                if (direct or flattened) and event["event_id"] not in included:
+            content = message.get("content")
+            if not isinstance(content, str):
+                content = canonical_json(content)
+            if message.get("type") == "tool":
+                observed = self.tool_returns.get(message.get("tool_call_id"))
+                if (observed is None or message.get("name") != observed[1]["payload"]["tool_name"]
+                        or self.redact(content) != observed[1]["content"]):
+                    uncertain = True
+                    continue
+                event = observed[1]
+                if event["event_id"] not in included:
                     included.append(event["event_id"])
+            elif message.get("type") == "human":
+                first_line, newline, _ = content.partition("\n")
+                if (not isinstance(message.get("content"), str) or
+                        newline and first_line.startswith("[") and first_line.endswith(" returned]")):
+                    uncertain = True  # Text is preserved; no call is selected.
         return self.model_input(messages=messages, report_id=report_id, report_revision=report_revision,
-                                included_event_ids=included, boundary="ASSEMBLED")
+                                included_event_ids=included, boundary="UNKNOWN" if uncertain else "ASSEMBLED")
 
     def feedback(self, *, event_type, assessment_id, proposal_id, proposal_revision, related_event_ids, content):
         if event_type not in {"feedback_delivery", "feedback_inclusion", "feedback_acknowledgement", "correction"}:
@@ -338,14 +348,10 @@ def make_trusted_model(llm, boundary, *, capture_input=None):
             messages = [SystemMessage(content=TRUSTED_INSTRUCTION), *messages]
             pairs = []
             for message in messages:
-                if getattr(message, "type", None) == "tool":
+                if getattr(message, "type", None) == "tool" and message.name == "verify_proposal":
                     pairs.append((message.tool_call_id, message.content))
-                elif getattr(message, "type", None) == "human":
-                    # Exact pinned _as_text representation; call IDs are recovered
-                    # only from separately observed returns, not guessed from text.
-                    for call_id, payload in boundary.delivered.items():
-                        if message.content == "[verify_proposal returned]\n" + payload:
-                            pairs.append((call_id, payload))
+                # Human marker text carries no call-specific identity. It cannot
+                # establish feedback inclusion without transformation lineage.
             # IDs must remain unique across bound wrappers and unbound wrap-up.
             input_id = f"{boundary.run_id}:input:{boundary.next_input_sequence()}"
             if capture_input is not None:

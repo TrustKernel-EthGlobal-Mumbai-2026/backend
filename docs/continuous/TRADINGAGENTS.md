@@ -77,9 +77,16 @@ IDs/redaction/ingest callbacks, filters retained content before hashing, and emi
 - `model_input`: full retained canonical visible-message envelope at the actual
   input-assembly seam, report ID/revision and exact observed tool event references
   as both `included_event_ids` and parents. `assembled_native_input` is called
-  only at this seam and matches observed returns in ordinary ToolMessages or
-  the exact pinned wrap-up text. A historical log missing this observation must
-  use UNKNOWN; the generic builder requires an explicit boundary argument.
+  only at this seam and links intact ToolMessages by observed call ID, tool name
+  and retained body. Flattened human marker text never establishes a call origin,
+  even when its name/body has only one matching return. With no separately
+  instrumented transformation lineage, marker text or unrecognized ToolMessages
+  make the accepted input boundary UNKNOWN. Proven intact-message refs may remain,
+  but uncertain refs are withheld. This conservative encoding prevents a false
+  snapshot PASS or missing-tool FAIL while preserving the exact raw input.
+  Unsupported structured human content is also UNKNOWN. A historical log missing
+  the assembly observation must use UNKNOWN; the generic builder requires an
+  explicit boundary argument.
 - `report`: exact retained report text, independent report revision, actual input
   event ID/parent and explicit completion/phase. Nonempty output or graph exit
   cannot imply COMPLETE. Native tests capture CLOSED with completion UNKNOWN.
@@ -96,7 +103,9 @@ The native fixtures verify an already authored/captured report revision 0, then
 observe the scripted analyst's new abstaining report revision 1. That new report
 has its own actual assembled input and is **not** covered by the old assessment.
 Tests retain actual A tool_result/model_input/report events for both normal and
-capped paths. Exact AST subsets are checked against the pin's git blobs and use
+capped paths. The capped path retains raw finding text but withholds call-specific
+inclusion after flattening: no feedback.input_included event is manufactured.
+The normal path retains exact ToolMessage call identities. Exact AST subsets are checked against the pin's git blobs and use
 real LangGraph StateGraph/ToolNode. They do not import the full upstream package,
 run GraphSetup, call a provider or demonstrate actual-model behavior.
 
@@ -149,14 +158,15 @@ coverage/principal doubles; no private recordings or original profiles are read.
 
 | Check | Latest evidence |
 |---|---|
-| Lane C generic offline controls | 9 PASS with real accepted A core |
-| Native exact pinned dispatch, normal and wrap-up | 2 PASS with authored responses |
-| Combined accepted A + C, cached native environment | 40 PASS = A29 + C11 |
-| Combined stdlib-only without native pin/deps | 38 PASS; native class explicit SKIP |
+| Lane C generic offline controls | 13 PASS with real accepted A core |
+| Native normal/wrap-up dispatch plus human-feedback marker control | 3 PASS with authored responses |
+| Combined accepted A + C, cached native environment | 45 PASS = A29 + C16 |
+| Combined stdlib-only without native pin/deps | 42 PASS; native class explicit SKIP |
 | Old revision/view/policy/report substitution | Rejected; report/proposal separation tested |
 | Missing assembly, unknown completion/source status | Remain UNKNOWN/INCONCLUSIVE, never promoted |
 | Gap, lag, cycle, timeout, failed refresh, exhaustion | No named report release |
 | B operation forwarding/receipt control | Authored service double only; real B NOT RUN |
+| Identical returns, partial history and ordinary human marker text | No guessed origin; uncertain snapshot linkage INCONCLUSIVE |
 
 Commands: `python -S -B -m unittest discover -s tests -p "test_continuous*.py" -v`.
 Native: set `TRUSTKERNEL_TRADINGAGENTS_UPSTREAM` to the reviewed exact pin, use the
@@ -170,3 +180,29 @@ the original subgraph's shared round cap. Durable restart/resume, full graph
 splicing, actual B parity and actual-model corrective behavior remain unproven.
 Frontend and independent quality evaluation remain deferred. Orchestrator owns
 central README/orchestration/CI and generated integration-conflict resolution.
+
+## Capture review correction
+
+The orchestrator's independent review of `7961d39` requested changes: two distinct
+calls with identical tool name/body were both credited from one flattened human
+message. That was an attribution error; the earlier generic tests did not detect
+it. The historical review and commit remain preserved. Earlier documentation and
+native wrap-up linkage assertions are superseded by this repair.
+
+Current behavior deliberately withholds **all** flattened marker-to-call links,
+including unique matches. It does not choose an arbitrary matching call or count
+all candidates. Raw input remains byte-bound after privacy filtering. A's accepted
+contract is unchanged: an uncertain input boundary yields an INCONCLUSIVE required-
+snapshot check, with policy RECHECK in the authored controls. A separate report-
+completion check may still PASS; this is not decision clearance. Future exact
+flattened linkage requires explicit host-observed transformation lineage from the
+pre-flattened messages and its retained output positions; that lineage is not
+implemented by this repair.
+
+New authored controls cover duplicated identical returns; one intact occurrence
+plus partial/ambiguous history; a unique ordinary human marker; unknown call IDs;
+and intact ToolMessages distinguishing identical bodies. A native negative control
+also rejects feedback inclusion from one human marker when two delivered calls
+share the same assessment payload. Native wrap-up tests now expect UNKNOWN and no
+call-specific feedback inclusion. This repaired slice awaits independent review;
+B service integration remains a separate gate.

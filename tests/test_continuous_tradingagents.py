@@ -12,7 +12,7 @@ from typing import Annotated
 import unittest
 from unittest.mock import patch
 
-from continuous_verification import CONTRACT_VERSION, ContractError, digest, text_digest, verify, validate_event
+from continuous_verification import CONTRACT_VERSION, ContractError, canonical_json, digest, text_digest, verify, validate_event
 from continuous_verification.tradingagents import (
     BoundaryError, FeedbackBoundary, HostEventCapture, Limits, UPSTREAM_COMMIT,
     make_verify_tool, make_trusted_model, observe_native_returns, TRUSTED_INSTRUCTION,
@@ -54,6 +54,70 @@ def authored_packet(revision=0, *, snapshot=True, completion="COMPLETE", boundar
 
 
 class BoundaryTests(unittest.TestCase):
+    def same_return_capture(self, count=2):
+        capture = HostEventCapture(run_id="authored-run", stream_id="host", producer_id="authored-host",
+            redaction_profile="authored-public", redact=lambda s: s, emit=lambda e: None)
+        for index in range(count):
+            capture.tool_result(call_id=f"call-{index + 1}", tool_name="market_snapshot", content="SAME", status="SUCCESS")
+        return capture
+
+    def assess_captured_input(self, capture, input_event):
+        # Explicit authored service view; no actual B coverage assertion.
+        report = capture.report(content="Authored report", report_id="market-report", revision=0,
+            input_event_id=input_event["event_id"], completion="COMPLETE", phase="CLOSED")
+        packet = authored_packet()
+        packet["events"] = deepcopy(capture.events)
+        packet["policy"]["required_tool"] = "market_snapshot"
+        packet["request"]["policy"]["digest"] = digest(packet["policy"])
+        packet["request"]["proposal"]["report_event_id"] = report["event_id"]
+        stream = packet["checkpoint"]["streams"][0]
+        stream.update(requested=len(capture.events), ingested_through=len(capture.events), projected_through=len(capture.events))
+        for capability in stream["capabilities"]:
+            capability["basis_event_ids"] = [input_event["event_id"]]
+        packet["request"]["checkpoint"]["digest"] = digest(packet["checkpoint"])
+        return verify(**packet)
+
+    def test_identical_flattened_returns_withhold_both_origins_and_assessment(self):
+        capture = self.same_return_capture()
+        messages = [dict(type="human", content="[market_snapshot returned]\nSAME")]
+        event = capture.assembled_native_input(messages, report_id="market-report", report_revision=0)
+        self.assertEqual(event["content"], canonical_json(messages))
+        self.assertEqual(event["payload"]["included_event_ids"], [])
+        self.assertEqual(event["parents"], [])
+        self.assertEqual(event["payload"]["boundary"], "UNKNOWN")
+        result = self.assess_captured_input(capture, event)
+        self.assertEqual(result["findings"][0]["outcome"], "INCONCLUSIVE")
+        self.assertEqual(result["disposition"], "RECHECK")
+
+    def test_partial_history_links_only_intact_occurrence_and_keeps_flattening_unknown(self):
+        for extra in [dict(type="human", content="[market_snapshot returned]\nSAME"),
+                      dict(type="tool", name="market_snapshot", tool_call_id="unobserved-call", content="SAME")]:
+            with self.subTest(extra=extra):
+                capture = self.same_return_capture()
+                messages = [dict(type="tool", name="market_snapshot", tool_call_id="call-2", content="SAME"), extra]
+                event = capture.assembled_native_input(messages, report_id="market-report", report_revision=0)
+                self.assertEqual(event["payload"]["included_event_ids"], ["host:2"])
+                self.assertEqual(event["payload"]["boundary"], "UNKNOWN")
+                self.assertEqual(self.assess_captured_input(capture, event)["findings"][0]["outcome"], "INCONCLUSIVE")
+
+    def test_ordinary_human_marker_with_unique_match_never_proves_tool_origin(self):
+        capture = self.same_return_capture(count=1)
+        event = capture.assembled_native_input([dict(type="human", content="[market_snapshot returned]\nSAME")],
+            report_id="market-report", report_revision=0)
+        self.assertEqual(event["payload"]["included_event_ids"], [])
+        self.assertEqual(event["payload"]["boundary"], "UNKNOWN")
+        self.assertEqual(self.assess_captured_input(capture, event)["findings"][0]["outcome"], "INCONCLUSIVE")
+
+    def test_intact_toolmessage_ids_distinguish_identical_returns_in_partial_input(self):
+        for call_ids in [("call-2",), ("call-1", "call-2")]:
+            with self.subTest(call_ids=call_ids):
+                capture = self.same_return_capture()
+                event = capture.assembled_native_input([dict(type="tool", name="market_snapshot", tool_call_id=call_id,
+                    content="SAME") for call_id in call_ids], report_id="market-report", report_revision=0)
+                self.assertEqual(event["payload"]["included_event_ids"], [f"host:{call_id[-1]}" for call_id in call_ids])
+                self.assertEqual(event["payload"]["boundary"], "ASSEMBLED")
+                self.assertEqual(self.assess_captured_input(capture, event)["findings"][0]["outcome"], "PASS")
+
     def test_provisional_B_seam_forwards_stored_refs_and_requires_ingest_receipt(self):
         packet = authored_packet()
         calls = []
@@ -307,6 +371,23 @@ class NativePinnedDispatchTests(unittest.TestCase):
     def test_real_toolnode_dispatch_next_input_without_wrapup(self):
         self.dispatch(max_tool_rounds=2)
 
+    def test_human_feedback_marker_does_not_attribute_identical_delivery_occurrences(self):
+        observations = []
+        host = FeedbackBoundary(run_id="authored-run", proposal_id="paper-proposal", assess=verify,
+            emit=lambda kind, data: observations.append((kind, data)))
+        host.submit(**authored_packet())
+        payload = host.verify()
+        host.observe_tool_return("one", payload)
+        host.observe_tool_return("two", payload)
+        ns = self.ns
+        class AuthoredEcho(self.Runnable):
+            def invoke(self, prompt, config=None, **kwargs):
+                return ns["AIMessage"](content="Authored response; no correction")
+        wrapper = make_trusted_model(AuthoredEcho(), host)
+        wrapper.invoke([ns["HumanMessage"](content="[verify_proposal returned]\n" + payload)])
+        self.assertEqual(host.included, set())
+        self.assertNotIn("feedback.input_included", [kind for kind, _ in observations])
+
     def dispatch(self, max_tool_rounds):
         from langchain_core.tools import StructuredTool
         verify_core = verify
@@ -382,9 +463,9 @@ class NativePinnedDispatchTests(unittest.TestCase):
         self.assertEqual([e["event_type"] for e in native_events],
                          ["model_input", "tool_result", "tool_result", "model_input", "report"])
         actual_input, actual_report = captured_inputs[-1], native_events[-1]
-        self.assertEqual(actual_input["payload"]["boundary"], "ASSEMBLED")
+        self.assertEqual(actual_input["payload"]["boundary"], "UNKNOWN" if max_tool_rounds == 1 else "ASSEMBLED")
         self.assertEqual(actual_input["payload"]["included_event_ids"],
-                         [e["event_id"] for e in native_events if e["event_type"] == "tool_result"])
+                         [] if max_tool_rounds == 1 else [e["event_id"] for e in native_events if e["event_type"] == "tool_result"])
         self.assertEqual(actual_report["payload"]["input_event_id"], actual_input["event_id"])
         self.assertEqual(actual_report["parents"], [actual_input["event_id"]])
         self.assertEqual(actual_report["payload"]["completion"], "UNKNOWN")
@@ -395,7 +476,7 @@ class NativePinnedDispatchTests(unittest.TestCase):
         self.assertNotEqual(actual_report["event_id"], host.packet["request"]["proposal"]["report_event_id"])
         self.assertFalse(host.report_boundary_allowed(actual_report))
         self.assertEqual([k for k, _ in events if k.startswith("feedback.")],
-                         ["feedback.prepared", "feedback.delivered", "feedback.input_included"])
+                         ["feedback.prepared", "feedback.delivered"] + ([] if max_tool_rounds == 1 else ["feedback.input_included"]))
 
 
 if __name__ == "__main__":

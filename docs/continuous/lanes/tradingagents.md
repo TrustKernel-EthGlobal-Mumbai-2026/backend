@@ -1,6 +1,6 @@
 # TradingAgents feedback lane
 
-Updated 5 November 2026. **A0.2 INTEGRATED OFFLINE; WAITING FOR REVIEWED B SERVICE.**
+Updated 5 November 2026. **CAPTURE REVIEW REPAIR TESTED; AWAITING RE-REVIEW AND REVIEWED B SERVICE.**
 Branch `codex/tradingagents-feedback`; draft PR base `codex/continuous-verification`.
 
 Accepted A dependency source `e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2`, integration
@@ -20,10 +20,10 @@ model_input/tool_result/report events and feedback observations. Historical trac
 without an assembly boundary remain UNKNOWN. Native completion/source status is
 not promoted from a successful framework return.
 
-Verified: C9 generic tests use accepted A core; C2 pinned native dispatch tests
-use authored Runnable responses and real ToolNode, capturing ordinary/wrap-up
-inputs and new report events. Combined A+C: 40 PASS in cached native environment;
-stdlib-only: 38 PASS, native class SKIP. No actual-model inference or real B
+Verified: C13 generic tests use accepted A core; C3 native tests use authored
+responses and real ToolNode. Normal ToolMessages retain exact origins; wrap-up
+text remains raw but call-specific linkage is UNKNOWN. Combined A+C: 45 PASS
+in cached native environment; stdlib-only: 42 PASS, native class SKIP. No actual-model inference or real B
 service test. Native tests continue an invocation; no durable restart resume.
 
 Prepared B callbacks: stored-reference `execute("verify", A_request)` and host
@@ -42,3 +42,13 @@ Next: stop at B review gate, then bind real receipt/view callbacks and splice/te
 the named report boundary. Orchestrator handles README/orchestration/CI/generated
 conflicts. No model/provider calls, budget mutation, private rebuild, live policy,
 experiment, trading, signing, on-chain operation or merge. No sibling clone edits.
+
+Capture review history: orchestrator requested changes on `7961d39` because one
+flattened message credited two identical return occurrences. The repair removes
+all name/body-only attribution, including unique matches and feedback lifecycle
+inference. No arbitrary candidate is chosen. Partial histories/unknown IDs remain
+UNKNOWN and yield INCONCLUSIVE snapshot checks, not false omission FAIL/PASS.
+Exact retained input and proven intact-message links are preserved. A is unchanged.
+Duplicated-return, partial-history, human-marker and native feedback-marker controls
+pass. Exact flattened linkage would need host-observed transformation lineage;
+it is not implemented here. Repair acceptance and real B integration are separate.
