@@ -1,6 +1,8 @@
 # Continuous verification candidate contract 0.2
 
-Status: executable candidate for orchestrator acceptance, 5 November 2026.
+Status: accepted for scoped offline integration, 5 November 2026. Reviewed source
+commit: `e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2`; integration source placement:
+`29f038f`. PR #2 remains draft; the runtime milestone is incomplete.
 This successor does not change historical builders or the procedural-loop API.
 
 ## Public Python API
@@ -143,7 +145,7 @@ and applicable explicit policy; `binding_matches` alone grants nothing.
 
 ## Remaining proposed decisions
 
-Orchestrator acceptance of this candidate is pending. Service authentication,
+Orchestrator acceptance is limited to scoped offline report checks. Service authentication,
 complete registered stream coverage, host gate semantics and any live policy
 remain separate decisions. This lane chooses no live freshness policy and
 claims no model behavior, persistence, adapter integration or transport readiness.
