@@ -1,4 +1,4 @@
-"""Temporary authored packets; real accepted A core, no B persistence claim."""
+"""Temporary authored inputs; accepted A/B offline, scripted native responses only."""
 import ast
 from collections import Counter
 from copy import deepcopy
@@ -7,6 +7,7 @@ import logging
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 from types import SimpleNamespace
 from typing import Annotated
 import unittest
@@ -17,7 +18,10 @@ from continuous_verification.tradingagents import (
     BoundaryError, FeedbackBoundary, HostEventCapture, Limits, UPSTREAM_COMMIT,
     make_verify_tool, make_trusted_model, observe_native_returns, TRUSTED_INSTRUCTION,
     make_stored_assessor, make_host_ingest,
+    StoredFeedbackHost, validate_ingest_receipt,
+    LocalServiceWorker,
 )
+from continuous_verification.service import Principal, ServiceBackend, ServiceError
 
 
 def authored_packet(revision=0, *, snapshot=True, completion="COMPLETE", boundary="ASSEMBLED"):
@@ -51,6 +55,156 @@ def authored_packet(revision=0, *, snapshot=True, completion="COMPLETE", boundar
         policy=dict(policy_id=policy["policy_id"], version=policy["version"], digest=digest(policy),
                     checks=[c["check_id"] for c in policy["checks"]]), checks=[c["check_id"] for c in policy["checks"]])
     return dict(request=request, checkpoint=checkpoint, events=deepcopy(capture.events), policy=policy)
+
+
+def stored_fixture(path, *, worker=False):
+    # Actual B storage with trusted authored grants; no agent supplies these.
+    principal = Principal("authored-collector", frozenset({"configure", "collect", "verify", "read", "feedback"}),
+                          frozenset({"authored-run"}))
+    factory = lambda: ServiceBackend(path, principal=principal, service_id="authored-local-service")
+    backend = LocalServiceWorker(factory) if worker else factory()
+    try:
+        backend.configure_run("authored-run", [dict(stream_id="host", collector_id=principal.actor_id,
+            producer_id="authored-host", adapter_version="tradingagents-feedback-0.2", redaction_profile="authored-public")])
+        backend.execute("register_run", dict(run_id="authored-run", registration_id="authored-registration"))
+        policy = authored_packet()["policy"]
+        backend.install_policy("authored-run", policy)
+        host = StoredFeedbackHost(backend=backend, run_id="authored-run", stream_id="host", producer_id="authored-host",
+            redaction_profile="authored-public", redact=lambda s: s, proposal_id="paper-proposal", policy=policy,
+            limits=Limits(source_rounds=1, verify_calls=2, remediations=1))
+        return backend, host
+    except BaseException:
+        backend.close()
+        raise
+
+
+def captured_coverage(backend, input_event, report):
+    # Explicit scoped collector observations over this authored instrumented host.
+    backend.record_coverage("authored-run", "host", [dict(name=name, state="CAPTURED", basis_event_ids=[basis])
+        for name, basis in (("model_input", input_event["event_id"]), ("tool_lifecycle", input_event["event_id"]),
+                            ("phase_boundaries", report["event_id"]), ("report_completion", report["event_id"]))])
+
+
+def submit_stored_report(host, report, revision):
+    return host.submit_report(report_event=report, proposal_content="Authored paper abstention; no trading",
+        proposal_revision=revision, request_id=f"stored-request-{revision}", checkpoint_id="stored-prefix",
+        checkpoint_revision=revision, streams=[dict(stream_id="host", requested=len(host.capture.events))])
+
+
+class PersistedHostTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = Path(self.tmp.name) / "feedback.sqlite"
+        self.backend, self.host = stored_fixture(self.path)
+        self.addCleanup(self.tmp.cleanup)
+        self.addCleanup(lambda: self.backend.close())
+
+    def initial_report(self):
+        event = self.host.assemble_input([dict(type="human", content="Authored report request; no snapshot delivered")],
+            report_id="market-report", report_revision=0)
+        report = self.host.capture.report(content="Authored initial report; required snapshot omitted",
+            report_id="market-report", revision=0, input_event_id=event["event_id"], completion="COMPLETE", phase="CLOSED")
+        captured_coverage(self.backend, event, report)
+        return event, report
+
+    def test_persisted_delivery_revision_recheck_and_restart_preserve_failure(self):
+        _, report0 = self.initial_report()
+        request0 = submit_stored_report(self.host, report0, 0)
+        payload0 = self.host.boundary.verify()
+        failed = json.loads(payload0)
+        self.assertEqual([f["outcome"] for f in failed["findings"]], ["FAIL", "PASS"])
+        with self.assertRaisesRegex(BoundaryError, "newer revision"):
+            self.host.record_revision(failed["assessment_id"], report0)
+        self.host.observe_return(call_id="verify-0", tool_name="verify_proposal", content=payload0, status="SUCCESS")
+        feedback_message = dict(type="tool", name="verify_proposal", tool_call_id="verify-0", content=payload0)
+        self.host.assemble_input([feedback_message], report_id="market-report", report_revision=1)
+        self.host.acknowledge(failed["assessment_id"], "Authored acknowledgement of omission")
+        defect = self.host.boundary.source_round([lambda: "Authored provider defect Close=99 Low=100; no replacement price"])[0]
+        self.host.observe_return(call_id="snapshot-1", tool_name="authored_snapshot", content=defect, status="SUCCESS")
+        input1 = self.host.assemble_input([feedback_message, dict(type="tool", name="authored_snapshot",
+            tool_call_id="snapshot-1", content=defect)], report_id="market-report", report_revision=1)
+        report1 = self.host.capture.report(content="Authored abstention: provider defect remains unresolved",
+            report_id="market-report", revision=1, input_event_id=input1["event_id"], completion="COMPLETE", phase="CLOSED")
+        self.host.record_revision(failed["assessment_id"], report1)
+        self.assertFalse(self.host.boundary.report_boundary_allowed(report1))
+        captured_coverage(self.backend, input1, report1)
+        request1 = submit_stored_report(self.host, report1, 1)
+        rechecked = json.loads(self.host.boundary.verify(origin="host"))
+        self.assertEqual([f["outcome"] for f in rechecked["findings"]], ["PASS", "PASS"])
+        self.assertNotEqual(failed["binding"], rechecked["binding"])
+        self.assertEqual(self.host.boundary.counts, dict(source_rounds=1, verify_calls=2, remediations=1))
+        self.assertEqual(len(self.backend.resolve_view(request0)["events"]), 2)
+        self.assertEqual(self.backend.resolve_view(request1), {k: self.host.boundary.packet[k] for k in ("checkpoint", "events", "policy")})
+        kinds = [e["event_type"] for e in self.host.capture.events]
+        for kind in ("feedback_delivery", "feedback_inclusion", "feedback_acknowledgement", "correction"):
+            self.assertIn(kind, kinds)
+        self.host.boundary.abstain("Scoped procedure passes; source defect and decision suitability remain unresolved")
+        self.assertFalse(self.backend.execute("get_run_state", dict(run_id="authored-run"))["atomic_semantic_ready"])
+        with self.assertRaises(ServiceError) as error:
+            self.backend.execute("acknowledge_feedback", dict(run_id="authored-run"))
+        self.assertEqual(error.exception.code, "UNSUPPORTED_OPERATION")
+        principal = self.backend.principal
+        self.backend.close()
+        self.backend = ServiceBackend(self.path, principal=principal, service_id="authored-local-service")
+        for result in (failed, rechecked):
+            self.assertEqual(self.backend.execute("get_assessment", dict(run_id="authored-run", assessment_id=result["assessment_id"])), result)
+        self.assertEqual(len(self.backend.resolve_view(request0)["events"]), 2)
+        self.assertIn(defect, [e["content"] for e in self.backend.resolve_view(request1)["events"]])
+        self.backend.audit()
+
+    def test_actual_receipt_duplicate_retry_and_malformed_controls(self):
+        capture = HostEventCapture(run_id="authored-run", stream_id="host", producer_id="authored-host",
+            redaction_profile="authored-public", redact=lambda s: s, emit=lambda e: None)
+        event = capture.tool_result(call_id="c", tool_name="authored_snapshot", content="Authored body", status="SUCCESS")
+        self.backend.execute("ingest_events", dict(run_id="authored-run", batch_id="earlier-batch", events=[event]))
+        ingest = make_host_ingest(self.backend, run_id="authored-run")
+        receipt = ingest(event)
+        self.assertEqual(receipt["events"][0]["status"], "DUPLICATE")
+        self.assertEqual(ingest(event), receipt)
+        mutations = []
+        for field in ("run_id", "batch_id", "receipt_id"):
+            changed = deepcopy(receipt)
+            changed[field] = "wrong"
+            mutations.append(changed)
+        for field, value in (("event_id", "wrong"), ("receipt_position", True), ("status", "WRONG"), ("status", [])):
+            changed = deepcopy(receipt)
+            changed["events"][0][field] = value
+            mutations.append(changed)
+        changed = deepcopy(receipt)
+        changed["streams"] = []
+        mutations.append(changed)
+        for changed in mutations:
+            self.assertFalse(validate_ingest_receipt(changed, event))
+
+    def test_invalid_reply_after_real_commit_does_not_advance_capture_and_exact_retry_recovers(self):
+        backend = self.backend
+        class CorruptReply:
+            def execute(self, operation, request):
+                response = backend.execute(operation, request)
+                response["receipt_id"] = "wrong"
+                return response
+        self.host.capture.emit = make_host_ingest(CorruptReply(), run_id="authored-run")
+        with self.assertRaisesRegex(BoundaryError, "receipt"):
+            self.host.capture.tool_result(call_id="retry-call", tool_name="authored_snapshot", content="Authored exact body", status="SUCCESS")
+        self.assertEqual(self.host.capture.events, [])
+        self.assertEqual(self.backend.execute("get_run_state", dict(run_id="authored-run"))["raw_ingested_events"], 1)
+        self.host.capture.emit = make_host_ingest(self.backend, run_id="authored-run")
+        event = self.host.capture.tool_result(call_id="retry-call", tool_name="authored_snapshot", content="Authored exact body", status="SUCCESS")
+        self.assertEqual(event["event_id"], "host:1")
+        self.assertEqual(len(self.host.capture.events), 1)
+        self.assertEqual(self.backend.execute("get_run_state", dict(run_id="authored-run"))["raw_ingested_events"], 1)
+
+    def test_persisted_unready_prefix_stays_unresolved_without_source_calls(self):
+        self.backend.project_on_ingest = False
+        _, report = self.initial_report()
+        request = submit_stored_report(self.host, report, 0)
+        result = json.loads(self.host.boundary.verify())
+        self.assertEqual(result["status"], "NOT_READY")
+        self.assertTrue(all(f["outcome"] == "INCONCLUSIVE" for f in result["findings"]))
+        self.host.boundary.abstain("Projection prerequisite not ready")
+        self.backend.project("authored-run")
+        self.assertEqual(self.backend.execute("verify", request), result)
+        self.assertEqual(self.host.boundary.counts["source_rounds"], 0)
 
 
 class BoundaryTests(unittest.TestCase):
@@ -118,7 +272,7 @@ class BoundaryTests(unittest.TestCase):
                 self.assertEqual(event["payload"]["boundary"], "ASSEMBLED")
                 self.assertEqual(self.assess_captured_input(capture, event)["findings"][0]["outcome"], "PASS")
 
-    def test_provisional_B_seam_forwards_stored_refs_and_requires_ingest_receipt(self):
+    def test_stored_operation_shape_with_authored_double_and_rejected_receipt(self):
         packet = authored_packet()
         calls = []
         class AuthoredServiceDouble:
@@ -387,6 +541,107 @@ class NativePinnedDispatchTests(unittest.TestCase):
         wrapper.invoke([ns["HumanMessage"](content="[verify_proposal returned]\n" + payload)])
         self.assertEqual(host.included, set())
         self.assertNotIn("feedback.input_included", [kind for kind, _ in observations])
+
+    def test_persisted_native_dispatch_revision_and_scoped_recheck(self):
+        self.persisted_dispatch(max_tool_rounds=3)
+
+    def test_persisted_native_wrapup_stays_unresolved_on_recheck(self):
+        self.persisted_dispatch(max_tool_rounds=1)
+
+    def persisted_dispatch(self, max_tool_rounds):
+        from langchain_core.tools import StructuredTool
+        from types import FunctionType
+        with tempfile.TemporaryDirectory() as directory:
+            backend, host = stored_fixture(Path(directory) / "native-feedback.sqlite", worker=True)
+            try:
+                first_input = host.assemble_input([dict(type="human", content="Authored initial report request")],
+                    report_id="market-report", report_revision=0)
+                report0 = host.capture.report(content="Authored report with omitted snapshot", report_id="market-report",
+                    revision=0, input_event_id=first_input["event_id"], completion="COMPLETE", phase="CLOSED")
+                captured_coverage(backend, first_input, report0)
+                request0 = submit_stored_report(host, report0, 0)
+                ns, inputs, captured_inputs = self.ns.copy(), [], []
+                defect = "Authored provider defect Close=99 Low=100; never replace this price"
+
+                def authored_snapshot() -> str:
+                    """Authored offline source return; no provider network operation."""
+                    return host.boundary.source_round([lambda: defect])[0]
+
+                tool = make_verify_tool(host.boundary)
+                source = StructuredTool.from_function(authored_snapshot)
+                ns.update(TOOLS=(tool, source), get_language_instruction=lambda: "",
+                    get_instrument_context_from_state=lambda state: "Authored fixture; no order authority")
+                factory = FunctionType(ns["create_market_analyst"].__code__, ns)
+                test = self
+                class AuthoredCorrection(self.Runnable):
+                    def bind_tools(self, tools, **kwargs):
+                        test.assertEqual([t.name for t in tools], ["verify_proposal", "authored_snapshot"])
+                        return self
+                    def invoke(self, prompt, config=None, **kwargs):
+                        messages = prompt.to_messages() if hasattr(prompt, "to_messages") else prompt
+                        inputs.append(messages)
+                        if len(inputs) == 1:
+                            return ns["AIMessage"](content="", tool_calls=[dict(name="verify_proposal", args={},
+                                id="native-verify-0", type="tool_call")])
+                        original = next(iter(host.boundary.pending_returns.values()))
+                        test.assertEqual(original["findings"][0]["outcome"], "FAIL")
+                        test.assertIn(original["assessment_id"], "\n".join(str(m.content) for m in messages))
+                        if len(inputs) == 2:
+                            host.acknowledge(original["assessment_id"], "Authored acknowledgement of omitted call")
+                            if max_tool_rounds > 1:
+                                return ns["AIMessage"](content="", tool_calls=[dict(name="authored_snapshot", args={},
+                                    id="native-snapshot-1", type="tool_call")])
+                        if max_tool_rounds > 1:
+                            test.assertIn(defect, "\n".join(str(m.content) for m in messages))
+                        return ns["AIMessage"](content="AUTHORED abstention: source defect or missing source remains",
+                            response_metadata=dict(finish_reason="stop"))
+
+                def capture_input(messages):
+                    event = host.assemble_input(messages, report_id="market-report", report_revision=1)
+                    captured_inputs.append(event)
+                    return event
+                analyst = factory(make_trusted_model(AuthoredCorrection(), host.boundary, capture_input=capture_input))
+                reports = []
+                def observed_agent(state):
+                    host.observe_native_returns(state["messages"], classify_status=lambda message:
+                        "SUCCESS" if message.name == "authored_snapshot" else "UNKNOWN")
+                    output = analyst(state)
+                    if output["market_report"]:
+                        # Explicit authored stop metadata, not nonempty-output inference.
+                        test.assertEqual(output["messages"][0].response_metadata.get("finish_reason"), "stop")
+                        reports.append(host.capture.report(content=output["market_report"], report_id="market-report",
+                            revision=1, input_event_id=captured_inputs[-1]["event_id"], completion="COMPLETE", phase="CLOSED"))
+                    return output
+                spec = SimpleNamespace(key="market", agent_node="Market Analyst", report_key="market_report", tools=(tool, source))
+                with patch("socket.socket.connect", side_effect=AssertionError("Network forbidden")), \
+                     patch("socket.create_connection", side_effect=AssertionError("Network forbidden")):
+                    graph = ns["_analyst_graph"](spec, observed_agent, max_tool_rounds=max_tool_rounds)
+                    result = graph.invoke(dict(messages=[], trade_date="2026-11-05"),
+                        config=dict(recursion_limit=12, max_concurrency=1))
+                report1 = reports[-1]
+                self.assertEqual(result["market_report"], report1["content"])
+                original = next(iter(host.boundary.pending_returns.values()))
+                host.record_revision(original["assessment_id"], report1)
+                captured_coverage(backend, captured_inputs[-1], report1)
+                request1 = submit_stored_report(host, report1, 1)
+                recheck = json.loads(host.boundary.verify(origin="host"))
+                expected = "PASS" if max_tool_rounds > 1 else "INCONCLUSIVE"
+                self.assertEqual([f["outcome"] for f in recheck["findings"]], [expected, "PASS"])
+                self.assertEqual(captured_inputs[-1]["payload"]["boundary"], "ASSEMBLED" if max_tool_rounds > 1 else "UNKNOWN")
+                self.assertNotEqual(original["binding"], recheck["binding"])
+                self.assertEqual(backend.execute("get_assessment", dict(run_id="authored-run", assessment_id=original["assessment_id"])), original)
+                self.assertEqual(len(backend.resolve_view(request0)["events"]), 2)
+                self.assertEqual(host.boundary.counts, dict(source_rounds=1 if max_tool_rounds > 1 else 0, verify_calls=2, remediations=1))
+                kinds = [event["event_type"] for event in backend.resolve_view(request1)["events"]]
+                self.assertIn("feedback_delivery", kinds)
+                self.assertEqual("feedback_inclusion" in kinds, max_tool_rounds > 1)
+                if max_tool_rounds > 1:
+                    self.assertIn(defect, [event["content"] for event in backend.resolve_view(request1)["events"]])
+                host.boundary.abstain("Authored paper abstention; scoped procedure is not price/decision truth")
+                self.assertFalse(backend.execute("get_run_state", dict(run_id="authored-run"))["atomic_semantic_ready"])
+                backend.audit()
+            finally:
+                backend.close()
 
     def dispatch(self, max_tool_rounds):
         from langchain_core.tools import StructuredTool

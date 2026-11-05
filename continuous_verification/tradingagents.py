@@ -1,10 +1,12 @@
 """TradingAgents host plumbing over accepted continuous-verification 0.2.
 
 No policy evaluator, provider/model launch, service coverage assertion or global
-clearance. B's reviewed persistence/checkpoint facade is still an integration gate.
+clearance. Accepted B supplies durable receipts and exact stored checkpoint views.
 """
 from copy import deepcopy
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
+import json
 from pathlib import Path
 
 from .contracts import (
@@ -21,8 +23,61 @@ class BoundaryError(RuntimeError):
     """An unavailable or stale boundary cannot authorize a report."""
 
 
+class LocalServiceWorker:
+    """Own B's single-worker SQLite backend on one dedicated host thread.
+
+    LangGraph agent/ToolNode threads call synchronous facade methods. Creation,
+    reads, writes and close all execute on the owning thread. No connection is
+    shared across threads and no B thread-safety checks are disabled. This is an
+    in-process host bridge, not a transport, server or durable host scheduler.
+    """
+
+    def __init__(self, backend_factory):
+        self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="tradingagents-service")
+        self._closed = False
+        try:
+            self._backend = self._executor.submit(backend_factory).result()
+        except BaseException:
+            self._executor.shutdown(wait=True)
+            raise
+
+    def _call(self, method, *args, **kwargs):
+        if self._closed:
+            raise BoundaryError("Service worker is closed")
+        return self._executor.submit(getattr(self._backend, method), *deepcopy(args), **deepcopy(kwargs)).result()
+
+    def execute(self, operation, request):
+        return self._call("execute", operation, request)
+
+    def resolve_view(self, request):
+        return self._call("resolve_view", request)
+
+    def configure_run(self, run_id, streams):
+        return self._call("configure_run", run_id, streams)
+
+    def install_policy(self, run_id, policy):
+        return self._call("install_policy", run_id, policy)
+
+    def record_coverage(self, run_id, stream_id, observations):
+        return self._call("record_coverage", run_id, stream_id, observations)
+
+    def project(self, run_id):
+        return self._call("project", run_id)
+
+    def audit(self):
+        return self._call("audit")
+
+    def close(self):
+        if not self._closed:
+            try:
+                self._call("close")
+            finally:
+                self._closed = True
+                self._executor.shutdown(wait=True)
+
+
 def make_stored_assessor(backend):
-    """Prepare B's provisional execute seam; no real-service parity claimed.
+    """Use accepted B's stored-reference verify operation.
 
     backend is preconfigured by the trusted host with its own Principal. Only A's
     request crosses this boundary; local policy/events/coverage are never sent as
@@ -35,8 +90,45 @@ def make_stored_assessor(backend):
     return assess
 
 
-def make_host_ingest(backend, *, run_id, accept_receipt):
-    """Prepare assigned-collector ingest; receipt DTO awaits B review.
+def validate_ingest_receipt(response, event):
+    """Validate accepted B's single-event durable receipt, without authentication.
+
+    The injected local backend/principal is the trusted issuer boundary. Digests
+    and stream watermarks bind the returned receipt; they do not prove authority.
+    """
+    request = dict(run_id=event["run_id"], batch_id="tradingagents-" + digest(event), events=[event])
+    if (type(response) is not dict or set(response) != {"run_id", "batch_id", "receipt_id", "events", "streams"}
+            or response["run_id"] != request["run_id"] or response["batch_id"] != request["batch_id"]
+            or response["receipt_id"] != "receipt-" + digest(request)
+            or type(response["events"]) is not list or len(response["events"]) != 1):
+        return False
+    item = response["events"][0]
+    if (type(item) is not dict or set(item) != {"event_id", "receipt_position", "status"}
+            or item["event_id"] != event["event_id"] or type(item["status"]) is not str or item["status"] not in {"ACCEPTED", "DUPLICATE"}
+            or type(item["receipt_position"]) is not int or item["receipt_position"] < 1):
+        return False
+    if type(response["streams"]) is not list or not response["streams"]:
+        return False
+    ids = set()
+    for state in response["streams"]:
+        if (type(state) is not dict or set(state) != {"stream_id", "observed", "ingested_through", "projected_through", "gaps"}
+                or type(state["stream_id"]) is not str or not state["stream_id"] or state["stream_id"] in ids
+                or any(type(state[k]) is not int or state[k] < 0 for k in ("observed", "ingested_through", "projected_through"))
+                or not state["projected_through"] <= state["ingested_through"] <= state["observed"]
+                or type(state["gaps"]) is not list):
+            return False
+        ids.add(state["stream_id"])
+        for gap in state["gaps"]:
+            if type(gap) is not list or len(gap) != 2 or any(type(n) is not int for n in gap) or not 1 <= gap[0] <= gap[1]:
+                return False
+        if state["stream_id"] == event["stream_id"] and (
+                state["observed"] < event["sequence"] or any(a <= event["sequence"] <= b for a, b in state["gaps"])):
+            return False
+    return event["stream_id"] in ids
+
+
+def make_host_ingest(backend, *, run_id, accept_receipt=validate_ingest_receipt):
+    """Assigned-collector ingest using accepted B's durable receipt DTO.
 
     accept_receipt(response, event) must explicitly validate B's actual durable
     receipt. No configure/register/coverage/policy operation is agent-accessible.
@@ -164,13 +256,16 @@ class HostEventCapture:
             proposal_id=proposal_id, proposal_revision=proposal_revision,
             related_event_ids=list(related_event_ids)), parents=related_event_ids)
 
+    def observation(self, kind, details):
+        return self._record("observation", canonical_json(details), dict(kind=kind))
+
 
 class FeedbackBoundary:
     """Local host controller using A's accepted request/result and exact bindings.
 
     submit receives a trusted, service-resolved checkpoint/events/policy view.
-    assess has A's exact pure signature for offline use; B's future stored-reference
-    bridge must resolve that same view without trusting agent policy/coverage.
+    assess has A's exact pure signature for offline use; B's stored-reference
+    bridge resolves that same view without trusting agent policy/coverage.
     emit records local lifecycle observations; it does not claim durable storage.
     authorize controls only the referenced report boundary, never decision truth.
     """
@@ -297,6 +392,117 @@ class FeedbackBoundary:
     def abstain(self, reason):
         self.stopped, self.feedback = True, None
         self.emit("proposal.abstained", dict(reason=reason, binding=deepcopy(self.current)))
+
+
+class StoredFeedbackHost:
+    """C's explicit host driver over accepted B; never an autonomous experiment.
+
+    The caller configures/authenticates B, registers the complete stream set and
+    installs policy. This class asserts no coverage. Source operations and report
+    completion signals remain explicit host observations. Each captured event is
+    synchronously receipt-validated before the local sequence advances.
+    """
+
+    def __init__(self, *, backend, run_id, stream_id, producer_id, redaction_profile,
+                 redact, proposal_id, policy, limits=Limits(), observe=lambda kind, data: None):
+        validate_policy(policy)
+        self.backend, self.policy = backend, deepcopy(policy)
+        self.capture = HostEventCapture(run_id=run_id, stream_id=stream_id, producer_id=producer_id,
+            redaction_profile=redaction_profile, redact=redact, emit=make_host_ingest(backend, run_id=run_id))
+        def emit(kind, data):
+            self.capture.observation(kind, data)
+            observe(kind, deepcopy(data))
+        self.boundary = FeedbackBoundary(run_id=run_id, proposal_id=proposal_id,
+            assess=make_stored_assessor(backend), emit=emit, limits=limits)
+        self.deliveries, self.inclusions = {}, set()
+
+    def submit_report(self, *, report_event, proposal_content, proposal_revision, request_id,
+                      checkpoint_id, checkpoint_revision, streams):
+        validate_event(report_event)
+        run = self.boundary.run_id
+        if report_event["run_id"] != run or report_event["event_type"] != "report":
+            raise BoundaryError("Expected same-run captured report")
+        stored = self.backend.execute("get_evidence", dict(run_id=run, event_id=report_event["event_id"]))["event"]
+        if stored != report_event:
+            raise BoundaryError("Report differs from retained event")
+        checkpoint = self.backend.execute("checkpoint", dict(run_id=run, checkpoint_id=checkpoint_id,
+            revision=checkpoint_revision, registry_revision=0, streams=deepcopy(streams)))
+        request = dict(contract_version=CONTRACT_VERSION, run_id=run, request_id=request_id,
+            proposal=dict(proposal_id=self.boundary.proposal_id, revision=proposal_revision,
+                content=proposal_content, content_digest=text_digest(proposal_content),
+                report_event_id=report_event["event_id"], report_id=report_event["payload"]["report_id"],
+                report_revision=report_event["payload"]["revision"], dependencies=None, dependency_completeness="UNKNOWN"),
+            checkpoint=dict(checkpoint_id=checkpoint["checkpoint_id"], revision=checkpoint["revision"], digest=digest(checkpoint)),
+            policy=dict(policy_id=self.policy["policy_id"], version=self.policy["version"], digest=digest(self.policy),
+                checks=[c["check_id"] for c in self.policy["checks"]]), checks=[c["check_id"] for c in self.policy["checks"]])
+        self.boundary.submit(request, **self.backend.resolve_view(request))
+        return deepcopy(request)
+
+    def _proposal_for_assessment(self, assessment_id):
+        result = self.backend.execute("get_assessment", dict(run_id=self.boundary.run_id, assessment_id=assessment_id))
+        request = next((r for r in self.boundary.requests if r["request_id"] == result["request_id"]), None)
+        if request is None:
+            raise BoundaryError("Assessment request not observed by this host")
+        return request["proposal"]
+
+    def _feedback(self, kind, assessment_id, related, details):
+        proposal = self._proposal_for_assessment(assessment_id)
+        return self.capture.feedback(event_type=kind, assessment_id=assessment_id,
+            proposal_id=proposal["proposal_id"], proposal_revision=proposal["revision"],
+            related_event_ids=related, content=canonical_json(details))
+
+    def observe_return(self, *, call_id, tool_name, content, status):
+        event = self.capture.tool_result(call_id=call_id, tool_name=tool_name, content=content, status=status)
+        if tool_name == "verify_proposal":
+            self.boundary.observe_tool_return(call_id, content)
+            if call_id not in self.deliveries:
+                result = json.loads(content)
+                delivery = self._feedback("feedback_delivery", result["assessment_id"], [event["event_id"]],
+                    dict(call_id=call_id, tool_result_event_id=event["event_id"]))
+                self.deliveries[call_id] = (event["event_id"], delivery)
+        return event
+
+    def observe_native_returns(self, messages, *, classify_status=None):
+        for message in messages:
+            if getattr(message, "type", None) == "tool":
+                status = classify_status(message) if classify_status else (
+                    "ERROR" if getattr(message, "status", None) == "error" else "UNKNOWN")
+                self.observe_return(call_id=message.tool_call_id, tool_name=message.name or "unknown_tool",
+                    content=message.content if isinstance(message.content, str) else canonical_json(message.content), status=status)
+
+    def assemble_input(self, messages, *, report_id, report_revision):
+        event = self.capture.assembled_native_input(messages, report_id=report_id, report_revision=report_revision)
+        for call_id, (tool_id, delivery) in self.deliveries.items():
+            if tool_id in event["payload"]["included_event_ids"]:
+                key = (event["event_id"], delivery["event_id"])
+                if key not in self.inclusions:
+                    self._feedback("feedback_inclusion", delivery["payload"]["assessment_id"], list(key),
+                        dict(call_id=call_id, model_input_event_id=event["event_id"]))
+                    self.inclusions.add(key)
+        return event
+
+    def acknowledge(self, assessment_id, text):
+        related = [d["event_id"] for _, d in self.deliveries.values() if d["payload"]["assessment_id"] == assessment_id]
+        if not related:
+            raise BoundaryError("No observed delivery to acknowledge")
+        self.boundary.acknowledge(assessment_id, text)
+        return self._feedback("feedback_acknowledgement", assessment_id, related, dict(text=text))
+
+    def record_revision(self, assessment_id, report_event):
+        # A correction observation links the new report to the original assessed
+        # proposal. It never marks the finding repaired; only a new recheck can.
+        validate_event(report_event)
+        if report_event["run_id"] != self.boundary.run_id or report_event["event_type"] != "report":
+            raise BoundaryError("Expected same-run captured revision")
+        stored = self.backend.execute("get_evidence", dict(run_id=self.boundary.run_id, event_id=report_event["event_id"]))["event"]
+        if stored != report_event:
+            raise BoundaryError("Revision differs from retained report")
+        original = self._proposal_for_assessment(assessment_id)
+        if (report_event["payload"]["report_id"] != original["report_id"]
+                or report_event["payload"]["revision"] <= original["report_revision"]):
+            raise BoundaryError("No newer revision of the assessed report")
+        return self._feedback("correction", assessment_id, [report_event["event_id"]],
+            dict(report_id=report_event["payload"]["report_id"], report_revision=report_event["payload"]["revision"]))
 
 
 def make_verify_tool(boundary):
