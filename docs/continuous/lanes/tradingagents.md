@@ -1,6 +1,6 @@
 # TradingAgents feedback lane
 
-Updated 5 November 2026. **PERSISTED OFFLINE MILESTONE TESTED; READY FOR REVIEW.**
+Updated 5 November 2026. **PERSISTED CORE ACCEPTED; DURABLE DEMO TESTED FOR FINAL REVIEW.**
 Branch codex/tradingagents-feedback; draft PR base codex/continuous-verification.
 
 Accepted A0.2 source e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2 / integration
@@ -31,8 +31,8 @@ feedback_inclusion. Completion metadata is explicitly scripted. Host checkpoint/
 coverage/recheck driver is authored; full GraphSetup and actual-model behavior are
 not claimed. Host source/verify/remediation counts normal 1/2/1, capped 0/2/1.
 
-Tests: C17 stdlib controls including 4 real persisted-host cases; C5 native cases.
-Combined A29+B49+C22: 100 PASS in cached native environment. Stdlib-only: 95 PASS,
+Tests: C18 stdlib controls including 4 real persisted-host cases and an artifact case; C5 native cases.
+Combined A29+B49+C23: 101 PASS in cached native environment. Stdlib-only: 96 PASS,
 native class SKIP. All inputs/stores temporary and authored. Command:
 python -S -B -m unittest discover -s tests -p "test_continuous*.py".
 For native tests set TRUSTKERNEL_TRADINGAGENTS_UPSTREAM to exact reviewed pin and
@@ -53,3 +53,19 @@ generated metadata conflicts handled centrally. Full GraphSetup, actual-model
 smoke/live policies, frontend and quality evaluation remain deferred. No paid
 model/provider calls, budget/hold mutation, private rebuild, experiment launch,
 trade, signature, on-chain action, main merge or sibling clone write.
+
+Bounded scope extension authorized by orchestrator: new tools/continuous_demo.py,
+without changing tools/offline_demo.py. Public-helper stdlib host demo retains
+feedback.sqlite, events.jsonl and JSON/Markdown summary in a NEW directory under
+.local-runs; refuses overwrite/path escape/links. Actual command exercised:
+python -S -B tools/continuous_demo.py --output .local-runs/continuous-review-001.
+The retained artifact shows original omission FAIL, delivered finding/input,
+authored source and revised report/proposal, scoped recheck and preserved failure,
+with provider defect UNRESOLVED. This is authored host behavior, not native/model
+inference. CLI prints output/read-only SQLite and trace-viewing instructions.
+
+Orchestrator accepted core 1e4e8bd367508b99588f11f43534de32c84d28eb after independent
+immutable-snapshot review: 100 PASS native-enabled; 95 PASS stdlib with native
+class explicitly skipped (five native cases unexecuted there). This is scoped
+persisted/exact AST-seam acceptance, not full GraphSetup or model behavior. Only
+the requested demo/handoff remains for final review; no new research scope.

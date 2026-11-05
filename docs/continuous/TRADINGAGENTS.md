@@ -1,6 +1,6 @@
 # TradingAgents persisted feedback adapter
 
-Lane C, 5 November 2026. **Persisted offline milestone tested; ready for review.**
+Lane C, 5 November 2026. **Persisted core accepted; durable authored demo tested for final review.**
 Actual local B service is integrated; no paid model/provider execution, live policy,
 full semantic-ledger readiness or actual-model corrective behavior is claimed.
 
@@ -8,7 +8,8 @@ full semantic-ledger readiness or actual-model corrective behavior is claimed.
 |---|---|---|
 | A0.2 contracts/verifier | source e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2, integration 29f038f | Exact 8 files, unchanged; dependency commit 07e0a81 |
 | B stored-reference service | 251b3b02c63e860020f94ce0b2962472eb0979fe | Exact capture/journal/projection/service, 2 tests and CAPTURE.md; dependency commit 91d39ba |
-| C ambiguity repair | 9478a61dd8a84009bd53829c19399568c030382c | Orchestrator accepted scoped capture semantics after 13 generic tests and duplicate-return control; that audit did not exercise native tests |
+| C ambiguity repair | 9478a61dd8a84009bd53829c19399568c030382c | Accepted scoped capture semantics after 13 generic tests; native unexecuted in that audit |
+| C persisted core | 1e4e8bd367508b99588f11f43534de32c84d28eb | Accepted after independent immutable-snapshot code review, 100 native-enabled tests and 95 stdlib tests; five native cases unexecuted in stdlib audit |
 
 Imported A/B documentation retains its source-time status wording; the above
 orchestrator acceptance is the authority for this scoped offline integration.
@@ -152,14 +153,46 @@ acknowledgement remains UNSUPPORTED_OPERATION; explicit lifecycle observations
 are ingested through the assigned collector. get_run_state retains
 `atomic_semantic_ready=false` and `native_trace_mapping=NOT_IMPLEMENTED`.
 
+## Durable authored artifact demo
+
+From this checkout run, with a **new** output directory:
+
+```text
+python -S -B tools/continuous_demo.py --output .local-runs/continuous-review-001
+```
+
+The command uses public `StoredFeedbackHost`/A/B helpers, never test imports or a
+second verifier. It requires only Python3.11 stdlib. It refuses existing output
+paths, escapes from this checkout's `.local-runs`, and links/junctions. A failed
+attempt leaves its new partial artifacts for review; choose another new directory
+instead of overwriting it. It does not call the historical `offline_demo.py`,
+read private history/budgets or launch models/providers.
+
+The output retains `feedback.sqlite`, `events.jsonl`, `summary.json` and
+`summary.md`. The actual CLI was exercised with the above new review directory.
+Its JSON contains exact original/recheck A results and bindings, request/report
+references, feedback event IDs, frozen checkpoint event counts, allowances, audit
+and the unchanged unresolved provider defect. Every source/response is authored;
+this is an explicit stdlib **host** demonstration, not native/model behavior or a
+research experiment. Native graph proofs remain the separate optional tests.
+
+Read the Markdown/JSON summaries and UTF-8 JSON-lines trace. Open SQLite **read
+only**: `cv_events` holds retained observations, `cv_objects` with kind `assessment`
+holds original/recheck results, and `cv_batches` holds receipts. The CLI prints
+these instructions and the absolute output path. The artifact test reads the
+closed database read-only, checks both stored results and trace digest, and proves
+an overwrite attempt leaves existing files byte-identical. The demo's expected
+original omission is [FAIL,PASS], scoped recheck [PASS,PASS], paper abstention,
+and provider defect UNRESOLVED; procedural PASS does not validate the price.
+
 ## Verification and continuation
 
 | Check | Latest evidence |
 |---|---|
-| C stdlib generic + real persisted-host cases | 17 PASS |
+| C stdlib generic + real persisted-host/artifact cases | 18 PASS |
 | C pinned native plumbing/negative controls + 2 persisted subgraph paths | 5 PASS |
-| Combined A29 + B49 + C22 in cached native environment | 100 PASS |
-| Combined stdlib without native pin/deps | 95 PASS; native class explicitly SKIP |
+| Combined A29 + B49 + C23 in cached native environment | 101 PASS |
+| Combined stdlib without native pin/deps | 96 PASS; native class explicitly SKIP |
 | Actual duplicate receipt/exact retry, invalid receipt after commit | No duplicate logical event or local sequence advancement on invalid reply |
 | Changed report/proposal/policy/prefix, ambiguous identical returns | Bound rejection or honest INCONCLUSIVE; original finding retained |
 | Metadata/index/export | Regenerated and checked before publication |
@@ -169,8 +202,8 @@ Native: set `TRUSTKERNEL_TRADINGAGENTS_UPSTREAM` to the reviewed exact pin, use 
 cached Python3.11 environment and omit `-S`. Cached versions: LangChain Core
 1.7.1, LangGraph 1.2.18, Prebuilt 1.1.1. No dependency installation.
 
-B is no longer a dependency blocker. Next: orchestrator reviews this persisted
-milestone and integrates accepted owned changes/dependency imports; central
+A/B and the core C milestone are accepted for scoped offline integration. Next:
+orchestrator reviews the small durable demo and integrates accepted changes; central
 README/orchestration/CI and generated metadata conflicts remain orchestrator-owned.
 Full GraphSetup/host restart continuation, semantic extraction, live policy,
 actual-model smoke, frontend and independent quality evaluation remain deferred.
@@ -184,7 +217,10 @@ with A0.2 but incorrectly credited two identical call returns from one flattened
 human message. Its prior test success did not establish valid capture semantics.
 The orchestrator requested changes. Repair 9478a61 removed all text-only origin
 inference and was accepted for scoped capture semantics after independent code
-review, 13 generic tests and the original duplicate-return control. That audit
-explicitly did not run native tests; native evidence above is C's separate run.
+review, 13 generic tests and the original duplicate-return control. That repair audit
+explicitly did not run native tests. The later independent core-1e4e8bd audit did
+run 100 tests with the exact cached native pin and 95 stdlib tests; the five native
+cases were explicitly unexecuted in the stdlib audit. Neither establishes actual
+model behavior or full GraphSetup readiness.
 The original failed review/commits and data defects remain preserved. Accepted
 capture semantics do not grant general session completeness or decision clearance.
