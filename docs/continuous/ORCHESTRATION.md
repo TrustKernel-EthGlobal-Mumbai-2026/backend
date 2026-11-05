@@ -6,6 +6,33 @@ orchestrator chat. This file is the repository's current coordination record.
 The earlier [architecture proposal](../CONTINUOUS_VERIFICATION_PLAN.md) supplies
 the rationale; it is not evidence that an implementation already exists.
 
+## Current readiness handoff
+
+Foundation PRs #2 -> #3 -> #5 -> #4 -> #1 are merged to main at `b365415`.
+[Draft PR #6](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/6)
+contains the separate bounded actual-import test package. Candidate `f3c679b`
+matches the implementation independently reviewed by the orchestrator: eleven
+native tests passed without skips; seven standard-library controls passed with
+the native class explicitly skipped. A retained authored HTTP run has69 runtime
+events,29 typed records and15 monitor entries; raw hashchain, exact SQLite parity,
+typed audit and monitor/raw parity passed.
+
+The optional injected CLI route calls the real CLI parser with a trusted SDK
+client, preserves its exit/envelope/assessment/checkpoint IDs, and places the
+same call's feedback in the next actual serialized request. It does not establish
+an agent-issued OS shell command. Model-requested dispatch and direct host rechecks
+are separate observations. Supervised nonces give separate launches distinct run
+IDs. Approval binds the selected transport and accepted package/schema bytes.
+
+Test readiness is accepted; actual provider behavior remains untested. Before a
+paid smoke, obtain NEW explicit approval for the bounded Terra-medium profile
+(four requests/120seconds/proposed incremental $0.65 under the cumulative $5
+ceiling), current price review and unchanged ledger/hold/key prerequisites.
+The original unknown hold stays reserved. Scheduled coordination was stopped at
+the owner's request; no replacement schedule or automatic paid launch is allowed.
+SDK/MCP core parity is accepted; particular harness setup/capture/gating remains
+a host-integration step. Frontend and independent quality evaluation stay deferred.
+
 ## Objective and gates
 
 The owner clarified the immediate target: an actual model in TradingAgents calls
