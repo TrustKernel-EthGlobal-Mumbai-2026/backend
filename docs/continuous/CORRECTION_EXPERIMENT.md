@@ -1,0 +1,165 @@
+# Checkpointed report correction experiment
+
+Candidate implementation on `codex/correction-experiment`, based on `39e0e1c`.
+The old smoke, core, upstream and main are unchanged. Root owns shared metadata,
+fresh source capture, operational reviews and paid launches. This lane performs
+offline implementation and authored tests only. Accepted B live-source commit
+`6a39e8545c71bc54095150131edc7d40f3d70c8d` is imported exactly and bound by
+SOURCE_DEPENDENCY. Root independently verified its 21 native source tests and
+the controller's 14 native tests; operational launch gates remain root-owned.
+
+The user authorized seven minutes each for Terra and Sol, fresh read-only market
+and news, and testing whether the model uses CLI checkpoint feedback procedurally.
+There is no guarantee of a failed first report or a successful correction.
+
+## Protocol and time
+
+One invocation runs one arm, sequentially under root control. The supervised
+parent records one start/deadline clock. The observation window ends 420 seconds
+after that start, including setup. The supervisor permits five additional seconds
+for closing/auditing artifacts only; inference is forbidden during that grace.
+No model request starts without its full 30-second request allowance remaining.
+
+| Phase | Slot or bound | Model/source allowance |
+|---|---|---|
+| Initial research and actual report revision 0 | By 180 seconds | At most 6 model requests, 5 bounded live source calls |
+| Model-requested CLI checkpoint 0 | At 180 seconds | 1 request from the remaining 5-call pool; host binds the actual report/checkpoint, then offers argument-free `verify_proposal` with auto choice |
+| Finding feedback and actual revision 1 | By 330 seconds | Up to 2 source queries and a model report, retaining the final request for recheck |
+| Model-requested CLI checkpoint 1 | At 350 seconds | Final request offers verification of the newly bound report/checkpoint |
+| Completed-protocol observation | Until 420 seconds | No filler model/source calls |
+
+Checkpoint waits and completed observation are declared scheduled waits, recorded
+separately from measured model invocation durations, setup, and total observation
+time. Offline tests simulate this schedule without a real seven-minute wait.
+Paid mode uses real time. STOP, timeout, provider errors, new unknown usage,
+exhausted bounds or missing required behavior can end early with a partial outcome.
+This protocol does not claim continuous model reasoning or access hidden thoughts.
+
+Only an actual model-generated `verify_proposal` call through native ToolNode
+executes `continuous_verification.cli.main(["verify"], client=..., stdin/stdout=...)`.
+The host creates and binds reports/checkpoints, grants and backend; the model
+cannot supply these values. The CLI is an injected in-process parser/SDK route,
+not an OS shell command or CLI transport subprocess. No host-only fallback counts
+as agent CLI use. No report means no seed, proposal or verifier invocation.
+
+## Source scope and context
+
+The normal pinned TradingAgents market analyst and actual native ToolNode execute
+with the original market/news schemas. This is a market analyst offered native
+news access, not full GraphSetup or a separate news analyst evaluation.
+Paid mode fetches fresh native Yahoo market/news data when each agent calls a
+source, using accepted B's thin live session over the existing live pipeline.
+There is no replay fallback on network failure. Sequential arms may see different
+prices, news, availability and retrieval times. Query/date/timezone, references,
+coverage, gaps, native cache behavior and actual HTTP observations remain explicit
+in per-call provenance. Offline replay/test doubles are for deterministic tests only.
+
+The original market/news tool schemas remain intact. The trusted policy bounds
+stock windows, indicator/snapshot lookbacks, news dates/count and HTTP exposure.
+RSI/MACD, stock60d, snapshot10rows and news7d are examples, not exact preset
+eligibility. A model can choose other valid native arguments within B's reviewed
+bounds. Correction can use any two valid native source calls. Repeated valid
+queries intentionally retrieve again with new call IDs/times/provenance under
+the existing caps; they are not automatic provider retries. There is no replay
+fallback, date rewrite or fake source return after a live network failure.
+
+Native ToolMessage success proves a string returned. The snapshot counts as
+SUCCESS only when B's full-argument live source record has both status and
+source_status AVAILABLE, joined to that intact model call ID. Unavailable,
+NO_DATA, argument mismatch and invocation errors remain distinct source records;
+model omission is a separate behavior. The existing policy checks only required
+snapshot inclusion and report completion, never price truth, TTL or global quality.
+
+Preflight inspects the reviewed live-source policy and dependencies without any
+source fetch or model/provider call. Future live response sizes are unknown.
+The actual 40,000-byte serialized wire bound and original Budget's 50,000-byte
+messages/metadata envelope remain authoritative. Runtime stops on overflow;
+raw source artifacts remain outside model context and nothing is silently
+summarized or truncated to force fit. Source-specific bounded exposure/status
+is B's responsibility and remains distinct from a model choosing not to call.
+No large synthetic estimator is a launch prerequisite.
+
+## Immutable report, feedback and recheck
+
+The first report comes from the actual model, with observed COMPLETE, TRUNCATED
+or UNKNOWN completion and its own assembled-input reference. It is closed and
+bound before offering verification. Truncated reports remain assessable so the
+existing report_completion check can fail honestly. Verifier omission retains
+the actual response and stops without manufacturing an assessment.
+
+After the real CLI return, the next correction input includes the exact current
+report already present in AI history, immutable finding in the intact CLI
+ToolMessage, original source ToolMessages, and available live-source catalog.
+The host resume packet references the actual report event/revision/digest; it
+does not copy the whole report a second time. Actual SDK serialization must contain both that
+feedback packet and the same call ID's exact CLI result. Typed delivery/inclusion
+events and wire evidence record this; receipt or continuation does not establish
+understanding or repair.
+
+Revision 1 must be a new model-generated report with the same report ID, higher
+revision and its own input reference. Only its new immutable checkpoint can be
+rechecked, again upon a real model request. The original assessment remains
+byte-identical in storage. Unchanged/noncompliant reports can fail again. Clean
+initial named checks produce NO_CORRECTION_NEEDED and observation to window end;
+no failure, correction or revision is fabricated. No model response after final
+recheck is required or claimed.
+
+## Money, approval and launch
+
+Both models use medium effort, zero retries, concurrency 1, at most 11 requests
+each. Historical conservative request reserves remain $0.16024 Terra and $0.32048
+Sol: per-arm worst $1.76264/$3.52528, paired $5.28792. Rounded caps are $1.77/$3.53
+($5.30 paired), within reported headroom $5.656075 under the cumulative $10 ceiling.
+These are conservative bounds, not invoices or a new $10 allowance.
+
+Original Budget reservation/settlement machinery is reused unchanged. A new
+operator-reviewed closed ledger must bind initial/active/hard [3,10,10], exact
+file hash, carried balance, all historical rows and both known $0.16024 unknown
+holds by full tuple. Old smoke approvals cannot launch this milestone. New
+approvals bind selected model/profile/cap, live-source policy/plan hash, accepted B
+dependency, upstream pin, runtime versions, implementation, checkpoint policy,
+operator baseline, one unused absolute output and expiry. Generated templates
+are false. Only credential-name presence is checked by readiness; no secret search.
+
+Root launches sequentially. The second arm requires a new explicit read-only
+baseline including settled first-arm rows. A new unknown hold stops before arm
+two. No hold is cleared, reconciled or released by this harness, and no ceiling
+is raised. No scheduler or automatic retry is installed.
+
+```powershell
+# No paid call; ROOT supplies accepted live-source plan and operator review paths.
+python -B tools/correction_experiment.py --mode preflight --model gpt-6.1-terra --upstream "$env:TRUSTKERNEL_TRADINGAGENTS_UPSTREAM" --source-plan "$env:CORRECTION_SOURCE_PLAN" --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW" --output .local-runs/correction-preflight-terra-001
+# AUTHORED source/model responses and simulated phase schedule; no live fetch:
+python -B tools/correction_experiment.py --mode scripted --model gpt-6.1-sol --upstream "$env:TRUSTKERNEL_TRADINGAGENTS_UPSTREAM" --source-plan "$env:CORRECTION_SOURCE_PLAN" --output .local-runs/correction-authored-sol-001
+```
+
+Root alone prepares the reviewed per-arm operator approval and invokes `--mode
+paid --approval <matching-operator-artifact>` after all gates. Do not substitute
+smoke outputs, an authored source fixture or stale budget metadata. Ctrl+C stops
+the supervisor/child and retains unknown reservations; hard timeout also retains
+partial files. Read result.json, phases-turns.jsonl,
+runtime-trace/trace.jsonl and feedback.sqlite read-only. CLI request/envelope/exit,
+model/source call IDs, source status/provenance and feedback next-wire references
+remain inspectable. Failure is an outcome, never automatic permission to rerun.
+
+The frozen live socket/process boundary is `live_experiment.safety.network_guard`;
+B's reviewed HTTP/CFFI source guard additionally restricts Yahoo methods/routes.
+The correction child installs a separate output/SQLite/credential-file guard.
+It never installs the old permanent API-only network audit before live sources.
+The model transport remains Responses-only. Native HTTP/raw artifacts and fresh
+session caches must stay beneath the new arm output, outside the frozen source tree.
+
+Current offline validation: 14 controller native tests pass with the accepted B
+dependency (normal pinned factory/SDK/ToolNode; authored transports only).
+Five standard-library controls pass; the native class explicitly skips when its
+optional dependencies are absent. The B interface test enters the real candidate
+context with its call body replaced by an authored stub, verifies lazy entry,
+repeated dynamic queries/callbacks and closed-session refusal. This is interface
+binding evidence, not a live fetch. B source safety was separately reviewed by
+root at its immutable accepted commit. Paid execution still requires the exact
+per-arm operator approval and operational gates; this lane performs none.
+
+The source-plan file contains exactly the `plan` object from B's default no-fetch
+preflight JSON output, not its enclosing result. Its bytes are hashed and bound
+into the per-arm approval. `--source-bundle` is an optional offline deterministic
+fixture input only and is rejected for paid execution.
