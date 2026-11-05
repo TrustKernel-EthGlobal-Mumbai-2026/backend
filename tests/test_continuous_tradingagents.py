@@ -7,6 +7,7 @@ import logging
 import os
 from pathlib import Path
 import subprocess
+import sqlite3
 import tempfile
 from types import SimpleNamespace
 from typing import Annotated
@@ -22,6 +23,7 @@ from continuous_verification.tradingagents import (
     LocalServiceWorker,
 )
 from continuous_verification.service import Principal, ServiceBackend, ServiceError
+from tools.continuous_demo import run as run_continuous_demo
 
 
 def authored_packet(revision=0, *, snapshot=True, completion="COMPLETE", boundary="ASSEMBLED"):
@@ -205,6 +207,37 @@ class PersistedHostTests(unittest.TestCase):
         self.backend.project("authored-run")
         self.assertEqual(self.backend.execute("verify", request), result)
         self.assertEqual(self.host.boundary.counts["source_rounds"], 0)
+
+
+class DemoArtifactTests(unittest.TestCase):
+    def test_authored_demo_retains_readable_store_and_refuses_overwrite_or_escape(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output, summary = run_continuous_demo(root / ".local-runs" / "review", workspace_root=root)
+            self.assertEqual(summary["status"], "COMPLETE")
+            self.assertEqual([f["outcome"] for f in summary["original"]["findings"]], ["FAIL", "PASS"])
+            self.assertEqual([f["outcome"] for f in summary["recheck"]["findings"]], ["PASS", "PASS"])
+            self.assertEqual(summary["provider_defect"]["status"], "UNRESOLVED")
+            self.assertEqual(summary["checkpoint_event_counts"][0], 2)
+            self.assertTrue(summary["original_preserved"])
+            self.assertEqual(json.loads((output / "summary.json").read_text("utf-8")), summary)
+            self.assertIn("not native/model behavior", (output / "summary.md").read_text("utf-8"))
+            events = [json.loads(line) for line in (output / "events.jsonl").read_text("utf-8").splitlines()]
+            self.assertEqual(digest(events), summary["event_digest"])
+            connection = sqlite3.connect((output / "feedback.sqlite").as_uri() + "?mode=ro", uri=True)
+            try:
+                assessments = [json.loads(row[0]) for row in connection.execute("SELECT body FROM cv_objects WHERE kind='assessment'")]
+                self.assertIn(summary["original"], assessments)
+                self.assertIn(summary["recheck"], assessments)
+            finally:
+                connection.close()
+            before = {path.name: path.read_bytes() for path in output.iterdir() if path.is_file()}
+            with self.assertRaises(FileExistsError):
+                run_continuous_demo(output, workspace_root=root)
+            self.assertEqual(before, {path.name: path.read_bytes() for path in output.iterdir() if path.is_file()})
+            with self.assertRaises(ValueError):
+                run_continuous_demo(root / "outside", workspace_root=root)
+            self.assertFalse((root / "outside").exists())
 
 
 class BoundaryTests(unittest.TestCase):

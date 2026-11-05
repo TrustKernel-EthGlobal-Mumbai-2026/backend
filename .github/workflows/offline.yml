@@ -34,6 +34,8 @@ jobs:
           python -S -B tools/context_index.py search "snapshot omission" --limit 5
       - name: Portable synthetic runtime demonstration
         run: python -S -B tools/offline_demo.py --output .local-runs/ci-demo
+      - name: Retained authored continuous-feedback demonstration
+        run: python -S -B tools/continuous_demo.py --output .local-runs/ci-continuous-demo
       - name: Verify exported file hashes and credential-pattern policy
         run: python -S -B tools/check_export.py
 

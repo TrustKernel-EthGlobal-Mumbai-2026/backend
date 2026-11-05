@@ -1,12 +1,25 @@
 # Continuous verification: active orchestration
 
-Updated: 5 November 2026. Status: all four scoped code gates accepted; durable authored demo and final combined review pending.
+Updated: 5 November 2026. Status: all four offline gates and durable demo reviewed; authorized merge sequence in progress; actual-model test readiness is the primary next milestone.
 Owner approved parallel work in separate chats, coordinated by the existing
 orchestrator chat. This file is the repository's current coordination record.
 The earlier [architecture proposal](../CONTINUOUS_VERIFICATION_PLAN.md) supplies
 the rationale; it is not evidence that an implementation already exists.
 
 ## Objective and gates
+
+The owner clarified the immediate target: an actual model in TradingAgents calls
+TrustKernel, receives feedback in its next runtime input, and visibly progresses.
+SDK/MCP access is secondary. Offline/scripted/native-subset proofs are completed
+foundations, not actual-model behavior. Readiness work continues separately on
+`codex/tradingagents-integration-smoke`; no paid execution is authorized.
+
+The owner explicitly authorized merging the existing PRs to main. Preserve the
+stacked dependency order: #2 contracts -> #3 capture/service -> #5 interfaces ->
+#4 TradingAgents/demo, each into the integration branch, then #1 to main. Resolve
+generated context/manifest conflicts by rebuilding from the combined sources;
+do not overwrite implementation to resolve derived-file conflicts. New smoke
+readiness work is excluded from these reviewed PR heads.
 
 Deliver one offline, checkpoint-bound capture -> ledger -> verification ->
 feedback -> revision -> recheck integration, then prepare a separately approved
