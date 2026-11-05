@@ -163,6 +163,29 @@ preserve the known historical hold and separately review any new unknown hold fi
 
 ## View / stop / proof and failure criteria
 
+Verification defaults to the direct native host route. The opt-in
+`--verify-transport injected-cli` routes a parsed model `verify_proposal` tool
+dispatch through actual `continuous_verification.cli.main(["verify"], client=...,
+stdin=..., stdout=...)` in process. The host supplies the checkpoint, scoped SDK
+client, grants and backend; the model cannot invent these inputs or file paths.
+This proves the injected CLI parser/SDK request and result path, not a model-issued
+shell command or an OS CLI transport subprocess. The existing parent supervisor
+still launches the bounded runner child. Host rechecks always use the direct
+route and carry a separate `HOST_RECHECK` origin. Transport selection and all
+accepted continuous_verification Python/schema bytes are bound into approval;
+changing CLI/SDK or other package dependencies invalidates that binding.
+
+`turns-checkpoints.jsonl` is flushed per observation and also mirrored into the
+runtime trace. It retains turn starts/results, the first and later serialized
+request starts, tool omissions, checkpoint dispatch/result or skipped outcomes,
+exact trusted requests, checkpoint IDs, assessment IDs, and CLI argv/envelope/
+exit/status. `MODEL_TOOL_DISPATCH` distinguishes the model tool path from host
+rechecks; in scripted mode the model response is authored HTTP override data.
+The exact returned assessment must occur as the same call ID's function-call
+output in the next actual SDK-serialized request. Each supervised launch derives
+its run ID from its unique parent nonce; readiness, trace and feedback use that
+same run ID. Request/checkpoint identifiers are scoped within that run.
+
 Read readiness.json and VIEW.md. Preflight stores import provenance (real module
 paths/hashes), fixture.json, implementation/profile digests and approval-required.json.
 Scripted/paid execution additionally retains runtime-trace/trace.jsonl and its
@@ -200,10 +223,12 @@ python -S -B -m unittest discover -s tests -p test_tradingagents_integration.py 
 python -B -m unittest discover -s tests -p test_tradingagents_integration.py -v
 ```
 
-The stdlib suite has 5 controls; actual-import tests explicitly SKIP if pinned
-source/framework dependencies are unavailable. Cached native execution has 8 tests,
+The stdlib suite has 7 controls; actual-import tests explicitly SKIP if pinned
+source/framework dependencies are unavailable. Cached native execution has 11 tests,
 including default no-paid imports, real NormalizedChatOpenAI HTTP serialization/
-parsing and ToolNode feedback continuation, and omitted/ignored/truncated cases.
+parsing and ToolNode feedback continuation, omitted/ignored/truncated cases,
+exact injected CLI request/envelope/exit/status/assessment/checkpoint checks,
+safe denial, same-ID next-wire feedback and two isolated launch identities.
 No optional integration is counted as PASS when missing. Source/approval expiry/
 one-output bindings, paid-flag denial, read-only authored budget checks (known hold preserved; changed identity/value/state, new
 unknown, insufficient headroom and concurrent balance rejected) and parent
@@ -216,7 +241,9 @@ The [selected-model page](https://developers.openai.com/api/docs/models/gpt-6.1-
 does not establish this account's access, key validity or approved budget.
 
 Retained current candidate evidence: `.local-runs/terra-preflight-001` and
-`.local-runs/terra-ready-001`. These consume only the supplied review JSON metadata,
+`.local-runs/terra-ready-001` (accepted earlier direct-path snapshot), plus
+`.local-runs/terra-cli-ready-001` for the injected CLI/turn-monitor extension.
+These consume only the supplied review JSON metadata,
 not the real ledger. The deterministic artifact reports READY_FOR_APPROVAL with
 execution_enabled=false, provider_generated_verify=false, exact feedback IDs in
 requests 2/3 and visible next action. The old four-Sol-call prototype is superseded.

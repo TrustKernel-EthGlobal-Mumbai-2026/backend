@@ -13,7 +13,10 @@ import subprocess
 import sys
 import tempfile
 from tools import tradingagents_integration as integration
-from tools.tradingagents_integration import PROFILE, ROOT, preflight_plan, approval_template, validate_approval, read_existing_budget, reviewed_budget_summary
+from tools.tradingagents_integration import PROFILE, ROOT, preflight_plan, approval_template, validate_approval, read_existing_budget, reviewed_budget_summary, CheckpointTransport
+from continuous_verification import digest
+from continuous_verification.service import Principal, ServiceBackend
+from continuous_verification.tradingagents import BoundaryError
 
 
 def authored_review(path=None, total=4.128377500000004):
@@ -49,8 +52,17 @@ class ReadinessPlanTests(unittest.TestCase):
             budget_review="CONFIRMED_PINNED_LEDGER_PRESERVE_KNOWN_HOLD",
             pricing_review="CONFIRMED_ORIGINAL_UPPER_RATES_CONSERVATIVE", model_account_access="UNPROBED_CALL_MAY_FAIL_AND_RETAIN_HOLD")
         validate_approval(authored_approval_double, fixture, output=output, review=review)
+        original_read = Path.read_bytes
+        for dependency in ("cli.py", "sdk.py", "capture.py", "journal.py", "projection.py", "contract.schema.json"):
+            def changed_bytes(path, dependency=dependency):
+                content = original_read(path)
+                return content + b"\n" if path.name == dependency else content
+            with self.subTest(dependency=dependency), patch.object(Path, "read_bytes", changed_bytes):
+                with self.assertRaises(PermissionError):
+                    validate_approval(authored_approval_double, fixture, output=output, review=review)
         for key, value in (("profile_digest", "wrong"), ("implementation_digest", "wrong"), ("fixture_digest", "wrong"),
                            ("incremental_limit_usd", 5), ("launch_output", ".local-runs/other"),
+                           ("verify_transport", "injected-cli"),
                            ("approved", False), ("expires_at", "2020-01-01T00:00:00Z")):
             with self.subTest(key=key), self.assertRaises(PermissionError):
                 validate_approval(dict(authored_approval_double, **{key: value}), fixture, output=output, review=review)
@@ -133,6 +145,66 @@ class ReadinessPlanTests(unittest.TestCase):
                 self.assertIn("never reconciled", stop["unknown_paid_reservations"])
 
 
+class InjectedCliCheckpointTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        self.addCleanup(self.temp.cleanup)
+        self.packet = json.loads((ROOT / "continuous_verification/schemas/example.json").read_text("utf-8"))
+        self.packet["events"][1]["payload"]["included_event_ids"] = []
+        self.packet["events"][1]["parents"] = []
+        self.run = self.packet["request"]["run_id"]
+        principal = Principal("collector", frozenset({"configure", "collect", "read", "verify"}), frozenset({self.run}))
+        self.backend = ServiceBackend(self.root / "authored-cli.sqlite", principal=principal, service_id="authored-service")
+        self.addCleanup(self.backend.close)
+        self.backend.configure_run(self.run, [dict(stream_id="host", collector_id="collector", producer_id="authored-host",
+            adapter_version="fixture-1", redaction_profile="authored-public")])
+        self.backend.execute("register_run", dict(run_id=self.run, registration_id="authored-cli-registration"))
+        self.backend.install_policy(self.run, self.packet["policy"])
+        self.backend.execute("ingest_events", dict(run_id=self.run, batch_id="authored-cli-batch", events=self.packet["events"]))
+        self.backend.record_coverage(self.run, "host", self.packet["checkpoint"]["streams"][0]["capabilities"])
+        checkpoint = self.backend.execute("checkpoint", dict(run_id=self.run, checkpoint_id="checkpoint-1", revision=0,
+            registry_revision=0, streams=[dict(stream_id="host", requested=3)]))
+        self.request = self.packet["request"]
+        self.request["checkpoint"]["digest"] = digest(checkpoint)
+
+    def test_actual_cli_parser_exact_request_envelope_exit_and_failing_assessment(self):
+        events = []
+        route = CheckpointTransport(self.backend, self.run, selection="injected-cli", emit=lambda kind, data: events.append((kind,data)))
+        result = route.verify(self.request, origin="MODEL_TOOL_DISPATCH", turn=1, model_call_id="authored-call")
+        request_event, result_event = events[0][1], events[1][1]
+        self.assertEqual(request_event["request"], self.request)
+        self.assertEqual(request_event["checkpoint"], self.request["checkpoint"])
+        self.assertEqual(result_event["cli_argv"], ["verify"])
+        self.assertEqual(result_event["cli_exit_code"], 0)
+        self.assertEqual(result_event["cli_stderr"], "")
+        self.assertEqual(result_event["cli_envelope"], {"ok":True,"result":result})
+        self.assertEqual(result_event["assessment_id"], result["assessment_id"])
+        self.assertEqual(result_event["result_status"], "ASSESSED")
+        self.assertEqual(result["disposition"], "HOLD")
+        self.assertEqual([f["outcome"] for f in result["findings"]], ["FAIL","PASS"])
+        self.assertFalse(result_event["cli_subprocess"])
+        self.assertFalse(result_event["agent_shell_command"])
+        direct = route.verify(self.request, origin="HOST_RECHECK")
+        self.assertEqual(direct, result)
+        self.assertEqual(events[-1][1]["transport"], "DIRECT_NATIVE_HOST")
+        self.assertIsNone(events[-1][1]["cli_exit_code"])
+
+    def test_actual_cli_safe_denial_retains_exit_and_does_not_invent_assessment(self):
+        events = []
+        route = CheckpointTransport(self.backend, self.run, selection="injected-cli", emit=lambda kind,data:events.append((kind,data)))
+        foreign = deepcopy(self.request)
+        foreign["run_id"] = "authored-foreign"
+        with self.assertRaises(BoundaryError):
+            route.verify(foreign, origin="MODEL_TOOL_DISPATCH",turn=1,model_call_id="authored-denied")
+        event = events[-1][1]
+        self.assertEqual(event["cli_exit_code"], 3)
+        self.assertEqual(event["cli_envelope"]["error"]["code"], "FORBIDDEN")
+        self.assertEqual(event["cli_stderr"], "FORBIDDEN\n")
+        self.assertIsNone(event["assessment_id"])
+        self.assertEqual(event["result_status"], "TRANSPORT_ERROR")
+
+
 class RealImportedRunnerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -200,6 +272,9 @@ class RealImportedRunnerTests(unittest.TestCase):
                     self.assertFalse(report["dispatch_observed"])
                     self.assertIsNone(report["original"])
                     self.assertFalse(report["observed_progress"])
+                    skipped = [e for e in report["state"]["monitor_events"] if e["kind"] == "smoke.checkpoint_skipped"]
+                    self.assertEqual({e["payload"]["origin"] for e in skipped}, {"MODEL_TOOL_DISPATCH","HOST_RECHECK"})
+                    self.assertEqual(report["cli_parser_invocations"], 0)
                 elif scenario == "truncated":
                     self.assertEqual(result.returncode, 1)
                     self.assertEqual(report["outcome"], "OUTPUT_CAP_WITH_PARTIAL_PROGRESS")
@@ -208,3 +283,38 @@ class RealImportedRunnerTests(unittest.TestCase):
                     self.assertEqual(result.returncode, 0)
                     self.assertTrue(report["observed_progress"])
                     self.assertEqual(report["recheck"]["findings"][0]["outcome"], "FAIL")
+
+    def test_injected_cli_checkpoint_wire_feedback_turn_monitor_and_unique_run_identity(self):
+        direct_process, direct, direct_dir = self.invoke("identity-direct", "--mode", "scripted")
+        process, report, target = self.invoke("identity-cli", "--mode", "scripted", "--verify-transport", "injected-cli")
+        self.assertEqual(direct_process.returncode,0)
+        self.assertEqual(process.returncode,0,process.stdout+process.stderr)
+        self.assertNotEqual(direct["run_id"],report["run_id"])
+        self.assertNotEqual(direct["launch_id"],report["launch_id"])
+        self.assertEqual(report["launch_id"],json.loads((target/"parent.json").read_text("utf-8"))["nonce"])
+        self.assertIn(report["launch_id"],report["run_id"])
+        self.assertEqual(report["service_state"]["run_id"],report["run_id"])
+        self.assertEqual(report["cli_parser_invocations"],1)
+        self.assertEqual(report["cli_subprocess_invocations"],0)
+        self.assertFalse(report["agent_issued_shell_command"])
+        monitor = [json.loads(line) for line in (target/"turns-checkpoints.jsonl").read_text("utf-8").splitlines()]
+        self.assertTrue(all(e["run_id"]==report["run_id"] for e in monitor))
+        self.assertEqual([e["payload"]["turn"] for e in monitor if e["kind"]=="smoke.turn_start"],[1,2,3])
+        request_starts = [e for e in monitor if e["kind"]=="smoke.request_start"]
+        self.assertEqual([e["payload"]["first_request"] for e in request_starts],[True,False,False])
+        checkpoints = [e["payload"] for e in monitor if e["kind"]=="smoke.checkpoint_result"]
+        self.assertEqual([e["origin"] for e in checkpoints],["MODEL_TOOL_DISPATCH","HOST_RECHECK"])
+        cli, host = checkpoints
+        self.assertEqual(cli["transport"],"HOST_INJECTED_CLI_PARSER")
+        self.assertEqual(cli["cli_exit_code"],0)
+        self.assertEqual(cli["cli_envelope"],{"ok":True,"result":report["original"]})
+        self.assertEqual(cli["assessment_id"],report["original"]["assessment_id"])
+        self.assertEqual(cli["checkpoint"],report["requests"][0]["checkpoint"])
+        self.assertEqual(host["transport"],"DIRECT_NATIVE_HOST")
+        self.assertEqual(host["assessment_id"],report["recheck"]["assessment_id"])
+        trace = [json.loads(line) for line in (target/"runtime-trace/trace.jsonl").read_text("utf-8").splitlines()]
+        next_wire = next(e["payload"]["body"] for e in trace if e["kind"]=="smoke.wire_request" and e["payload"]["proof"]["call"]==2)
+        feedback = next(item for item in next_wire["input"] if item.get("type")=="function_call_output" and item.get("call_id")==cli["model_call_id"])
+        self.assertEqual(json.loads(feedback["output"]),cli["cli_envelope"]["result"])
+        self.assertEqual(report["allowances"],dict(source_rounds=1,verify_calls=2,remediations=1))
+        self.assertFalse(report["provider_generated_verify"])

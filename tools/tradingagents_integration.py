@@ -4,6 +4,7 @@ from contextlib import contextmanager, closing
 from copy import deepcopy
 import hashlib
 import importlib
+import io
 import json
 import os
 import sqlite3
@@ -21,7 +22,7 @@ sys.path.insert(0, str(ROOT))
 sys.dont_write_bytecode = True
 
 from continuous_verification import digest
-from continuous_verification.tradingagents import UPSTREAM_COMMIT
+from continuous_verification.tradingagents import UPSTREAM_COMMIT, BoundaryError
 from tools.continuous_demo import new_output, write_new
 
 PROFILE = dict(model="gpt-6.1-terra", endpoint="https://api.openai.com/v1", effort="medium",
@@ -33,9 +34,9 @@ PROFILE = dict(model="gpt-6.1-terra", endpoint="https://api.openai.com/v1", effo
     tool_choice="auto", live_sources=False)
 
 
-def preflight_plan():
+def preflight_plan(verify_transport="direct"):
     """Presence/status only; never open budget files or inspect credential values."""
-    return dict(profile=deepcopy(PROFILE), profile_digest=digest(PROFILE), execution_enabled=False,
+    return dict(profile=deepcopy(PROFILE), profile_digest=digest(PROFILE), execution_enabled=False, verify_transport=verify_transport,
         credential_status="ENV_NAME_PRESENT_VALUE_UNREAD" if "OPENAI_API_KEY" in os.environ else "ENV_NAME_ABSENT",
         budget_status="NOT_OPENED_OR_MUTATED; existing cumulative ledger/unknown holds require separate review",
         model_access="NOT_CHECKED; no account/provider request", new_user_approval="REQUIRED",
@@ -88,9 +89,12 @@ def real_runtime(upstream):
 
 
 def implementation_digest():
-    paths = ["tools/tradingagents_integration.py", "continuous_verification/tradingagents.py",
-        "continuous_verification/contracts.py", "continuous_verification/verifier.py", "continuous_verification/service.py",
+    paths = ["tools/tradingagents_integration.py",
         "trustkernel/runner.py", "trustkernel/trace.py", "trustkernel/replay.py", "trustkernel/safety.py", "trustkernel/billing.py"]
+    # Bind every accepted package Python/schema dependency, including CLI/SDK and
+    # capture/journal/projection. A transport-handler edit invalidates approval.
+    paths += sorted(p.relative_to(ROOT).as_posix() for p in (ROOT / "continuous_verification").rglob("*")
+        if p.is_file() and p.suffix in {".py", ".json"})
     return digest({p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in paths})
 
 
@@ -102,9 +106,9 @@ def frozen_fixture(runtime):
         tools={name: dict(origin="AUTHORED", text="AUTHORED provider-row defect: Close=99 Low=100; do not reconcile or replace") for name in sorted(names)})
 
 
-def approval_template(fixture, review=None):
+def approval_template(fixture, review=None, *, verify_transport="direct"):
     return dict(approved=False, approval_id=None, expires_at=None, launch_output=None, milestone="actual-imported-analyst-smoke-v1",
-        profile_digest=digest(PROFILE), implementation_digest=implementation_digest(),
+        profile_digest=digest(PROFILE), implementation_digest=implementation_digest(), verify_transport=verify_transport,
         fixture_digest=digest(fixture), upstream_commit=UPSTREAM_COMMIT,
         incremental_limit_usd=PROFILE["proposed_incremental_limit_usd"],
         budget_review="REQUIRED_UNCHANGED_REVIEWED_LEDGER_AND_PRESERVED_HISTORICAL_HOLD",
@@ -113,10 +117,10 @@ def approval_template(fixture, review=None):
         model_account_access="UNPROBED_ACKNOWLEDGEMENT_REQUIRED")
 
 
-def validate_approval(approval, fixture, *, output, review=None, now=None):
+def validate_approval(approval, fixture, *, output, review=None, verify_transport="direct", now=None):
     """A reviewed operator artifact is required; this does not create approval."""
-    template = approval_template(fixture, review)
-    for key in ("milestone", "profile_digest", "implementation_digest", "fixture_digest", "upstream_commit", "incremental_limit_usd", "budget_review_digest"):
+    template = approval_template(fixture, review, verify_transport=verify_transport)
+    for key in ("milestone", "profile_digest", "implementation_digest", "fixture_digest", "upstream_commit", "incremental_limit_usd", "budget_review_digest", "verify_transport"):
         if approval.get(key) != template[key]:
             raise PermissionError("Approval binding mismatch")
     if (approval.get("approved") is not True or not isinstance(approval.get("approval_id"), str) or not approval["approval_id"]
@@ -263,7 +267,58 @@ def _complete(message):
     return "UNKNOWN"
 
 
-def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=None):
+class CheckpointTransport:
+    """Trusted host route, never a model-issued shell/OS CLI command.
+
+    Only model-generated native tool dispatch opts into the actual injected CLI
+    parser. Host rechecks stay direct and explicitly labeled. Neither checkpoint,
+    grants, backend nor file paths can be supplied by model arguments.
+    """
+    def __init__(self, backend, run_id, *, selection="direct", emit=lambda kind, data: None):
+        if selection not in {"direct", "injected-cli"}:
+            raise ValueError("Unknown verification transport")
+        from continuous_verification.sdk import Access, Client, ServiceErrorAdapter
+        from continuous_verification.service import ServiceError
+        self.backend, self.selection, self.emit = backend, selection, emit
+        self.client = Client(ServiceErrorAdapter(backend, ServiceError), Access(frozenset({"verify"}), frozenset({run_id})))
+
+    def verify(self, request, *, origin, turn=None, model_call_id=None):
+        from continuous_verification import canonical_json
+        from continuous_verification.cli import main as cli_main
+        selected = self.selection == "injected-cli" and origin == "MODEL_TOOL_DISPATCH"
+        common = dict(origin=origin, turn=turn, model_call_id=model_call_id, run_id=request["run_id"],
+            request_id=request["request_id"], checkpoint=deepcopy(request["checkpoint"]),
+            proposal_revision=request["proposal"]["revision"], report_event_id=request["proposal"]["report_event_id"],
+            report_revision=request["proposal"]["report_revision"], request_digest=digest(request),
+            transport="HOST_INJECTED_CLI_PARSER" if selected else "DIRECT_NATIVE_HOST",
+            cli_subprocess=False, agent_shell_command=False)
+        self.emit("smoke.checkpoint_dispatch", dict(common, request=deepcopy(request)))
+        envelope, code, stderr = None, None, ""
+        try:
+            if selected:
+                out, err = io.StringIO(), io.StringIO()
+                code = cli_main(["verify"], client=self.client, stdin=io.StringIO(canonical_json(request)), stdout=out, stderr=err)
+                envelope, stderr = json.loads(out.getvalue()), err.getvalue()
+                if code != 0 or envelope.get("ok") is not True:
+                    self.emit("smoke.checkpoint_result", dict(common, cli_argv=["verify"], cli_exit_code=code,
+                        cli_envelope=envelope, cli_stderr=stderr, assessment_id=None, result_status="TRANSPORT_ERROR"))
+                    raise BoundaryError("Injected CLI verification refused; no assessment invented")
+                result = envelope["result"]
+            else:
+                result = self.backend.execute("verify", deepcopy(request))
+        except BoundaryError:
+            raise
+        except Exception as error:
+            self.emit("smoke.checkpoint_result", dict(common, cli_exit_code=code, cli_envelope=envelope,
+                result_status="TRANSPORT_ERROR", error_type=type(error).__name__, assessment_id=None))
+            raise
+        self.emit("smoke.checkpoint_result", dict(common, cli_argv=["verify"] if selected else None,
+            cli_exit_code=code, cli_envelope=envelope, cli_stderr=stderr, result_status=result["status"],
+            assessment_id=result["assessment_id"], disposition=result["disposition"], result_digest=digest(result)))
+        return result
+
+
+def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", budget_info=None, verify_transport="direct"):
     """One shared real-import/client/ToolNode path; only HTTP model I/O differs."""
     import httpx
     from langchain_core.messages import HumanMessage
@@ -276,18 +331,39 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
     from trustkernel.replay import fixture_tools
     from continuous_verification.tradingagents import StoredFeedbackHost, LocalServiceWorker, Limits, make_verify_tool, make_trusted_model
     from continuous_verification.service import ServiceBackend, Principal
-    run_id = mode + "-real-import-smoke"
+    if not isinstance(launch_id, str) or len(launch_id) != 32 or any(c not in "0123456789abcdef" for c in launch_id):
+        raise ValueError("Expected supervised launch nonce")
+    run_id = mode + "-real-import-smoke-" + launch_id
     # Reuse original regex/key-field privacy filtering without enumerating any
     # credential environment values during readiness/scripted execution.
     class NoCredentialEnumeration(trace_module.Redactor):
         def __init__(self):
             self.secrets = []
     with patch.object(trace_module, "Redactor", NoCredentialEnumeration):
-        trace = trace_module.Trace(output / "runtime-trace", run_id, dict(mode=mode, upstream_commit=UPSTREAM_COMMIT,
+        trace = trace_module.Trace(output / "runtime-trace", run_id, dict(mode=mode, launch_id=launch_id, upstream_commit=UPSTREAM_COMMIT,
             response_origin="PROVIDER" if mode == "paid" else "AUTHORED_HTTP_OVERRIDE", hidden_reasoning_access=False))
     principal = Principal("smoke-collector", frozenset({"configure", "collect", "verify", "read"}), frozenset({run_id}))
     backend = LocalServiceWorker(lambda: ServiceBackend(output / "feedback.sqlite", principal=principal, service_id="smoke-local-service"))
-    state = dict(model_calls=0, wire_requests=[], outputs=[], dispatches=[], inputs=[], stop=None)
+    state = dict(model_calls=0, wire_requests=[], outputs=[], dispatches=[], inputs=[], stop=None, monitor_events=[], checkpoint_context={})
+    monitor_sink = (output / "turns-checkpoints.jsonl").open("x", encoding="utf-8")
+    def monitor(kind, data):
+        with trace.lock:
+            cleaned = trace.redactor.clean(data)
+            trace.emit(kind, cleaned)
+            event = dict(sequence=len(state["monitor_events"])+1, kind=kind, run_id=run_id,
+                observed_at=datetime.now(timezone.utc).isoformat(), response_origin="PROVIDER" if mode == "paid" else "AUTHORED_HTTP_OVERRIDE",
+                payload=cleaned)
+            monitor_sink.write(json.dumps(event, ensure_ascii=False) + "\n")
+            monitor_sink.flush()
+            os.fsync(monitor_sink.fileno())
+            state["monitor_events"].append(event)
+    def boundary_observation(kind, data):
+        if kind == "verification.requested":
+            calls = state["outputs"][-1]["tool_calls"] if state["outputs"] else []
+            call_id = next((c["id"] for c in calls if c["name"] == "verify_proposal"), None)
+            origin = "HOST_RECHECK" if data["origin"] == "host" else "MODEL_TOOL_DISPATCH" if call_id else "COOPERATIVE_HOST"
+            state["checkpoint_context"] = dict(origin=origin, turn=state["model_calls"] if origin == "MODEL_TOOL_DISPATCH" else None,
+                model_call_id=call_id if origin == "MODEL_TOOL_DISPATCH" else None)
     start = time.time()
     deadline = min(start + PROFILE["wall_seconds"], budget_info["approval_expires_epoch"]) if budget_info else start + PROFILE["wall_seconds"]
     budget = None
@@ -322,7 +398,11 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
     backend.install_policy(run_id, policy)
     host = StoredFeedbackHost(backend=backend, run_id=run_id, stream_id="host", producer_id="smoke-host", redaction_profile="smoke-redacted",
         redact=lambda text: trace.redactor.clean(text), proposal_id="smoke-paper-proposal", policy=policy,
-        limits=Limits(PROFILE["source_rounds"], PROFILE["verify_calls"], PROFILE["remediations"]))
+        limits=Limits(PROFILE["source_rounds"], PROFILE["verify_calls"], PROFILE["remediations"]), observe=boundary_observation)
+    checkpoint_transport = CheckpointTransport(backend, run_id, selection=verify_transport, emit=monitor)
+    def assess(request, *, checkpoint, events, policy):
+        return checkpoint_transport.verify(request, **state["checkpoint_context"])
+    host.boundary.assess = assess
     def coverage(input_event, report):
         backend.record_coverage(run_id, "host", [dict(name=name, state="CAPTURED", basis_event_ids=[basis])
             for name, basis in (("model_input", input_event["event_id"]), ("tool_lifecycle", input_event["event_id"]),
@@ -353,7 +433,12 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
         record = dict(call=state["model_calls"], origin="PROVIDER_REQUEST" if mode == "paid" else "AUTHORED_HTTP_OVERRIDE",
             tool_choice=body.get("tool_choice"), tools=[t.get("name") for t in body.get("tools", [])],
             feedback_call_ids=matched, retained_body_digest=digest(trace.redactor.clean(body)))
+        first = not state["wire_requests"]
         state["wire_requests"].append(record)
+        monitor("smoke.request_start", dict(turn=state["model_calls"], first_request=first,
+            phase="SDK_SERIALIZED_BEFORE_HTTP", provider_request=mode == "paid", verify_transport=verify_transport,
+            feedback_call_ids=matched))
+        print(f"TURN {state['model_calls']} REQUEST ATTEMPT START ({'APPROVED_PROVIDER' if mode == 'paid' else 'AUTHORED_HTTP_OVERRIDE'}; verify route={verify_transport})", flush=True)
         trace.emit("smoke.wire_request", dict(proof=record, body=body))
         return record
     def authored_http(request):
@@ -395,11 +480,17 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
             if state["model_calls"] >= PROFILE["max_model_calls"] or time.time() >= deadline:
                 raise PermissionError("Model call or wall-time bound reached")
             state["model_calls"] += 1
+            monitor("smoke.turn_start", dict(turn=state["model_calls"], phase="ENTERING_MODEL_CLIENT", verify_transport=verify_transport))
             result = self.delegate.invoke(messages, config=config, **kwargs)
             record = dict(call=state["model_calls"], origin="PROVIDER" if mode == "paid" else "AUTHORED_HTTP_OVERRIDE",
                 content=result.content, tool_calls=result.tool_calls, completion=_complete(result), response_id=result.response_metadata.get("id"))
             state["outputs"].append(record)
             trace.emit("smoke.model_output", record)
+            monitor("smoke.turn_result", dict(turn=state["model_calls"], completion=record["completion"],
+                response_id=record["response_id"], action="TOOL_CALL" if result.tool_calls else "VISIBLE_MESSAGE" if result.content else "EMPTY",
+                tool_call_ids=[c["id"] for c in result.tool_calls], tool_names=[c["name"] for c in result.tool_calls]))
+            if not any(c["name"] == "verify_proposal" for c in result.tool_calls):
+                monitor("smoke.verify_not_requested_this_turn", dict(turn=state["model_calls"], status="NOT_REQUESTED_THIS_TURN"))
             if len(result.tool_calls) > 1:
                 raise PermissionError("Smoke permits one tool call per model turn, never silently splits a batch")
             return result
@@ -451,6 +542,13 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
         error = type(exc).__name__
         trace.emit("smoke.stop", dict(error_type=error, outcome="STOPPED_NOT_PASS"))
     finally:
+        requested = any(c["name"] == "verify_proposal" for item in state["outputs"] for c in item["tool_calls"])
+        if not requested:
+            monitor("smoke.checkpoint_skipped", dict(origin="MODEL_TOOL_DISPATCH", turn=state["model_calls"],
+                transport="NOT_USED", selected_transport=verify_transport, reason="model_did_not_request_verify_proposal"))
+        if recheck is None:
+            monitor("smoke.checkpoint_skipped", dict(origin="HOST_RECHECK", transport="NOT_USED",
+                reason="no_initial_assessment_or_completed_report_or_stopped"))
         host.boundary.abstain("Host stops at the bounded smoke boundary; report procedure is not decision/price clearance")
         original_preserved = None
         if original:
@@ -459,6 +557,7 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
         backend.audit()
         backend.close()
         client.close()
+        monitor_sink.close()
         trace.close()
     verify_ids = [c["id"] for out in state["outputs"] for c in out["tool_calls"] if c["name"] == "verify_proposal"]
     verify_from_model = bool(verify_ids)
@@ -467,10 +566,13 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
     joined = sorted(set(verify_ids) & set(host.deliveries))
     progress = joined and "verify_proposal" in state["dispatches"] and bool(feedback_requests) and next_action
     truncated = any(out["completion"] == "TRUNCATED" for out in state["outputs"])
-    return dict(mode=mode, response_origin="PROVIDER" if mode == "paid" else "AUTHORED_HTTP_OVERRIDE", real_import=True,
+    return dict(mode=mode, run_id=run_id, launch_id=launch_id, response_origin="PROVIDER" if mode == "paid" else "AUTHORED_HTTP_OVERRIDE", real_import=True,
         full_graph_setup=False, error=error, observed_progress=bool(progress), provider_generated_verify=bool(mode == "paid" and verify_from_model),
         model_generated_verify_shape=verify_from_model, dispatch_observed="verify_proposal" in state["dispatches"],
         model_verify_call_ids=verify_ids, joined_generated_dispatched_delivered_ids=joined,
+        verify_transport=verify_transport, cli_parser_invocations=sum(e["kind"] == "smoke.checkpoint_result" and
+            e["payload"].get("cli_exit_code") is not None for e in state["monitor_events"]),
+        cli_subprocess_invocations=0, agent_issued_shell_command=False,
         delivered_call_ids=list(host.deliveries), exact_next_wire_feedback_requests=feedback_requests, next_action_observed=bool(next_action),
         outcome="STOPPED_NOT_PASS" if error else "OUTPUT_CAP_WITH_PARTIAL_PROGRESS" if truncated else
             "PROGRESSION_OBSERVED" if progress else "VOLUNTARY_VERIFY_OR_CONTINUATION_NOT_OBSERVED",
@@ -484,11 +586,12 @@ def child(args):
     if output == ROOT / ".local-runs" or not output.is_relative_to(ROOT / ".local-runs"):
         raise PermissionError("Child output outside supervised new-output root")
     marker = json.loads((output / "parent.json").read_text("utf-8"))
-    if marker["nonce"] != args.nonce or marker["profile_digest"] != digest(PROFILE) or marker["mode"] != args.mode:
+    if (marker["nonce"] != args.nonce or marker["profile_digest"] != digest(PROFILE) or marker["mode"] != args.mode
+            or marker["verify_transport"] != args.verify_transport):
         raise PermissionError("Supervisor binding mismatch")
     write_new(output / "child-started.json", json.dumps(dict(mode=args.mode, paid_authorized=False)) + "\n")
     args.output_authorized = True
-    plan = preflight_plan()
+    plan = preflight_plan(args.verify_transport)
     review = json.loads(Path(args.budget_review).read_text("utf-8")) if args.budget_review else None
     if review:
         plan["budget_review_summary"] = reviewed_budget_summary(review)
@@ -499,7 +602,7 @@ def child(args):
             raise PermissionError("NEW approval, reviewed fixture and closed-ledger review artifact required")
         approved_fixture = json.loads(Path(args.fixture).read_text("utf-8"))
         approval = json.loads(Path(args.approval).read_text("utf-8"))
-        validate_approval(approval, approved_fixture, output=output, review=review)
+        validate_approval(approval, approved_fixture, output=output, review=review, verify_transport=args.verify_transport)
         if "OPENAI_API_KEY" not in os.environ:
             raise PermissionError("API credential environment name absent; no credentials searched")
         budget_info = read_existing_budget(root.parent.parent, review=review)
@@ -515,11 +618,12 @@ def child(args):
         plan.update(upstream_commit=UPSTREAM_COMMIT, import_proof=runtime["import_proof"], dotenv_discovery="DISABLED",
             actual_import=True, implementation_digest=implementation_digest(), fixture_digest=digest(fixture))
         write_new(output / "fixture.json", json.dumps(fixture, indent=2) + "\n")
-        write_new(output / "approval-required.json", json.dumps(approval_template(fixture, review), indent=2) + "\n")
+        write_new(output / "approval-required.json", json.dumps(approval_template(fixture, review, verify_transport=args.verify_transport), indent=2) + "\n")
         if args.mode == "preflight":
             plan.update(readiness="NEEDS_SCRIPTED_REAL_IMPORT_PROOF", outcome="NO_PAID_PREFLIGHT_COMPLETE")
         else:
-            result = run_cycle(runtime, output, fixture, mode=args.mode, scenario=args.scenario, budget_info=budget_info)
+            result = run_cycle(runtime, output, fixture, mode=args.mode, launch_id=marker["nonce"], scenario=args.scenario, budget_info=budget_info,
+                verify_transport=args.verify_transport)
             plan.update(result)
             mechanism_ready = args.mode == "scripted" and args.scenario == "normal" and result["outcome"] == "PROGRESSION_OBSERVED" and result["original_preserved"]
             plan["readiness"] = "READY_FOR_APPROVAL" if mechanism_ready and review else "MECHANISM_READY_REVIEW_ARTIFACT_REQUIRED" if mechanism_ready else "OUTCOME_RECORDED_NOT_APPROVAL"
@@ -537,6 +641,11 @@ cv_batches. Reports/checkpoints are immutable. Original seed report is authored.
 Price truth/semantic readiness/global clearance are not established by this smoke.
 approval-required.json is deliberately NOT approved and cannot authorize spending.
 No hidden reasoning is claimed; .env files and credential values are not inspected.
+turns-checkpoints.jsonl is the per-turn/checkpoint monitor. It distinguishes native
+direct access, HOST_INJECTED_CLI_PARSER, model dispatch, host recheck and omitted
+tools. Injected CLI means cli.main(argv,client,stdin/stdout) in process, not an OS
+CLI subprocess or model-issued shell command. The bounded supervisor child is
+unchanged and separate from this transport distinction.
 """)
     return 0 if args.mode == "preflight" or plan.get("outcome") == "PROGRESSION_OBSERVED" else 1
 
@@ -547,6 +656,7 @@ def main():
     parser.add_argument("--output", required=True, help="NEW directory under checkout .local-runs")
     parser.add_argument("--upstream", default=os.environ.get("TRUSTKERNEL_TRADINGAGENTS_UPSTREAM"))
     parser.add_argument("--scenario", choices=("normal", "omit", "ignore", "truncated"), default="normal")
+    parser.add_argument("--verify-transport", choices=("direct", "injected-cli"), default="direct")
     parser.add_argument("--approval", help="NEW user-approved operator artifact; never generated approved by this program")
     parser.add_argument("--fixture", help="Exact reviewed fixture.json from preflight/scripted artifact")
     parser.add_argument("--budget-review", default=os.environ.get("TRUSTKERNEL_BUDGET_REVIEW"), help="Closed read-only operator review JSON; never the ledger itself")
@@ -577,9 +687,11 @@ def main():
     except (OSError, ValueError) as exc:
         parser.exit(1, f"New-output guard refused ({type(exc).__name__}).\n")
     nonce = uuid.uuid4().hex
-    write_new(output / "parent.json", json.dumps(dict(nonce=nonce, mode=args.mode, profile_digest=digest(PROFILE))) + "\n")
+    write_new(output / "parent.json", json.dumps(dict(nonce=nonce, mode=args.mode, profile_digest=digest(PROFILE),
+        verify_transport=args.verify_transport)) + "\n")
     command = [sys.executable, "-B", str(Path(__file__).resolve()), "--child", "--nonce", nonce,
-        "--mode", args.mode, "--output", str(output), "--upstream", str(Path(args.upstream).resolve()), "--scenario", args.scenario]
+        "--mode", args.mode, "--output", str(output), "--upstream", str(Path(args.upstream).resolve()), "--scenario", args.scenario,
+        "--verify-transport", args.verify_transport]
     for name in ("approval", "fixture", "budget_review"):
         if getattr(args, name):
             command.extend(["--" + name.replace("_", "-"), str(Path(getattr(args, name)).resolve())])
