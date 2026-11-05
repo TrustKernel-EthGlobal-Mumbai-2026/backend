@@ -12,6 +12,8 @@ TrustKernel exists to catch agent decisions that depend on stale evidence, fault
 
 **Parallel implementation authorized:** four separate chats own contracts/verifier, capture/ledger, TradingAgents feedback, and SDK/CLI/MCP. This chat remains the orchestrator. The [active orchestration board](docs/continuous/ORCHESTRATION.md) records branch ownership, dependency gates, status and draft PR scope. Integration targets `codex/continuous-verification`; the actual-model smoke test remains separately approval-gated.
 
+**First contract review:** candidate `8eadcb1` passes seven committed tests, but the orchestrator reproduced procedural PASS on a cyclic/future-parent authored event prefix. A repair is in progress; the contract is not accepted. Capture, adapter and transport slices continue independently with explicit provisional interfaces. No combined offline runtime milestone is claimed yet.
+
 The repository handoff is published. The [initial offline CI run](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/actions/runs/41722496087) passed on a fresh GitHub checkout, including BB8 verification and rebuilding/checking the committed context index. This is repository/mechanism validation, not another agent experiment.
 
 | Workstream | What exists now | Boundary / next action |

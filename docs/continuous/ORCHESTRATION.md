@@ -93,19 +93,28 @@ of scope; retain stable graph/event IDs and a cursor-based read contract.
 
 | Lane | State | Latest verified evidence | Next action |
 |---|---|---|---|
-| A | ACTIVE | Chat launch confirmed active; isolated branch and [draft PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2) exist | Publish executable contract candidate and focused tests |
-| B | ACTIVE / contract-dependent | Chat launch confirmed active; isolated branch and [draft PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3) exist | Prepare durable replay/storage slice; bind accepted A contract |
-| C | ACTIVE / contract-and-backend-dependent | Chat launch confirmed active; isolated branch and [draft PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4) exist | Inspect pinned dispatch/resume and test offline adapter seams |
-| D | ACTIVE / contract-and-backend-dependent | Chat launch confirmed active; isolated branch and [draft PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5) exist | Prepare thin transport tests; bind actual A/B interfaces |
+| A | CANDIDATE / CHANGES REQUESTED | [PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2), candidate `8eadcb1`: orchestrator independently reran 7 committed tests, then reproduced false PASS on an inconsistent causal prefix | Repair future-parent/cycle handling and clarify named-report/proposal scope before contract acceptance |
+| B | ACTIVE / contract-dependent | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3); owner reports 18 authored storage tests passing, not yet independently reviewed | Finish storage recovery milestone; propose actual stored-reference backend facade; bind corrected A |
+| C | ACTIVE / contract-and-backend-dependent | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4); early commit `b079882` and 7 authored boundary tests owner-reported | Test pinned native offline dispatch/resume; no actual-model behavior or backend integration claim |
+| D | ACTIVE / contract-and-backend-dependent | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5); owner reports official MCP SDK discovery/invocation over authored backend and unavailable-backend path | Publish transport slice and align B operation facade; actual backend parity remains untested |
 
 The orchestrator updates states after actual chat snapshots and artifact review.
 Public status deliberately omits private machine paths, account data and chat
 transcripts. Exact local chat/checkout identifiers live in the orchestrator's
 private coordination record. Pending or blocked work is never reported as PASS.
 
-Every workstream PR currently starts with a scope/status commit; implementation
-completion will be recorded only after actual changed code and test evidence are
-reviewed. All four PRs target the integration branch, not main. None is merged.
+Every workstream PR started with a scope/status commit. Initial implementations
+are now appearing, but completion is recorded only after actual code and test
+evidence review. All four PRs target the integration branch, not main. None is merged.
+
+First orchestrator review: immutable A candidate `8eadcb15da76873edd3d5e32c30065087516dc4a`
+passes its seven committed tests. Setting the authored first tool event's parents
+to the later report creates a same-stream future dependency and a cycle through
+tool -> model input -> report -> tool, yet both procedural checks still PASS.
+A received a bounded regression/repair request; no candidate contract has been
+accepted or relayed as frozen. Other lanes can continue independent work using
+explicitly provisional interfaces. This is a development finding on authored
+packets, not a defect asserted about historical market evidence.
 
 ## Draft PR descriptions
 
