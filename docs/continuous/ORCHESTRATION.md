@@ -94,9 +94,9 @@ of scope; retain stable graph/event IDs and a cursor-based read contract.
 | Lane | State | Latest verified evidence | Next action |
 |---|---|---|---|
 | A | ACCEPTED FOR SCOPED OFFLINE INTEGRATION | [PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2), corrected `e088970` / contract0.2: orchestrator independently reran all29 tests and original false-PASS control now rejects | B/C/D bind exact accepted API; A stays available for concrete integration defects |
-| B | ACTIVE / contract-dependent | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3); owner reports 18 authored storage tests passing, not yet independently reviewed | Finish storage recovery milestone; propose actual stored-reference backend facade; bind corrected A |
-| C | ACTIVE / contract-and-backend-dependent | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4); early commit `b079882` and 7 authored boundary tests owner-reported | Test pinned native offline dispatch/resume; no actual-model behavior or backend integration claim |
-| D | ACTIVE / contract-and-backend-dependent | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5); owner reports official MCP SDK discovery/invocation over authored backend and unavailable-backend path | Publish transport slice and align B operation facade; actual backend parity remains untested |
+| B | NATIVE STORAGE VERIFIED / SERVICE IMPLEMENTING | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3), `1f62562`: orchestrator independently reran26 authored storage/replay tests, including abrupt process recovery | Accepted A imported; implement/test real stored-reference service and scoped typed projection; visible-text inventory is not semantic ledger readiness |
+| C | ACTIVE / BACKEND DEPENDENT | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), `3b7916a`: owner reports8 generic plus2 cached native offline plumbing tests; not independently reviewed yet | Bind accepted A events/results; integrate actual B checkpoint service when reviewed; no actual-model behavior claim |
+| D | ACTIVE / BACKEND DEPENDENT | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5), `f596fc0`: owner reports official MCP SDK discovery/invocation over authored backend and unavailable-backend path | Accepted A validation binding in progress; actual persisted-core parity remains untested |
 
 The orchestrator updates states after actual chat snapshots and artifact review.
 Public status deliberately omits private machine paths, account data and chat
@@ -127,6 +127,15 @@ Collector/service authentication, complete registered streams, actual native
 input exposure and any live policy remain backend/host obligations, not schema
 guarantees. Proposal content is a separate downstream decision; these checks
 assess the explicitly bound upstream report only.
+
+Storage review: immutable B milestone `1f6256275d7ce5dcede610935dde23efcbe67f8c`
+was inspected and all26 dedicated tests independently reran successfully. Tests
+cover complete-line durable receipt, commit/ack crashes including actual abrupt
+subprocess exit, identity conflicts, sequence gaps, file changes, exact text
+spans, restart and incremental/full visible-inventory replay. This verifies that
+storage slice only; it has no public checkpoint/verification backend and keeps
+atomic semantic readiness unavailable. B's successor service implementation and
+all cross-lane integration still require review.
 
 ## Draft PR descriptions
 
