@@ -1,0 +1,195 @@
+"""Authored transport doubles only: these tests do NOT verify real core behavior."""
+import asyncio
+import importlib.util
+import io
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+
+from continuous_verification.cli import main
+from continuous_verification.sdk import (
+    Access, Client, InterfaceError, MAX_BYTES, OPERATIONS, decode_request,
+)
+
+ROOT = Path(__file__).resolve().parents[1]
+REQUEST = {"run_id": "authored-run", "proposal_id": "authored-proposal",
+           "checkpoint_id": "authored-checkpoint", "after_cursor": "opaque:0"}
+# Deliberately contains a failing rule, unready state and separate disposition.
+AUTHORED_RESULT = {"fixture": "TRANSPORT_TEST_DOUBLE", "readiness": "NOT_READY",
+                   "findings": [{"rule_id": "authored", "status": "FAIL"}],
+                   "disposition": "HOLD", "assessment_id": "authored-assessment",
+                   "next_cursor": "opaque:1"}
+
+
+class AuthoredBackend:
+    """Not a verifier, ledger, capture service, or accepted A/B DTO."""
+
+    def __init__(self):
+        self.calls = []
+
+    def execute(self, operation, request):
+        self.calls.append((operation, request))
+        return AUTHORED_RESULT
+
+
+def fixture_client(permissions=None):
+    return Client(AuthoredBackend(), Access(
+        frozenset(permissions if permissions is not None else OPERATIONS.values()),
+        frozenset({"authored-run"})))
+
+
+class TransportTests(unittest.TestCase):
+    def test_every_operation_cli_sdk_preserves_result_and_input(self):
+        for operation in OPERATIONS:
+            with self.subTest(operation=operation):
+                client = fixture_client()
+                out, err = io.StringIO(), io.StringIO()
+                code = main([operation], client=client,
+                            stdin=io.StringIO(json.dumps(REQUEST)), stdout=out, stderr=err)
+                self.assertEqual(code, 0)  # invocation success is not rule PASS
+                self.assertEqual(json.loads(out.getvalue()), client.call(operation, REQUEST))
+                self.assertEqual(json.loads(out.getvalue())["result"], AUTHORED_RESULT)
+                self.assertEqual(client.backend.calls[0], (operation, REQUEST))
+                self.assertEqual(err.getvalue(), "")
+
+    def test_no_backend_never_fabricates_success(self):
+        out, err = io.StringIO(), io.StringIO()
+        code = main(["verify"], stdin=io.StringIO(json.dumps(REQUEST)), stdout=out, stderr=err)
+        result = json.loads(out.getvalue())
+        self.assertEqual(code, 3)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"]["code"], "BACKEND_UNAVAILABLE")
+        self.assertNotIn("result", result)
+        self.assertEqual(err.getvalue().strip(), "BACKEND_UNAVAILABLE")
+
+    def test_permission_and_run_scope_deny_before_backend(self):
+        client = fixture_client({"read", "verify"})
+        for operation in ("register_run", "ingest_events", "checkpoint", "acknowledge_feedback"):
+            self.assertEqual(client.call(operation, REQUEST)["error"]["code"], "FORBIDDEN")
+        forged = dict(REQUEST, run_id="other-run", permissions=["collect"], run_ids=["other-run"])
+        self.assertEqual(client.call("get_evidence", forged)["error"]["code"], "FORBIDDEN")
+        self.assertEqual(client.backend.calls, [])
+        no_grants = Client(client.backend)
+        self.assertEqual(no_grants.call("verify", REQUEST)["error"]["code"], "FORBIDDEN")
+
+    def test_strict_json_limits_and_request_validation(self):
+        bad = ['[]', '{', '{"run_id":"a","run_id":"b"}',
+               '{"run_id":"a","x":NaN}', '{"run_id":"a","x":1e999}',
+               json.dumps({"run_id": "a", "x": "z" * MAX_BYTES}),
+               '{"run_id":"a","x":' + '[' * 40 + '0' + ']' * 40 + '}']
+        for raw in bad:
+            with self.subTest(raw=raw[:60]), self.assertRaises(InterfaceError):
+                decode_request(raw)
+        client = fixture_client()
+        for value in ({}, {"run_id": False}, {"run_id": " "}, {"run_id": "x" * 257},
+                      {"run_id": "a", "x": object()}, {"run_id": "a", 1: "bad"}):
+            self.assertFalse(client.call("verify", value)["ok"])
+        self.assertEqual(client.backend.calls, [])
+
+    def test_cli_parse_and_input_errors_are_json(self):
+        for args, source in [(["wrong"], "{}"), (["verify", "--unknown"], "{}"),
+                             (["verify"], "{}"), (["verify"], "{invalid")]:
+            out, err = io.StringIO(), io.StringIO()
+            self.assertEqual(main(args, stdin=io.StringIO(source), stdout=out, stderr=err), 2)
+            self.assertFalse(json.loads(out.getvalue())["ok"])
+            self.assertTrue(err.getvalue())
+
+    def test_safe_path_and_argument_subprocess_handling(self):
+        with tempfile.TemporaryDirectory(prefix="authored transport spaces ") as directory:
+            # Shell metacharacters and a leading dash remain a literal filename.
+            path = Path(directory) / "-request & echo SHOULD_NOT_EXECUTE.json"
+            path.write_text(json.dumps(REQUEST), encoding="utf-8")
+            completed = subprocess.run(
+                [sys.executable, "-B", "-m", "continuous_verification.cli", "verify",
+                 "--request", str(path)], cwd=ROOT, capture_output=True, text=True, timeout=15)
+            self.assertEqual(completed.returncode, 3)
+            self.assertEqual(json.loads(completed.stdout)["error"]["code"], "BACKEND_UNAVAILABLE")
+            self.assertEqual(completed.stderr.strip(), "BACKEND_UNAVAILABLE")
+            missing = io.StringIO()
+            self.assertEqual(main(["verify", "--request", str(path) + ".absent"],
+                                  stdout=missing, stderr=io.StringIO()), 2)
+            self.assertEqual(json.loads(missing.getvalue())["error"]["code"], "INPUT_ERROR")
+
+    def test_backend_errors_do_not_echo_private_data(self):
+        class Broken:
+            def execute(self, operation, request):
+                raise RuntimeError("private diagnostic must not leak")
+        result = Client(Broken(), fixture_client().access).call("verify", REQUEST)
+        self.assertEqual(result["error"]["code"], "BACKEND_ERROR")
+        self.assertNotIn("private", json.dumps(result))
+
+    def test_invalid_backend_results_remain_backend_errors(self):
+        for value in ([], {"invalid": float("nan")}, {"invalid": object()}):
+            class Broken:
+                def execute(self, operation, request):
+                    return value
+            result = Client(Broken(), fixture_client().access).call("verify", REQUEST)
+            self.assertEqual(result["error"]["code"], "BACKEND_ERROR")
+
+    def test_mcp_missing_and_unsupported_dependency_are_explicit(self):
+        from importlib.metadata import PackageNotFoundError
+        from continuous_verification.mcp_server import build_server
+        with patch("continuous_verification.mcp_server.version", side_effect=PackageNotFoundError):
+            with self.assertRaisesRegex(RuntimeError, "dependency missing"):
+                build_server()
+        with patch("continuous_verification.mcp_server.version", return_value="2.0.0"):
+            with self.assertRaisesRegex(RuntimeError, "Unsupported"):
+                build_server()
+
+    def test_requests_and_results_are_copied(self):
+        client = fixture_client()
+        result = client.call("verify", REQUEST)
+        result["result"]["findings"].clear()
+        self.assertTrue(AUTHORED_RESULT["findings"])
+        self.assertIsNot(client.backend.calls[0][1], REQUEST)
+
+
+@unittest.skipUnless(importlib.util.find_spec("mcp"),
+                     "MISSING optional official mcp>=1.28,<2: genuine discovery/invocation unexecuted")
+class GenuineMCPTests(unittest.TestCase):
+    def test_official_sdk_stdio_discovery_and_authored_transport_parity(self):
+        from mcp import ClientSession, StdioServerParameters
+        from mcp.client.stdio import stdio_client
+
+        async def check(args, expected):
+            params = StdioServerParameters(command=sys.executable, args=args,
+                                           env={"PYTHONPATH": str(ROOT)})
+            async with stdio_client(params) as (read, write):
+                async with ClientSession(read, write) as session:
+                    await session.initialize()
+                    listed = await session.list_tools()
+                    self.assertEqual({tool.name for tool in listed.tools}, set(OPERATIONS))
+                    for tool in listed.tools:
+                        self.assertEqual(set(tool.inputSchema["properties"]), {"request"})
+                    for operation in OPERATIONS:
+                        called = await session.call_tool(operation, {"request": REQUEST})
+                        self.assertFalse(called.isError)
+                        self.assertEqual(json.loads(called.content[0].text), expected)
+                    malformed = await session.call_tool("get_evidence", {"request": {"path": "not-a-server-file"}})
+                    self.assertEqual(json.loads(malformed.content[0].text)["error"]["code"], "INVALID_REQUEST")
+                    path_arg = await session.call_tool("get_evidence", {"path": "not-a-server-file"})
+                    self.assertTrue(path_arg.isError)
+
+        with tempfile.TemporaryDirectory(prefix="authored MCP host ") as directory:
+            host = Path(directory) / "host with spaces.py"
+            # An explicit authored host is used; no production fixture switch.
+            host.write_text(
+                "from continuous_verification.mcp_server import build_server\n"
+                "from continuous_verification.sdk import Client, Access, OPERATIONS\n"
+                "class AuthoredBackend:\n"
+                "    def execute(self, operation, request):\n"
+                f"        return {AUTHORED_RESULT!r}\n"
+                "build_server(Client(AuthoredBackend(), Access(frozenset(OPERATIONS.values()), "
+                "frozenset({'authored-run'})))).run(transport='stdio')\n", encoding="utf-8")
+            asyncio.run(asyncio.wait_for(check(["-B", str(host)],
+                         {"ok": True, "result": AUTHORED_RESULT}), timeout=45))
+        asyncio.run(asyncio.wait_for(check(["-B", "-m", "continuous_verification.mcp_server"],
+                     Client().call("verify", REQUEST)), timeout=45))
+
+
+if __name__ == "__main__":
+    unittest.main()
