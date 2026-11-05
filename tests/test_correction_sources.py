@@ -82,6 +82,17 @@ class SourceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             sources.make_plan("not-a-date")
 
+    def test_live_arguments_accept_native_ranges_defaults_and_reject_unsafe_args(self):
+        stock = dict(symbol="ETH-USD", trade_date="2026-11-05", start_date="2026-10-01", end_date="2026-11-04")
+        self.assertEqual(sources._live_arguments("get_stock_data", stock, "2026-11-05"), stock)
+        indicators = dict(symbol="ETH-USD", trade_date="2026-11-05", curr_date="2026-11-05", indicator="rsi, macd")
+        self.assertEqual(sources._live_arguments("get_indicators", indicators, "2026-11-05")["look_back_days"], 30)
+        for bad in (dict(stock, start_date="2020-01-01"), dict(stock, end_date="2026-11-06"), dict(stock, symbol="OTHER"), dict(stock, trade_date="")):
+            with self.assertRaises(sources.SourceBundleError):
+                sources._live_arguments("get_stock_data", bad, "2026-11-05")
+        with self.assertRaises(sources.SourceBundleError):
+            sources._live_arguments("get_indicators", dict(indicators, look_back_days=True), "2026-11-05")
+
     def test_exact_replay_native_string_status_refs_and_detached_metadata(self):
         result, bundle = self.capture()
         for offer in bundle.offers():
@@ -341,6 +352,58 @@ class NativeSchemaTests(unittest.TestCase):
             with patch.object(originals_by_name["get_stock_data"], "description", description + " changed"):
                 with self.assertRaises(sources.SourceBundleError):
                     bundle.bind_tools(originals, lambda *args: None)
+
+    def test_thin_live_session_executes_each_call_with_fresh_cache_and_metadata(self):
+        import requests
+        from tools.tradingagents_integration import checked_upstream, real_runtime
+        upstream = checked_upstream(os.environ["CORRECTION_SOURCES_TEST_UPSTREAM"])
+        with real_runtime(upstream):
+            from tradingagents.agents.analysts import market_analyst, news_analyst
+            originals = tuple(tool for module in (market_analyst, news_analyst) for tool in module.TOOLS)
+            stock = next(tool for tool in originals if tool.name == "get_stock_data")
+            sent, observed, caches = [], [], []
+            def authored_http(connection, method, url, **kwargs):
+                response = requests.Response()
+                response.url, response.status_code = url, 200
+                text = "DATA_UNAVAILABLE: authored outage" if not sent else authored_text("get_stock_data")
+                response._content, response._content_consumed = text.encode(), True
+                sent.append(url)
+                return response
+            def authored_native(**arguments):
+                from tradingagents.dataflows.config import get_config
+                caches.append(get_config()["data_cache_dir"])
+                data = Path(caches[-1])
+                data.mkdir(parents=True, exist_ok=True)
+                (data/"ETH-USD-YFin-data.csv").write_text("Date,Close\n2026-11-05,2\n")
+                return requests.get(CHART).text
+            with patch.object(requests.sessions.Session, "request", authored_http), patch.object(stock, "func", authored_native):
+                with sources.live_source_session(self.root/"live-arm", as_of="2026-11-05", upstream=upstream,
+                    original_tools=originals, on_result=lambda *args: observed.append(args)) as session:
+                    self.assertEqual(sent, [])
+                    wrapped = next(tool for tool in session.tools if tool.name == stock.name)
+                    self.assertIs(wrapped.args_schema, stock.args_schema)
+                    self.assertEqual(wrapped.description, stock.description)
+                    arguments = dict(symbol="ETH-USD", trade_date="2026-11-05", start_date="2026-10-01", end_date="2026-11-05")
+                    first = session.call("get_stock_data", arguments)
+                    second = session.call("get_stock_data", arguments)
+                    self.assertEqual(len(sent), 2)
+                    self.assertNotEqual(caches[0], caches[1])
+                    self.assertEqual(first["source_status"], "SOURCE_UNAVAILABLE")
+                    self.assertEqual(second["source_status"], "AVAILABLE")
+                    self.assertEqual(second["text"], authored_text("get_stock_data"))
+                    self.assertEqual(second["mode"], "LIVE_NATIVE_PER_CALL")
+                    self.assertEqual(second["retrieval_status"], "HTTP_OBSERVED")
+                    self.assertEqual(len(second["fresh_bar_artifacts"]), 1)
+                    self.assertTrue((Path(second["source_refs"][0]["artifact_root"])/second["fresh_bar_artifacts"][0]["artifact"]["path"]).is_file())
+                    self.assertTrue(second["native_executed"])
+                    self.assertEqual(len(observed), 2)
+                    invalid = session.call("get_stock_data", dict(arguments, end_date="2026-11-06"))
+                    self.assertFalse(invalid["native_executed"])
+                    self.assertEqual(invalid["source_refs"], [])
+                    self.assertEqual(len(sent), 2)
+                receipts = list((self.root/"live-arm").glob("call-*/receipt.json"))
+                self.assertEqual(len(receipts), 2)
+                self.assertFalse(list((self.root/"live-arm").glob("call-*/private-cache")))
 
 
 if __name__ == "__main__":

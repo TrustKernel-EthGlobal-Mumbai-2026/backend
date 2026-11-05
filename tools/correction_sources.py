@@ -21,6 +21,8 @@ import socket
 import subprocess
 import sys
 import threading
+import time
+from contextlib import contextmanager, ExitStack
 from datetime import date, datetime, timedelta, timezone
 from unittest.mock import patch
 from uuid import uuid4
@@ -96,15 +98,16 @@ def _clean(value):
 
 
 class Artifacts:
-    def __init__(self, directory):
+    def __init__(self, directory, limit=None):
         self.root = Path(directory).resolve()
         self.total = 0
+        self.limit = LIMITS["max_retained_bytes"] if limit is None else limit
 
     def write(self, relative, body):
         path = (self.root / relative).resolve()
         if not path.is_relative_to(self.root) or path == self.root:
             raise SourceBundleError("Artifact path escaped capture directory")
-        if self.total + len(body) > LIMITS["max_retained_bytes"]:
+        if self.total + len(body) > self.limit:
             raise SourceBundleError("Retained capture byte bound exceeded")
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("xb") as stream:
@@ -486,6 +489,203 @@ class ReplayBundle:
         return tuple(bound)
 
 
+def _live_arguments(name, arguments, as_of):
+    """Ordinary live bounds, not a fixed capture catalog or replay lookup."""
+    definitions = {
+        "get_stock_data": ({"symbol", "start_date", "end_date", "trade_date"}, {}),
+        "get_indicators": ({"symbol", "indicator", "curr_date", "trade_date"}, {"look_back_days": 30}),
+        "get_verified_market_snapshot": ({"symbol", "curr_date", "trade_date"}, {"look_back_days": 30}),
+        "get_news": ({"ticker", "start_date", "end_date", "trade_date"}, {}),
+        "get_global_news": ({"curr_date", "trade_date"}, {"look_back_days": None, "limit": None}),
+    }
+    if name not in definitions or type(arguments) is not dict:
+        raise SourceBundleError("Unsupported live native tool")
+    required, defaults = definitions[name]
+    if not required <= set(arguments) or set(arguments) - required - set(defaults):
+        raise SourceBundleError("Missing or unexpected native arguments")
+    args = dict(defaults, **arguments)
+    day = date.fromisoformat(as_of)
+    if args["trade_date"] != as_of or str(args.get("symbol", args.get("ticker", "ETH-USD"))).upper() != "ETH-USD":
+        raise SourceBundleError("Live request differs from trusted run instrument/date")
+    for key in ("start_date", "end_date", "curr_date"):
+        if key in args:
+            parsed = date.fromisoformat(args[key])
+            if parsed.isoformat() != args[key] or not day-timedelta(days=90) <= parsed <= day:
+                raise SourceBundleError("Native date outside bounded run history")
+    if "start_date" in args:
+        width = (date.fromisoformat(args["end_date"])-date.fromisoformat(args["start_date"])).days
+        if not 0 <= width <= (30 if name == "get_news" else 90):
+            raise SourceBundleError("Native date window out of bounds")
+    if "look_back_days" in args:
+        lookback = 7 if args["look_back_days"] is None and name == "get_global_news" else args["look_back_days"]
+        if type(lookback) is not int or not 1 <= lookback <= 30:
+            raise SourceBundleError("Native lookback out of bounds")
+    if name == "get_global_news" and args["limit"] is not None and (type(args["limit"]) is not int or not 1 <= args["limit"] <= 5):
+        raise SourceBundleError("Native news count out of bounds")
+    if name == "get_indicators":
+        supported = {"close_50_sma", "close_200_sma", "close_10_ema", "macd", "macds", "macdh", "rsi", "boll", "boll_ub", "boll_lb", "atr", "vwma", "mfi"}
+        names = [item.strip().lower() for item in args["indicator"].split(",") if item.strip()]
+        if not 1 <= len(names) <= 3 or not set(names) <= supported:
+            raise SourceBundleError("Unsupported or excessive native indicators")
+    return args
+
+
+class LiveSourceSession:
+    """Thin serialized per-invocation wrapper around the reviewed live_tools.
+
+    Host checks upstream and installs the existing live-capable network/write
+    guards before invocation. This class never installs an API-only audit hook.
+    """
+    def __init__(self, output, *, as_of, upstream, original_tools, on_result, trace=None):
+        from langchain_core.tools import StructuredTool
+        self.root = Path(output).resolve()
+        self.root.mkdir(exist_ok=False)
+        self.as_of, self.upstream, self.on_result, self.trace = as_of, Path(upstream).resolve(), on_result, trace
+        date.fromisoformat(as_of)
+        self.originals = {tool.name: tool for tool in original_tools if tool.name in {"get_stock_data", "get_indicators", "get_verified_market_snapshot", "get_news", "get_global_news"}}
+        self.lock, self.calls, self.http_calls, self.artifact_bytes = threading.Lock(), 0, 0, 0
+        self.session_id = "live-source-" + uuid4().hex
+        self.closed = False
+        self.tools = tuple(StructuredTool.from_function(
+            lambda _name=name, **kwargs: self.call(_name, kwargs)["text"], name=name,
+            description=original.description, args_schema=original.args_schema)
+            for name, original in self.originals.items())
+
+    @staticmethod
+    def _cache_reset(cache_path, *, close_only=False):
+        # Inspected yfinance 1.7.0 cache controls. Never open a preexisting DB.
+        import yfinance.cache as cache
+        from yfinance.data import YfData
+        YfData.cache_get.cache_clear()
+        instance = type(YfData)._instances.pop(YfData, None)
+        if instance is not None:
+            instance._session.close()
+        for db_name, manager_name, field in (("_TzDBManager", "_TzCacheManager", "_tz_cache"),
+                                              ("_CookieDBManager", "_CookieCacheManager", "_cookie_cache"),
+                                              ("_ISINDBManager", "_ISINCacheManager", "_isin_cache")):
+            db = getattr(cache, db_name)
+            if db._db is not None and not Path(db.get_location()).resolve().is_relative_to(cache_path.parent):
+                raise SourceBundleError("Refusing preexisting external native cache state")
+            db.set_location(str(cache_path/"closed"))  # closes current owned DB, no file creation
+            setattr(getattr(cache, manager_name), field, None)
+
+    def call(self, name, arguments):
+        from live_experiment.sources import live_tools
+        from tradingagents.agents.analysts import market_analyst, news_analyst
+        with self.lock:
+            result = dict(text="DATA_UNAVAILABLE: native request outside live source bounds.", status="INPUT_OUT_OF_BOUNDS",
+                          source_status="NOT_FETCHED", source_refs=[], http_refs=[], coverage=None, captured_at=None,
+                          as_of=self.as_of, as_of_timezone="Asia/Calcutta", mode="LIVE_NATIVE_PER_CALL",
+                          continuously_live=False, text_origin="UNAVAILABLE_SENTINEL", native_executed=False)
+            try:
+                if self.closed or self.calls >= 12 or name not in self.originals:
+                    raise SourceBundleError("Live source session closed or call allowance exhausted")
+                args = _live_arguments(name, arguments, self.as_of)
+            except (ValueError, TypeError, AttributeError):
+                self.on_result(name, copy.deepcopy(arguments), copy.deepcopy(result))
+                return result
+            self.calls += 1
+            call_dir = self.root / f"call-{self.calls:04d}"
+            call_dir.mkdir()
+            artifacts = Artifacts(call_dir, limit=48_000_000-self.artifact_bytes)
+            native_trace, cache_path = CaptureTrace(), call_dir/"private-cache"
+            requested, deadline = utc(), time.monotonic()+30
+            retaining = retaining_http_class(artifacts)
+            session = self
+            class BoundedHttp(retaining):
+                def request(self, transport, original, connection, method, url, positional, kwargs):
+                    def counted(*a, **kw):
+                        if session.http_calls >= 96 or time.monotonic() >= deadline:
+                            raise SourceNetworkError("Live source request/time allowance exhausted")
+                        session.http_calls += 1
+                        return original(*a, **kw)
+                    return super().request(transport, counted, connection, method, url, positional, kwargs)
+            cfg = dict(source_cache_parent=str(cache_path), data_cache_dir=str(cache_path/"unused"),
+                       source_max_retries=0, source_http_timeout=8, source_max_response_bytes=2_000_000,
+                       source_max_http_requests=12, news_article_limit=5, global_news_article_limit=5,
+                       global_news_lookback_days=7,
+                       data_vendors=dict(core_stock_apis="yfinance", technical_indicators="yfinance", news_data="yfinance",
+                                         macro_data="fred", prediction_markets="polymarket"), tool_vendors={})
+            native, error, bars, executed = None, None, [], False
+            try:
+                self._cache_reset(cache_path)
+                market = tuple(self.originals[n] for n in ("get_stock_data", "get_indicators", "get_verified_market_snapshot") if n in self.originals)
+                news = tuple(self.originals[n] for n in ("get_news", "get_global_news") if n in self.originals)
+                with ExitStack() as stack:
+                    stack.enter_context(patch.object(market_analyst, "TOOLS", market))
+                    stack.enter_context(patch.object(news_analyst, "TOOLS", news))
+                    stack.enter_context(patch.object(source_http, "SOURCE_HOSTS", YAHOO_HOSTS))
+                    stack.enter_context(patch.object(source_http, "HttpCapture", BoundedHttp))
+                    stack.enter_context(live_tools(native_trace, cfg))
+                    selected = {tool.name: tool for module in (market_analyst, news_analyst) for tool in module.TOOLS}
+                    executed = True
+                    native = selected[name].func(**args)
+                    if not isinstance(native, str):
+                        raise SourceBundleError("Native source returned a non-string")
+            except Exception as exc:
+                error = type(exc).__name__
+            finally:
+                try:
+                    for csv_path in sorted(cache_path.rglob("*.csv")):
+                        if csv_path.is_symlink() or not csv_path.resolve().is_relative_to(cache_path):
+                            raise SourceBundleError("Native cache artifact escaped call")
+                        descriptor = artifacts.write("bars/"+csv_path.name, csv_path.read_bytes())
+                        bars.append(dict(artifact=descriptor, coverage=_bar_coverage(csv_path.read_bytes(), args.get("curr_date", args.get("end_date", self.as_of)))))
+                except Exception as exc:
+                    error = type(exc).__name__
+                try:
+                    self._cache_reset(cache_path, close_only=True)
+                    if cache_path.resolve().is_relative_to(call_dir) and cache_path.exists():
+                        shutil.rmtree(cache_path)
+                except Exception as exc:
+                    error = type(exc).__name__
+            descriptor, coverage, status = None, None, "ERROR"
+            if native is not None and error is None:
+                if _redact_text(native) != native:
+                    status = "SECRET_BEARING_NATIVE_OUTPUT_REFUSED"
+                elif len(native.encode()) > LIMITS["max_native_text_bytes"]:
+                    status = "NATIVE_OUTPUT_TOO_LARGE"
+                else:
+                    descriptor = artifacts.write("return.txt", native.encode())
+                    coverage = _coverage(name, args, native)
+                    status, _ = _status(name, native, coverage)
+            exposed = descriptor is not None and descriptor["bytes"] <= LIMITS["max_model_text_bytes"]
+            http = [event["payload"] for event in native_trace.events if event["kind"] in ("source.http.end", "source.http.error")]
+            evidence = [event["payload"] for event in native_trace.events if event["kind"] == "evidence.retrieved"]
+            result.update(text=native if exposed else "DATA_UNAVAILABLE: native live source has no safely exposable bounded return.",
+                status=status if descriptor is None or exposed else "MODEL_OUTPUT_TOO_LARGE", source_status=status,
+                coverage=coverage, captured_at=utc(), requested_at=requested, native_executed=executed,
+                http_refs=http, text_origin="NATIVE_UNCHANGED" if exposed else "UNAVAILABLE_SENTINEL",
+                native_error_type=error, fresh_bar_artifacts=bars,
+                retrieval_status="HTTP_OBSERVED" if http else "NO_HTTP_OBSERVED",
+                source_http_hosts=sorted(YAHOO_HOSTS),
+                cache_status=[item.get("cache_status", "UNKNOWN") for item in evidence],
+                fresh_per_call_cache=True, source_refs=[dict(call_id=self.session_id+"-"+str(self.calls), content=descriptor,
+                                                           artifact_root=str(call_dir), receipt_path=str(call_dir/"receipt.json"))] if executed else [])
+            artifacts.write("receipt.json" if executed else "unexecuted-attempt.json", (canonical(dict(tool=name, args=args, result=result,
+                provenance=native_trace.events, upstream_commit=PIN,
+                upstream_binding="HOST_CHECKED_BEFORE_GUARDS", upstream_path=str(self.upstream)))+"\n").encode())
+            self.artifact_bytes += artifacts.total
+            self.on_result(name, copy.deepcopy(args), copy.deepcopy(result))
+            if self.trace is not None:
+                self.trace.emit("correction.source.completed", dict(tool=name, args=args, result=result))
+            return result
+
+    def close(self):
+        self.closed = True
+
+
+@contextmanager
+def live_source_session(output, *, as_of, upstream, original_tools, on_result, trace=None):
+    """No fetch on enter; C installs existing live network/write guards first."""
+    session = LiveSourceSession(output, as_of=as_of, upstream=upstream, original_tools=original_tools,
+                                on_result=on_result, trace=trace)
+    try:
+        yield session
+    finally:
+        session.close()
+
+
 def _data_only_socket_guard():
     """Fresh capture child only. No OpenAI destination or child processes."""
     allowed_ips, original = set(), socket.getaddrinfo
@@ -588,7 +788,7 @@ def capture_once(output, upstream, plan):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mode", choices=("preflight", "capture", "inspect", "_worker"), default="preflight")
+    parser.add_argument("--mode", choices=("preflight", "replay-preflight", "capture", "inspect", "_worker"), default="preflight")
     parser.add_argument("--as-of", default=None)
     parser.add_argument("--stock-days", type=int, default=60)
     parser.add_argument("--output")
@@ -598,8 +798,11 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         plan = make_plan(args.as_of or current_source_date(), args.stock_days)
-        if args.mode == "preflight":
-            result = dict(status="PLAN_ONLY_NO_FETCH", plan=plan, model_calls=0,
+        if args.mode in ("preflight", "replay-preflight"):
+            live_policy = dict(mode="LIVE_NATIVE_PER_CALL", symbol="ETH-USD", as_of=plan["as_of"],
+                               stock_window_days_max=90, indicator_lookback_max=30, snapshot_rows_max=30,
+                               news_window_days_max=30, news_limit_max=5, fresh_cache_per_call=True)
+            result = dict(status="PLAN_ONLY_NO_FETCH", plan=live_policy if args.mode == "preflight" else plan, model_calls=0,
                           network_calls=0, budget_access="NONE", dependency_check="NOT_RUN")
         elif args.mode == "inspect":
             if not args.manifest or not args.expected_sha256:
