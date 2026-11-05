@@ -28,11 +28,11 @@
     {
       "destination": ".github/workflows/offline.yml",
       "previous_source_ref": "repository-authoring/.github/workflows/offline.yml",
-      "previous_staged_sha256": "71bc5f6b2d8bf7425372ce25e4ea302a9dd24a69f3c3b485a1eb728f61bc73bd",
+      "previous_staged_sha256": "306c192042d28cbb594603cf86b34561fc5cf4813632e676ada53f94934a49bf",
       "source_ref": "repository-authoring/.github/workflows/offline.yml",
-      "source_sha256": "306c192042d28cbb594603cf86b34561fc5cf4813632e676ada53f94934a49bf",
-      "staged_bytes": 1523,
-      "staged_sha256": "306c192042d28cbb594603cf86b34561fc5cf4813632e676ada53f94934a49bf",
+      "source_sha256": "6b0a6faec09db9d904e6c54a98ced3a403d766477c2f607873581c081dcc77a7",
+      "staged_bytes": 1678,
+      "staged_sha256": "6b0a6faec09db9d904e6c54a98ced3a403d766477c2f607873581c081dcc77a7",
       "treatment": "repository_handoff_adaptation",
       "workstream": ".github"
     },
@@ -77,11 +77,11 @@
     {
       "destination": "README.md",
       "previous_source_ref": "repository-authoring/README.md",
-      "previous_staged_sha256": "69b65affd4d946b1465a5536946048fc5989f1e89a12fd7a53d8260f4c364d4a",
+      "previous_staged_sha256": "7de9531815e6dce4bf4297dcaecea037f3904047da54a203a92f8b5977c5575a",
       "source_ref": "repository-authoring/README.md",
-      "source_sha256": "7de9531815e6dce4bf4297dcaecea037f3904047da54a203a92f8b5977c5575a",
-      "staged_bytes": 16067,
-      "staged_sha256": "7de9531815e6dce4bf4297dcaecea037f3904047da54a203a92f8b5977c5575a",
+      "source_sha256": "4ce55162f9dd466cb1e662c1434b2b5a652ed886408018d6410e1293cf2884b4",
+      "staged_bytes": 16334,
+      "staged_sha256": "4ce55162f9dd466cb1e662c1434b2b5a652ed886408018d6410e1293cf2884b4",
       "treatment": "repository_handoff_adaptation",
       "workstream": "repository-entrypoint"
     },
@@ -808,24 +808,69 @@
     {
       "destination": "context-index/catalog.json",
       "previous_source_ref": "repository-authoring/context-index/catalog.json",
-      "previous_staged_sha256": "2fbf49e6c39e449414b890b88518785f790ec81d19f604fe7e9ad43dd151df2f",
+      "previous_staged_sha256": "f5958ffca77500b17af29af55f377ac019971f091bcad19a8cb6a742364ca297",
       "source_ref": "repository-authoring/context-index/catalog.json",
-      "source_sha256": "f5958ffca77500b17af29af55f377ac019971f091bcad19a8cb6a742364ca297",
-      "staged_bytes": 67073,
-      "staged_sha256": "f5958ffca77500b17af29af55f377ac019971f091bcad19a8cb6a742364ca297",
+      "source_sha256": "f233ce7588d1a40ab32febdd27926316e06756f0e0fbe3c473aa34456b7ce4f2",
+      "staged_bytes": 69437,
+      "staged_sha256": "f233ce7588d1a40ab32febdd27926316e06756f0e0fbe3c473aa34456b7ce4f2",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
     {
       "destination": "context-index/chunks.jsonl",
       "previous_source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "previous_staged_sha256": "682cb0e2d25a52175111da7010944dd6c93fb83155dd22e68c34e455b9512209",
+      "previous_staged_sha256": "b864683765f5f3021d5b57a166b5a15bb664a624d7b9305d2399f3c33c026759",
       "source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "source_sha256": "b864683765f5f3021d5b57a166b5a15bb664a624d7b9305d2399f3c33c026759",
-      "staged_bytes": 281456,
-      "staged_sha256": "b864683765f5f3021d5b57a166b5a15bb664a624d7b9305d2399f3c33c026759",
+      "source_sha256": "79e2e90fab36498c162b5dff3e60d5753141f809ec3ebeee31bcec2b7fce958f",
+      "staged_bytes": 302743,
+      "staged_sha256": "79e2e90fab36498c162b5dff3e60d5753141f809ec3ebeee31bcec2b7fce958f",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
+    },
+    {
+      "destination": "continuous_verification/__init__.py",
+      "source_ref": "repository-authoring/continuous_verification/__init__.py",
+      "source_sha256": "e48e93a7ae8f11e9029cff2f81b5996792d68222c8bf7c460ac46ac438f8070d",
+      "staged_bytes": 604,
+      "staged_sha256": "e48e93a7ae8f11e9029cff2f81b5996792d68222c8bf7c460ac46ac438f8070d",
+      "treatment": "repository_handoff_addition",
+      "workstream": "continuous_verification"
+    },
+    {
+      "destination": "continuous_verification/contracts.py",
+      "source_ref": "repository-authoring/continuous_verification/contracts.py",
+      "source_sha256": "c24acf894af822a43d70e5d5f448356412745603fdca51541fcb5fbfe9f3eed1",
+      "staged_bytes": 10433,
+      "staged_sha256": "c24acf894af822a43d70e5d5f448356412745603fdca51541fcb5fbfe9f3eed1",
+      "treatment": "repository_handoff_addition",
+      "workstream": "continuous_verification"
+    },
+    {
+      "destination": "continuous_verification/schemas/contract.schema.json",
+      "source_ref": "repository-authoring/continuous_verification/schemas/contract.schema.json",
+      "source_sha256": "323086aca02a53f701ec936c176ba2738efd9e617fa2be7bb87e0358e0c88660",
+      "staged_bytes": 28286,
+      "staged_sha256": "323086aca02a53f701ec936c176ba2738efd9e617fa2be7bb87e0358e0c88660",
+      "treatment": "repository_handoff_addition",
+      "workstream": "continuous_verification"
+    },
+    {
+      "destination": "continuous_verification/schemas/example.json",
+      "source_ref": "repository-authoring/continuous_verification/schemas/example.json",
+      "source_sha256": "db52d1fd873d530b3dba775c79efae100de813f702d4d93978f14a0b73995fa6",
+      "staged_bytes": 5599,
+      "staged_sha256": "db52d1fd873d530b3dba775c79efae100de813f702d4d93978f14a0b73995fa6",
+      "treatment": "repository_handoff_addition",
+      "workstream": "continuous_verification"
+    },
+    {
+      "destination": "continuous_verification/verifier.py",
+      "source_ref": "repository-authoring/continuous_verification/verifier.py",
+      "source_sha256": "5fe4a9c1b439a5a8c39f5c7cc272a007209a79b9648fdf6963df8b26f0fa45a2",
+      "staged_bytes": 10233,
+      "staged_sha256": "5fe4a9c1b439a5a8c39f5c7cc272a007209a79b9648fdf6963df8b26f0fa45a2",
+      "treatment": "repository_handoff_addition",
+      "workstream": "continuous_verification"
     },
     {
       "destination": "docs/ARCHITECTURE.md",
@@ -952,13 +997,22 @@
       "workstream": "docs"
     },
     {
+      "destination": "docs/continuous/CONTRACT.md",
+      "source_ref": "repository-authoring/docs/continuous/CONTRACT.md",
+      "source_sha256": "2caf07f3d693d7e871c34494f6d9e71944ab248359c722da5c5098ad703ae5d2",
+      "staged_bytes": 9831,
+      "staged_sha256": "2caf07f3d693d7e871c34494f6d9e71944ab248359c722da5c5098ad703ae5d2",
+      "treatment": "repository_handoff_addition",
+      "workstream": "docs"
+    },
+    {
       "destination": "docs/continuous/ORCHESTRATION.md",
       "previous_source_ref": "repository-authoring/docs/continuous/ORCHESTRATION.md",
-      "previous_staged_sha256": "e3498062c6056a96773c04addd8c9dc16f83f4c2fc43d40f72a8c2bfefb1539d",
+      "previous_staged_sha256": "2dece2dec6292edccb6b74935028ac9a9e6a569fe0e33d84f75b383d9c940553",
       "source_ref": "repository-authoring/docs/continuous/ORCHESTRATION.md",
-      "source_sha256": "2dece2dec6292edccb6b74935028ac9a9e6a569fe0e33d84f75b383d9c940553",
-      "staged_bytes": 10877,
-      "staged_sha256": "2dece2dec6292edccb6b74935028ac9a9e6a569fe0e33d84f75b383d9c940553",
+      "source_sha256": "a2baaec2ea2dcc760d0f7c872dd8aff5d9cf709fdf6ea240d0c55877404ce7cc",
+      "staged_bytes": 11715,
+      "staged_sha256": "a2baaec2ea2dcc760d0f7c872dd8aff5d9cf709fdf6ea240d0c55877404ce7cc",
       "treatment": "repository_handoff_adaptation",
       "workstream": "docs"
     },
@@ -1747,6 +1801,24 @@
       "staged_bytes": 14454,
       "staged_sha256": "963143a7e6d56e82663e34c1a0b55fcd8f4eba59642ccdbd065ca2bec833cc10",
       "treatment": "repository_handoff_adaptation",
+      "workstream": "tests"
+    },
+    {
+      "destination": "tests/test_continuous_contracts.py",
+      "source_ref": "repository-authoring/tests/test_continuous_contracts.py",
+      "source_sha256": "b0c1829a0fe2f69b637575c4dd54036b3da3912a0ddb3dcfec8de686c1c2aec5",
+      "staged_bytes": 5943,
+      "staged_sha256": "b0c1829a0fe2f69b637575c4dd54036b3da3912a0ddb3dcfec8de686c1c2aec5",
+      "treatment": "repository_handoff_addition",
+      "workstream": "tests"
+    },
+    {
+      "destination": "tests/test_continuous_verifier.py",
+      "source_ref": "repository-authoring/tests/test_continuous_verifier.py",
+      "source_sha256": "685678b26b0aa362f266bbfe3137bfdacac9582a92a98cd4a315c38dc8217b62",
+      "staged_bytes": 12211,
+      "staged_sha256": "685678b26b0aa362f266bbfe3137bfdacac9582a92a98cd4a315c38dc8217b62",
+      "treatment": "repository_handoff_addition",
       "workstream": "tests"
     },
     {

@@ -93,7 +93,7 @@ of scope; retain stable graph/event IDs and a cursor-based read contract.
 
 | Lane | State | Latest verified evidence | Next action |
 |---|---|---|---|
-| A | CANDIDATE / CHANGES REQUESTED | [PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2), candidate `8eadcb1`: orchestrator independently reran 7 committed tests, then reproduced false PASS on an inconsistent causal prefix | Repair future-parent/cycle handling and clarify named-report/proposal scope before contract acceptance |
+| A | ACCEPTED FOR SCOPED OFFLINE INTEGRATION | [PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2), corrected `e088970` / contract0.2: orchestrator independently reran all29 tests and original false-PASS control now rejects | B/C/D bind exact accepted API; A stays available for concrete integration defects |
 | B | ACTIVE / contract-dependent | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3); owner reports 18 authored storage tests passing, not yet independently reviewed | Finish storage recovery milestone; propose actual stored-reference backend facade; bind corrected A |
 | C | ACTIVE / contract-and-backend-dependent | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4); early commit `b079882` and 7 authored boundary tests owner-reported | Test pinned native offline dispatch/resume; no actual-model behavior or backend integration claim |
 | D | ACTIVE / contract-and-backend-dependent | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5); owner reports official MCP SDK discovery/invocation over authored backend and unavailable-backend path | Publish transport slice and align B operation facade; actual backend parity remains untested |
@@ -112,9 +112,21 @@ passes its seven committed tests. Setting the authored first tool event's parent
 to the later report creates a same-stream future dependency and a cycle through
 tool -> model input -> report -> tool, yet both procedural checks still PASS.
 A received a bounded regression/repair request; no candidate contract has been
-accepted or relayed as frozen. Other lanes can continue independent work using
+accepted or relayed as frozen at that first review. Other lanes continued independent work using
 explicitly provisional interfaces. This is a development finding on authored
 packets, not a defect asserted about historical market evidence.
+
+Corrected review: source commit `e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2`
+defines `continuous-verification-0.2`. All29 contract/verifier tests independently
+pass from an isolated immutable snapshot. The original causal-cycle packet now
+returns ERROR/CAUSALITY with no binding or positive findings. Cross-stream cycles,
+unknown parents, lag/gaps and report ID/revision substitutions have dedicated
+controls. The orchestrator accepts this API for named offline report-procedure
+integration and imports the exact reviewed files, without merging PRs or main.
+Collector/service authentication, complete registered streams, actual native
+input exposure and any live policy remain backend/host obligations, not schema
+guarantees. Proposal content is a separate downstream decision; these checks
+assess the explicitly bound upstream report only.
 
 ## Draft PR descriptions
 

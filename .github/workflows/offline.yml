@@ -19,6 +19,8 @@ jobs:
         run: python -S -B -m unittest discover -s procedural_loop/tests -v
       - name: Live ledger and rules tests on temporary authored inputs
         run: python -S -B -m unittest discover -s live_verification/tests -v
+      - name: Continuous verification tests on authored offline inputs
+        run: python -S -B -m unittest discover -s tests -p 'test_continuous*.py' -v
       - name: Repository context and BB8 snapshot tests
         run: |
           python -S -B -m unittest discover -s tests -p test_context_index.py -v
