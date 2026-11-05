@@ -2,6 +2,7 @@
 from copy import deepcopy
 from datetime import datetime, timezone, timedelta
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from contextlib import redirect_stdout
 from tools import correction_experiment as experiment
 from tools.tradingagents_integration import real_runtime, checked_upstream
 
@@ -212,6 +214,15 @@ class ImportedProtocol(unittest.TestCase):
         self.assertEqual(len([e for e in events if e["kind"]=="checkpoint.cli_result"]),2)
         self.assertTrue(result["wire_proofs"][2]["feedback_call_in_wire"])
         self.assertTrue(result["wire_proofs"][2]["feedback_in_wire"])
+        self.assertTrue(result["wire_proofs"][2]["current_report_in_wire"])
+        wire=result["wire_proofs"][2]["body"]
+        report_text=result["reports"][0]["content"]
+        self.assertEqual(sum(part.get("text")==report_text for item in wire["input"] if isinstance(item,dict)
+            and item.get("role")=="assistant" and isinstance(item.get("content"),list) for part in item["content"]),1)
+        packet=next(json.loads(item["content"]) for item in wire["input"] if isinstance(item,dict) and isinstance(item.get("content"),str)
+            and item["content"].startswith('{"assessment_id"'))
+        self.assertNotIn("report",packet)
+        self.assertEqual(packet["report_event_id"],result["reports"][0]["event_id"])
         self.assertNotEqual(result["requests"][0]["checkpoint"],result["requests"][1]["checkpoint"])
         self.assertGreaterEqual(result["observation_seconds"],420)
         self.assertLess(result["elapsed_seconds"],20)
@@ -243,6 +254,38 @@ class ImportedProtocol(unittest.TestCase):
         self.assertNotEqual(calls[0]["call_id"],calls[1]["call_id"])
         records=list(result["source_records"].values())
         self.assertNotEqual(records[0]["source_refs"],records[1]["source_refs"])
+
+    def test_b_live_session_interface_lazy_enter_dynamic_repeated_args_and_callback_no_fetch(self):
+        candidate=experiment.ROOT/"tools/correction_sources.py"
+        if not candidate.exists():
+            candidate=Path(os.environ.get("TRUSTKERNEL_CORRECTION_SOURCES_CANDIDATE","missing-candidate"))
+        if not candidate.is_file(): self.skipTest("B immutable/candidate live adapter not supplied; binding NOT RUN")
+        spec=importlib.util.spec_from_file_location("tools.correction_sources",candidate)
+        sources=importlib.util.module_from_spec(spec);spec.loader.exec_module(sources)
+        out=io.StringIO()
+        with redirect_stdout(out): self.assertEqual(sources.main(["--mode","preflight","--as-of","2026-11-05"]),0)
+        policy=json.loads(out.getvalue())["plan"]
+        calls=[];callbacks=[]
+        def authored_call(session,name,args):
+            calls.append((name,deepcopy(args)))
+            result=dict(text="AUTHORED live-interface test, no source execution",status="AVAILABLE",source_status="AVAILABLE",
+                mode="LIVE_NATIVE_PER_CALL",text_origin="AUTHORED_OFFLINE_ONLY",source_refs=["authored-"+str(len(calls))],http_refs=[])
+            session.on_result(name,deepcopy(args),deepcopy(result));return result
+        with tempfile.TemporaryDirectory(dir=experiment.ROOT/".local-runs") as directory:
+            root=Path(directory);path=root/"live-policy.json";path.write_text(json.dumps(policy),"utf-8")
+            with patch.dict(sys.modules,{"tools.correction_sources":sources}),patch("tools.correction_sources",sources,create=True), \
+                    patch.object(experiment,"SOURCE_DEPENDENCY","AUTHORED_TEST_ONLY_PENDING_REVIEW"), \
+                    patch.object(sources.LiveSourceSession,"call",authored_call),real_runtime(checked_upstream(self.upstream)) as runtime:
+                adapter=experiment.load_source(path,mode="paid",live_plan=True,upstream=self.upstream)
+                with adapter.session(root,runtime,None,lambda *args:callbacks.append(args)):
+                    self.assertEqual(calls,[])  # Construction/enter is no fetch.
+                    self.assertTrue(adapter.native_tools(runtime))
+                    args=dict(symbol="ETH-USD",curr_date="2026-11-05",trade_date="2026-11-05",look_back_days=17)
+                    first=adapter.retrieve("get_verified_market_snapshot",args)
+                    second=adapter.retrieve("get_verified_market_snapshot",args)
+                    self.assertNotEqual(first["source_refs"],second["source_refs"])
+                self.assertEqual(len(calls),2);self.assertEqual(len(callbacks),2)
+                with self.assertRaises(experiment.BoundaryError): adapter.retrieve("get_verified_market_snapshot",args)
 
     def test_returned_unavailable_string_never_establishes_snapshot_success(self):
         result,events,_=self.run_case("clean_sequence",status="NO_DATA")

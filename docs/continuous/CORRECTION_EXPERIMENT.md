@@ -52,17 +52,14 @@ prices, news, availability and retrieval times. Query/date/timezone, references,
 coverage, gaps, native cache behavior and actual HTTP observations remain explicit
 in per-call provenance. Offline replay/test doubles are for deterministic tests only.
 
-The declared initial catalog is bounded stock data (60 calendar days by default),
-RSI and MACD (each one query, lookback 10), verified snapshot (10 rows), and ETH
-news (7 days). One indicator plus stock, snapshot and news leaves room for a
-report; the second indicator is optional. Global news and close_200_sma are
-outside this model catalog. Correction may use the existing
-history and up to two valid native source calls, freshly fetched on invocation. The native
-source policy bounds dates, query count, HTTP bytes/time and native model exposure.
-Dates/defaults are not silently rewritten.
-B validates native schema/date/range/bytes/count boundaries. Repeated valid
-queries intentionally fetch again under the same caps; they are not automatic
-provider retries. No offline replay is substituted if live fetching fails.
+The original market/news tool schemas remain intact. The trusted policy bounds
+stock windows, indicator/snapshot lookbacks, news dates/count and HTTP exposure.
+RSI/MACD, stock60d, snapshot10rows and news7d are examples, not exact preset
+eligibility. A model can choose other valid native arguments within B's reviewed
+bounds. Correction can use any two valid native source calls. Repeated valid
+queries intentionally retrieve again with new call IDs/times/provenance under
+the existing caps; they are not automatic provider retries. There is no replay
+fallback, date rewrite or fake source return after a live network failure.
 
 Native ToolMessage success proves a string returned. The snapshot counts as
 SUCCESS only when B's full-argument live source record has both status and
@@ -149,3 +146,17 @@ The correction child installs a separate output/SQLite/credential-file guard.
 It never installs the old permanent API-only network audit before live sources.
 The model transport remains Responses-only. Native HTTP/raw artifacts and fresh
 session caches must stay beneath the new arm output, outside the frozen source tree.
+
+Current offline validation: 14 native tests pass with the explicit provisional B
+candidate supplied (normal pinned factory/SDK/ToolNode; authored transports only).
+Five standard-library controls pass; the native class explicitly skips when its
+optional dependencies are absent. The B interface test enters the real candidate
+context with its call body replaced by an authored stub, verifies lazy entry,
+repeated dynamic queries/callbacks and closed-session refusal. This is interface
+binding evidence, not accepted source safety or a live fetch. Paid loading stays
+disabled until the accepted immutable B commit is bound.
+
+The source-plan file contains exactly the `plan` object from B's default no-fetch
+preflight JSON output, not its enclosing result. Its bytes are hashed and bound
+into the per-arm approval. `--source-bundle` is an optional offline deterministic
+fixture input only and is rejected for paid execution.

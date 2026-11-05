@@ -1,6 +1,6 @@
 """Bounded report/checkpoint/correction experiment; default no-paid preflight."""
 import argparse
-from contextlib import closing
+from contextlib import closing, contextmanager, redirect_stdout
 from copy import deepcopy
 from datetime import datetime, timezone, timedelta
 import hashlib
@@ -320,7 +320,7 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
         policy=POLICY,limits=Limits(profile["source_calls"],2,1),observe=emit)
     state = dict(revision=0,current_input=None,active_call=None,source_records={},messages=[],reports=[],raw_reports=[],requests=[],
         assessments=[],feedback_text=None,feedback_call_id=None,delivery=None,wire=[],error=None,outcome="PARTIAL_NO_REPORT",
-        inference_seconds=0.0,scheduled_wait_seconds=0.0)
+        inference_seconds=0.0,source_seconds=0.0,scheduled_wait_seconds=0.0)
     budget = None
     if mode=="paid":
         from trustkernel.safety import Budget
@@ -389,6 +389,7 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
         use_responses_api=True,store=False,max_tokens=2048,max_retries=0,timeout=30,http_client=http)
     if mode!="paid": options["api_key"]="authored-offline-placeholder-not-a-credential"
     model = NormalizedChatOpenAI(**options)
+    source_context=None
     class Observed(Runnable):
         def __init__(self,delegate): self.delegate=delegate
         def bind_tools(self,tools,**kwargs):
@@ -417,6 +418,14 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
             if len(result.tool_calls)>1: raise BoundaryError("One native tool call per model turn; no batch splitting")
             return result
     try:
+        if hasattr(source,"session"):
+            def source_callback(name,args,result):
+                call=state["active_call"]
+                emit("source.native_callback",dict(call_id=call["id"] if call else None,tool_name=name,
+                    full_native_arguments=args,result=result))
+            candidate_context=source.session(output,runtime,trace,source_callback)
+            candidate_context.__enter__()
+            source_context=candidate_context
         emit("experiment.start",dict(profile=profile,source_binding_sha256=source.binding_sha256,source_manifest=source.manifest,
             scope="market analyst with native news tool; not full GraphSetup or standalone news analyst"))
         # Accepted B supplies native schemas and per-call status/provenance.
@@ -432,10 +441,12 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
                     raise BoundaryError("Source call arguments/ID are not the observed model invocation")
                 if mode!="paid" and hasattr(source,"allowed") and not source.allowed(_native.name,arguments,limits.phase):
                     raise BoundaryError("Query outside declared phase-specific exact source catalog")
+                source_start=time.monotonic()
                 try: record=source.retrieve(_native.name,arguments)
                 except Exception as error:
                     emit("source.invocation_error",dict(call_id=call["id"],tool_name=_native.name,arguments=arguments,error_type=type(error).__name__))
                     raise
+                finally: state["source_seconds"]+=time.monotonic()-source_start
                 state["source_records"][call["id"]]=deepcopy(record)
                 emit("source.result",dict(call_id=call["id"],tool_name=_native.name,arguments=arguments,record=record))
                 return record["text"]
@@ -541,6 +552,7 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
         state["error"]=type(exc).__name__;state["outcome"]="STOPPED_PARTIAL_NOT_PASS"
         emit("experiment.stop",dict(error_type=type(exc).__name__,phase=limits.phase,last_input=state["current_input"]["event_id"] if state["current_input"] else None))
     finally:
+        if source_context is not None: source_context.__exit__(None,None,None)
         preserved=all(backend.execute("get_assessment",dict(run_id=run_id,assessment_id=a["assessment_id"]))==a for a in state["assessments"])
         service=backend.execute("get_run_state",dict(run_id=run_id));backend.audit();backend.close();http.close()
         emit("experiment.finished",dict(outcome=state["outcome"],original_assessments_preserved=preserved,
@@ -552,6 +564,8 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
         wire_proofs=state["wire"],source_records=state["source_records"],service_state=service,
         provider_generated_reports=bool(mode=="paid" and state["reports"]),hidden_reasoning=False,semantic_or_price_clearance=False,elapsed_seconds=time.time()-actual_start,
         observation_seconds=clock()-start,inference_seconds=state["inference_seconds"],scheduled_wait_seconds=state["scheduled_wait_seconds"],
+        source_seconds=state["source_seconds"],window_start_epoch=start,window_deadline_epoch=limits.deadline,
+        timing_note="Model invocation timing includes SDK/transport/callbacks, not private provider compute or continuous reasoning.",
         timing_mode="REAL_CLOCK" if mode=="paid" else "AUTHORED_SIMULATED_SCHEDULE",
         source_execution_mode=getattr(source,"mode","AUTHORED_TEST_DOUBLE")))
 
@@ -586,29 +600,56 @@ def authored_http(scenario, source):
     return respond
 
 
-def load_source(path, *, mode, live_plan=False):
-    if mode=="paid":
-        # Never fall back to the old replay loader for an authorized live arm.
-        raise PermissionError("Accepted B live session API/commit pending; paid replay is forbidden")
+def load_source(path, *, mode, live_plan=False, upstream=None):
+    if mode=="paid" and not live_plan:
+        raise PermissionError("Paid replay forbidden; live source policy required")
     if live_plan:
-        from tools.correction_sources import make_plan
+        from tools import correction_sources as sources
         policy=json.loads(Path(path).read_text("utf-8"))
-        if policy!=make_plan(policy["as_of"],policy["stock_days"]):
+        # Use B's public no-fetch plan output instead of a competing policy schema.
+        out=io.StringIO()
+        with redirect_stdout(out): status=sources.main(["--mode","preflight","--as-of",policy["as_of"]])
+        if status!=0 or policy!=json.loads(out.getvalue())["plan"]:
             raise PermissionError("Source plan differs from bounded B policy")
-        class OfflinePlan:
+        if mode=="paid" and SOURCE_DEPENDENCY.startswith("PENDING"):
+            raise PermissionError("Accepted B live source commit still pending")
+        examples=sources.make_plan(policy["as_of"])["calls"]
+        class LivePlan:
             binding_sha256=hashlib.sha256(Path(path).read_bytes()).hexdigest()
             manifest=policy
             ticker=policy["symbol"];as_of=policy["as_of"];asset_type="crypto"
-            mode="AUTHORED_OFFLINE_NO_SOURCE_FETCH"
-            catalog=[dict(call,status="NOT_PROBED") for call in policy["calls"]]
-            context="Bounded live query examples; this offline test performs NO fetch: "+canonical_json(catalog)
+            catalog=[dict(call,status="NOT_FETCHED") for call in examples]
+            context="Fresh read-only Yahoo data is retrieved on each tool invocation under the bounded source policy. " \
+                "Repeated valid requests fetch again, within the call cap. Choose few relevant indicators and include news; " \
+                "report current-day bar finality and missing data honestly. Example arguments (not preset eligibility): "+canonical_json(catalog)
+            active=None
+            @contextmanager
+            def session(self,output,runtime,trace,on_result):
+                if mode!="paid":
+                    yield
+                    return
+                from tradingagents.agents.analysts import news_analyst
+                originals=tuple({tool.name:tool for tool in (*runtime["market"].TOOLS,*news_analyst.TOOLS)}.values())
+                with sources.live_source_session(output/"live-sources",as_of=self.as_of,upstream=upstream,
+                        original_tools=originals,on_result=on_result,trace=trace) as session:
+                    self.active=session
+                    try: yield
+                    finally: self.active=None
             def native_tools(self,runtime):
+                if mode=="paid":
+                    if self.active is None: raise BoundaryError("Live source session not open")
+                    return self.active.tools
                 from tradingagents.agents.analysts import news_analyst
                 return tuple({tool.name:tool for tool in (*runtime["market"].TOOLS,*news_analyst.TOOLS)}.values())
             def retrieve(self,name,args):
+                if mode=="paid":
+                    if self.active is None: raise BoundaryError("Live source session not open")
+                    return self.active.call(name,args)
                 return dict(text="AUTHORED offline source response; no market fact or fetch: "+name,status="AVAILABLE",source_status="AVAILABLE",
                     text_origin="AUTHORED_OFFLINE_ONLY",source_refs=[],http_refs=[],arguments=args)
-        return OfflinePlan()
+        result=LivePlan()
+        result.mode="LIVE_NATIVE_PER_CALL" if mode=="paid" else "LIVE_POLICY_PREFLIGHT_NO_FETCH" if mode=="preflight" else "AUTHORED_OFFLINE_NO_SOURCE_FETCH"
+        return result
     from tools.correction_sources import ReplayBundle
     raw_hash=hashlib.sha256(Path(path).read_bytes()).hexdigest()
     bundle=ReplayBundle(path,expected_sha256=raw_hash)
@@ -703,7 +744,7 @@ def child(args):
     else:
         from trustkernel.safety import network_guard
         network_guard(False)
-    source=load_source(bundle_path,mode=args.mode,live_plan=bool(args.source_plan))
+    source=load_source(bundle_path,mode=args.mode,live_plan=bool(args.source_plan),upstream=upstream)
     if source.binding_sha256!=actual_hash: raise PermissionError("Source policy/fixture identity differs from approved bytes")
     with real_runtime(upstream) as runtime:
         plan.update(import_proof=runtime["import_proof"],runtime=runtime_fingerprint(),implementation_digest=implementation_digest(),
