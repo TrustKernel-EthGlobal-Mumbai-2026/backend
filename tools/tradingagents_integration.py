@@ -30,7 +30,7 @@ PROFILE = dict(model="gpt-6.1-terra", endpoint="https://api.openai.com/v1", effo
     source_rounds=1, verify_calls=2, remediations=1, graph_tool_rounds=3,
     max_concurrency=1, recursion_limit=12, request_timeout_seconds=25,
     wall_seconds=120, max_input_bytes=40000, retries=0,
-    cumulative_hard_limit_usd=5.0, proposed_incremental_limit_usd=0.65,
+    cumulative_hard_limit_usd=10.0, proposed_incremental_limit_usd=0.65,
     tool_choice="auto", live_sources=False)
 
 
@@ -111,7 +111,7 @@ def approval_template(fixture, review=None, *, verify_transport="direct"):
         profile_digest=digest(PROFILE), implementation_digest=implementation_digest(), verify_transport=verify_transport,
         fixture_digest=digest(fixture), upstream_commit=UPSTREAM_COMMIT,
         incremental_limit_usd=PROFILE["proposed_incremental_limit_usd"],
-        budget_review="REQUIRED_UNCHANGED_REVIEWED_LEDGER_AND_PRESERVED_HISTORICAL_HOLD",
+        budget_review="REQUIRED_TEN_DOLLAR_REVIEW_AND_BOTH_KNOWN_HOLDS",
         budget_review_digest=digest(review) if review else None,
         pricing_review="REQUIRED_ORIGINAL_UPPER_RATES_STILL_CONSERVATIVE",
         model_account_access="UNPROBED_ACKNOWLEDGEMENT_REQUIRED")
@@ -124,7 +124,7 @@ def validate_approval(approval, fixture, *, output, review=None, verify_transpor
         if approval.get(key) != template[key]:
             raise PermissionError("Approval binding mismatch")
     if (approval.get("approved") is not True or not isinstance(approval.get("approval_id"), str) or not approval["approval_id"]
-            or approval.get("budget_review") != "CONFIRMED_PINNED_LEDGER_PRESERVE_KNOWN_HOLD"
+            or approval.get("budget_review") != "CONFIRMED_TEN_DOLLAR_LEDGER_PRESERVE_BOTH_KNOWN_HOLDS"
             or approval.get("pricing_review") != "CONFIRMED_ORIGINAL_UPPER_RATES_CONSERVATIVE"
             or approval.get("model_account_access") != "UNPROBED_CALL_MAY_FAIL_AND_RETAIN_HOLD"):
         raise PermissionError("New explicit approval and launch reviews required")
@@ -149,10 +149,20 @@ def reviewed_budget_summary(review):
         fingerprint = review["budget_sha256_before"]
         total = float(review["reserved_including_existing_holds"])
         initial, active, hard = review["initial_active_hard"]
+        holds = review["known_unknown_holds"]
+        # Operator-supplied exact SELECT id,reserved,charge,status,response_id
+        # tuples, never inferred from whichever unknown rows happen to exist.
+        if (review["review_version"] != "ten-dollar-two-holds-v1"
+                or not isinstance(holds, list) or len(holds) != 2
+                or any(not isinstance(row, list) or len(row) != 5
+                    or not isinstance(row[0], str) or not row[0]
+                    or row[1:] != [0.16024, None, "in_flight_or_unknown", None] for row in holds)
+                or len({row[0] for row in holds}) != 2):
+            raise ValueError()
         required = upper_charge(PROFILE["model"], dict(input_tokens=60000, output_tokens=2048)) * PROFILE["max_model_calls"]
         if (review["unchanged"] is not True or fingerprint != review["budget_sha256_after"]
                 or len(fingerprint) != 64 or any(c not in "0123456789abcdef" for c in fingerprint)
-                or review["existing_unsettled_rows"] != 1 or hard != 5 or not 0 < initial <= active <= hard
+                or review["existing_unsettled_rows"] != 2 or [initial, active, hard] != [3, 10, 10]
                 or not 0 <= total <= active or required > PROFILE["proposed_incremental_limit_usd"]
                 or total + required > active):
             raise ValueError()
@@ -160,15 +170,16 @@ def reviewed_budget_summary(review):
         raise PermissionError("Reviewed unchanged budget baseline does not fit this smoke") from None
     return dict(review_digest=digest(review), ledger_sha256=fingerprint, committed_including_historical_hold=total,
         initial=initial, active=active, hard=hard, remaining=active-total, proposed_worst_reserve=required,
-        historical_hold_reserved=0.16024, historical_hold_policy="PRESERVE_UNCHANGED; never settle/release/reconcile", fits=True)
+        known_unknown_holds=deepcopy(holds), historical_hold_reserved=0.32048,
+        historical_hold_policy="PRESERVE_BOTH_UNCHANGED; never settle/release/reconcile", fits=True)
 
 
 def read_existing_budget(operational_root, *, review, baseline=None, owned_ids=(), allow_pending=(),
                          remaining_calls=PROFILE["max_model_calls"]):
     """Future paid launch only: pin historical rows; permit only this run's writes.
 
-    Review SHA binds the closed DB before the first read. The original unknown
-    row remains reserved forever in this runner; its full tuple is pinned along
+    Review SHA binds the closed DB before the first read. Both known unknown
+    rows remain reserved in this runner; their reviewed full tuples are pinned along
     with all settled rows/carry. New unknowns or unrelated changes refuse a call.
     Never called against real files by preflight/scripted readiness modes.
     """
@@ -191,17 +202,16 @@ def read_existing_budget(operational_root, *, review, baseline=None, owned_ids=(
     if baseline is None and (hashlib.sha256(db_path.read_bytes()).hexdigest() != reviewed["ledger_sha256"]
             or any(Path(str(db_path)+suffix).exists() for suffix in ("-wal", "-journal"))):
         raise PermissionError("Closed ledger changed while baseline was read")
-    if policy.get("hard_limit_usd") != 5 or policy.get("initial_limit_usd") != limits[0] or limits != [reviewed["initial"],reviewed["active"],5]:
+    if (policy.get("hard_limit_usd") != PROFILE["cumulative_hard_limit_usd"]
+            or policy.get("initial_limit_usd") != limits[0]
+            or limits != [reviewed["initial"], reviewed["active"], reviewed["hard"]]):
         raise PermissionError("Existing cumulative/active policy changed")
     unknowns = {k: r for k,r in rows.items() if r[3] != "settled" or r[2] is None}
     if baseline is None:
         if (not math.isclose(total,reviewed["committed_including_historical_hold"],rel_tol=0,abs_tol=1e-9)
-                or len(unknowns) != 1):
+                or unknowns != {row[0]: row for row in reviewed["known_unknown_holds"]}):
             raise PermissionError("Reviewed historical state changed")
-        hold = next(iter(unknowns.values()))
-        if hold[1] != reviewed["historical_hold_reserved"] or hold[2] is not None or hold[3] != "in_flight_or_unknown":
-            raise PermissionError("Historical hold identity/value/state is not the reviewed baseline")
-        baseline = dict(rows=deepcopy(rows), policy=deepcopy(policy), total=total, hold_id=hold[0])
+        baseline = dict(rows=deepcopy(rows), policy=deepcopy(policy), total=total, hold_ids=sorted(unknowns))
     if any(rows.get(k) != r for k,r in baseline["rows"].items()) or policy != baseline["policy"]:
         raise PermissionError("Historical row/hold or policy changed; no reconciliation allowed")
     extra = set(rows)-set(baseline["rows"])
@@ -369,7 +379,7 @@ def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", b
     budget = None
     if mode == "paid":
         from trustkernel.safety import Budget
-        budget = Budget(budget_info["path"], 5, PROFILE["model"], deadline, Path(budget_info["path"]).parent.parent / "STOP", trace,
+        budget = Budget(budget_info["path"], PROFILE["cumulative_hard_limit_usd"], PROFILE["model"], deadline, Path(budget_info["path"]).parent.parent / "STOP", trace,
             PROFILE["max_model_calls"], initial_limit=budget_info["policy"]["initial_limit_usd"])
     class Observer(trace_module.Observer):
         def on_tool_start(self, serialized, input_str, **kw):
@@ -608,7 +618,7 @@ def child(args):
         budget_info = read_existing_budget(root.parent.parent, review=review)
         budget_info["approval_expires_epoch"] = datetime.fromisoformat(approval["expires_at"].replace("Z", "+00:00")).timestamp()
         plan.update(execution_enabled=True, new_user_approval="VALIDATED_OPERATOR_ARTIFACT",
-            budget_status="PINNED_CUMULATIVE_READ_CHECK_PASSED; historical unknown hold remains reserved",
+            budget_status="PINNED_CUMULATIVE_READ_CHECK_PASSED; both historical unknown holds remain reserved",
             paid_launch_status="APPROVED_EXECUTION_WITH_RUNTIME_LIMITS")
     child_guards(output, paid=args.mode == "paid", budget_path=budget_info["path"] if budget_info else None)
     with real_runtime(root) as runtime:

@@ -19,10 +19,13 @@ from continuous_verification.service import Principal, ServiceBackend
 from continuous_verification.tradingagents import BoundaryError
 
 
-def authored_review(path=None, total=4.128377500000004):
+def authored_review(path=None, total=4.288617500000004):
     fingerprint = hashlib.sha256(path.read_bytes()).hexdigest() if path else "0"*64
     return dict(budget_sha256_before=fingerprint, budget_sha256_after=fingerprint, unchanged=True,
-        reserved_including_existing_holds=str(total), initial_active_hard=[3,5,5], existing_unsettled_rows=1)
+        reserved_including_existing_holds=str(total), initial_active_hard=[3,10,10], existing_unsettled_rows=2,
+        review_version="ten-dollar-two-holds-v1", known_unknown_holds=[
+            ["authored-historical-hold", .16024, None, "in_flight_or_unknown", None],
+            ["authored-expired-key-hold", .16024, None, "in_flight_or_unknown", None]])
 
 
 class ReadinessPlanTests(unittest.TestCase):
@@ -34,7 +37,7 @@ class ReadinessPlanTests(unittest.TestCase):
         self.assertEqual(plan["new_user_approval"], "REQUIRED")
         self.assertEqual(PROFILE["tool_choice"], "auto")
         self.assertFalse(PROFILE["live_sources"])
-        self.assertEqual(PROFILE["cumulative_hard_limit_usd"], 5)
+        self.assertEqual(PROFILE["cumulative_hard_limit_usd"], 10)
         self.assertEqual(PROFILE["max_model_calls"], 4)
         plan["profile"]["model"] = "changed"
         self.assertEqual(PROFILE["model"], "gpt-6.1-terra")
@@ -49,9 +52,20 @@ class ReadinessPlanTests(unittest.TestCase):
         authored_approval_double = dict(template, approved=True, approval_id="authored-unit-double-not-user-approval",
             launch_output=".local-runs/authored-unit-approval-never-launched",
             expires_at=(datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
-            budget_review="CONFIRMED_PINNED_LEDGER_PRESERVE_KNOWN_HOLD",
+            budget_review="CONFIRMED_TEN_DOLLAR_LEDGER_PRESERVE_BOTH_KNOWN_HOLDS",
             pricing_review="CONFIRMED_ORIGINAL_UPPER_RATES_CONSERVATIVE", model_account_access="UNPROBED_CALL_MAY_FAIL_AND_RETAIN_HOLD")
         validate_approval(authored_approval_double, fixture, output=output, review=review)
+        # Previously approved five-dollar/single-hold artifacts are never upgraded.
+        old_review = dict(review, initial_active_hard=[3,5,5], existing_unsettled_rows=1)
+        old_review.pop("review_version")
+        old_review.pop("known_unknown_holds")
+        with self.assertRaises(PermissionError):
+            reviewed_budget_summary(old_review)
+        with self.assertRaises(PermissionError):
+            validate_approval(dict(authored_approval_double,
+                budget_review="CONFIRMED_PINNED_LEDGER_PRESERVE_KNOWN_HOLD"), fixture, output=output, review=review)
+        with self.assertRaises(PermissionError):
+            validate_approval(authored_approval_double, fixture, output=output, review=old_review)
         original_read = Path.read_bytes
         for dependency in ("cli.py", "sdk.py", "capture.py", "journal.py", "projection.py", "contract.schema.json"):
             def changed_bytes(path, dependency=dependency):
@@ -72,28 +86,49 @@ class ReadinessPlanTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "runs").mkdir()
-            (root / "budget_policy.json").write_text(json.dumps(dict(hard_limit_usd=5, initial_limit_usd=3)), "utf-8")
+            (root / "budget_policy.json").write_text(json.dumps(dict(hard_limit_usd=10, initial_limit_usd=3)), "utf-8")
             path = root / "runs/approved-budget.sqlite"
             db = sqlite3.connect(path)
             try:
-                db.executescript("CREATE TABLE budget(id INTEGER,reserved REAL); INSERT INTO budget VALUES(1,4.128377500000004);"
+                db.executescript("CREATE TABLE budget(id INTEGER,reserved REAL); INSERT INTO budget VALUES(1,4.288617500000004);"
                     "CREATE TABLE budget_policy(id INTEGER,initial_limit REAL,active_limit REAL,hard_limit REAL);"
-                    "INSERT INTO budget_policy VALUES(1,3,5,5);"
+                    "INSERT INTO budget_policy VALUES(1,3,10,10);"
                     "CREATE TABLE requests(id TEXT,reserved REAL,charge REAL,status TEXT,response_id TEXT);"
                     "INSERT INTO requests VALUES('authored-historical-hold',0.16024,NULL,'in_flight_or_unknown',NULL);"
+                    "INSERT INTO requests VALUES('authored-expired-key-hold',0.16024,NULL,'in_flight_or_unknown',NULL);"
                     "INSERT INTO requests VALUES('authored-settled',3.9,3.473855,'settled','authored-response');")
                 db.commit()
                 review = authored_review(path)
                 before = path.read_bytes()
                 initial = read_existing_budget(root, review=review)
                 baseline = initial["baseline"]
-                self.assertEqual(baseline["hold_id"], "authored-historical-hold")
+                self.assertEqual(baseline["hold_ids"], ["authored-expired-key-hold", "authored-historical-hold"])
                 self.assertAlmostEqual(initial["required_reserve"], .64096)
                 self.assertEqual(before, path.read_bytes())
+                # Even with the exact DB hash, the review must explicitly name
+                # both actual unknown tuples. Never silently adopt a new hold.
+                for field, value in ((0, "wrong-id"), (1, .15), (2, 0), (3, "settled"), (4, "unexpected-response")):
+                    bad = deepcopy(review)
+                    bad["known_unknown_holds"][1][field] = value
+                    with self.subTest(review_field=field), self.assertRaises(PermissionError):
+                        read_existing_budget(root, review=bad)
+                for bad in (dict(review, known_unknown_holds=review["known_unknown_holds"][:1]),
+                            dict(review, known_unknown_holds=[review["known_unknown_holds"][0]]*2),
+                            dict(review, existing_unsettled_rows=3),
+                            dict(review, initial_active_hard=[3,5,5]),
+                            dict(review, initial_active_hard=[3,9,10])):
+                    with self.assertRaises(PermissionError):
+                        reviewed_budget_summary(bad)
                 mutations = [
                     "UPDATE requests SET id='changed' WHERE id='authored-historical-hold'",
                     "UPDATE requests SET reserved=.15 WHERE id='authored-historical-hold'",
                     "UPDATE requests SET status='settled',charge=.01 WHERE id='authored-historical-hold'",
+                    "DELETE FROM requests WHERE id='authored-expired-key-hold'",
+                    "UPDATE requests SET id='changed' WHERE id='authored-expired-key-hold'",
+                    "UPDATE requests SET reserved=.15 WHERE id='authored-expired-key-hold'",
+                    "UPDATE requests SET charge=.01,status='settled',response_id='invented' WHERE id='authored-expired-key-hold'",
+                    "UPDATE requests SET response_id='invented' WHERE id='authored-expired-key-hold'",
+                    "UPDATE requests SET charge=1 WHERE id='authored-settled'",
                     "INSERT INTO requests VALUES('new-unknown',.16024,NULL,'in_flight_or_unknown',NULL)",
                     "UPDATE budget SET reserved=4.2",
                 ]
@@ -111,15 +146,38 @@ class ReadinessPlanTests(unittest.TestCase):
                     db.executemany("INSERT INTO requests VALUES(?,?,?,?,?)", list(baseline["rows"].values()))
                     db.execute("UPDATE budget SET reserved=?", (baseline["total"],))
                     db.commit()
+                db.execute("UPDATE budget_policy SET active_limit=5")
+                db.commit()
+                with self.assertRaises(PermissionError):
+                    read_existing_budget(root, review=review, baseline=baseline)
+                db.execute("UPDATE budget_policy SET active_limit=10")
+                db.commit()
+                policy_path = root / "budget_policy.json"
+                policy_bytes = policy_path.read_bytes()
+                policy_path.write_text(json.dumps(dict(hard_limit_usd=5, initial_limit_usd=3)), "utf-8")
+                with self.assertRaises(PermissionError):
+                    read_existing_budget(root, review=review, baseline=baseline)
+                policy_path.write_bytes(policy_bytes)
                 with self.assertRaises(PermissionError):
                     read_existing_budget(root, review=review)  # Physical identity changed since closed review.
                 with self.assertRaises(PermissionError):
-                    reviewed_budget_summary(authored_review(total=4.9))
-                db.execute("INSERT INTO requests VALUES('our-request',.16024,.01,'settled','authored-new-response')")
+                    reviewed_budget_summary(authored_review(total=9.9))
+                db.execute("INSERT INTO requests VALUES('our-request',.16024,NULL,'in_flight_or_unknown',NULL)")
+                db.execute("UPDATE budget SET reserved=?", (baseline["total"]+.16024,))
+                db.commit()
+                # Only the tracked in-flight reservation at its permitted boundary
+                # may be pending. A third retained unknown is never adopted.
+                with self.assertRaises(PermissionError):
+                    read_existing_budget(root, review=review, baseline=baseline, owned_ids={"our-request"}, remaining_calls=3)
+                pending = read_existing_budget(root, review=review, baseline=baseline, owned_ids={"our-request"},
+                    allow_pending={"our-request"}, remaining_calls=3)
+                self.assertEqual(pending["baseline"], baseline)
+                db.execute("UPDATE requests SET charge=.01,status='settled',response_id='authored-new-response' WHERE id='our-request'")
                 db.execute("UPDATE budget SET reserved=?", (baseline["total"]+.01,))
                 db.commit()
                 allowed = read_existing_budget(root, review=review, baseline=baseline, owned_ids={"our-request"},remaining_calls=3)
-                self.assertEqual(allowed["baseline"]["rows"]["authored-historical-hold"], baseline["rows"]["authored-historical-hold"])
+                for identity in baseline["hold_ids"]:
+                    self.assertEqual(allowed["baseline"]["rows"][identity], baseline["rows"][identity])
             finally:
                 db.close()
 

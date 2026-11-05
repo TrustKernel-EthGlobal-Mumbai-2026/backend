@@ -1,7 +1,8 @@
 # Actual-model TradingAgents integration-smoke readiness
 
-Status: **test-readiness package prepared; PAID EXECUTION DISABLED pending NEW
-explicit user approval and launch checks**. 5 November 2026.
+Status: **offline retry-readiness candidate; PAID EXECUTION DISABLED pending NEW
+explicit user approval and launch checks**. 5 November 2026. The user-authorized
+cumulative ceiling is now $10; this does not authorize another smoke attempt.
 
 Branch codex/tradingagents-integration-smoke is based on main
 b365415f072eaf9d9b475662f56c7c7c441c6fc9 after the foundation merges. PR4 stayed
@@ -13,7 +14,11 @@ against main; no A/B/D, original guard/instrumentation or upstream file is chang
 An actual provider model must voluntarily generate verify_proposal, actual native
 dispatch must return a persisted scoped finding, a subsequent actual model request
 must contain that exact return/call ID, and a later provider response must show a
-visible next action/report. This actual-model milestone **has not run**. Earlier
+visible next action/report. This actual-model milestone **is not achieved**. The
+separately approved 5 November attempt made one API request and stopped on HTTP
+401 (expired credential), with no successful model response, CLI dispatch or
+assessment and no retry. See [the recorded attempt](SMOKE_ATTEMPT_2026-11-05.md).
+This offline adjustment makes no provider or credential probe. Earlier
 AST-subset and authored demos do not establish it.
 
 This runner uses normal imports from the installed pinned v0.7.1 checkout
@@ -50,8 +55,8 @@ its Python executable explicitly.
 From the checkout run with NEW output directories:
 
 ```text
-python -B tools/tradingagents_integration.py --output .local-runs/model-preflight-001 --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
-python -B tools/tradingagents_integration.py --mode scripted --output .local-runs/model-ready-scripted-001 --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
+python -B tools/tradingagents_integration.py --output .local-runs/model-ten-preflight-001 --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
+python -B tools/tradingagents_integration.py --mode scripted --verify-transport injected-cli --output .local-runs/model-ten-scripted-001 --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
 ```
 
 Alternatively pass --upstream explicitly. The budget-review argument is an operator
@@ -84,7 +89,7 @@ are unavailable in paid mode.
 | Model tool choice | auto, parallel_tool_calls=false; one call per returned AI turn; a batch is stopped, not split |
 | Native tool-bearing turns | 3, shared by source and verifier as in the pinned graph; forced wrap-up can lose call identity |
 | Source/verification/remediation | 1 frozen-source dispatch round, 2 verification calls (initial voluntary + host recheck), 1 proposal/report remediation |
-| Money proposal | Incremental ceiling $0.65, subject to unchanged cumulative/active headroom under the existing $5 hard ceiling; not a fresh $5 |
+| Money proposal | Incremental ceiling $0.65 under the user-authorized cumulative/active $10 ceiling; original initial limit $3, all prior spending/carry/holds retained |
 
 Source schemas remain the original market tuple. Frozen wrapper bodies replace
 native source functions using original fixture_tools; one source function call per
@@ -101,8 +106,12 @@ the graph. Both prompt tool list and ToolNode tuple include verify_proposal.
   has approved=false, no approval ID/expiry/output and incomplete confirmations.
   It cannot launch anything as generated. An operator artifact is a local execution
   guard; it is not proof of human authorization without the separate user approval.
-- Credential-name presence and an acknowledgement that account/model availability
-  is unprobed. The first separately approved bounded request may fail; no impossible
+- Credential-name presence and an acknowledgement that replacement-key/model access
+  is unprobed. The prior key failed authentication; the user must replace it before
+  a newly approved attempt. A future operator may inject the replacement Windows
+  User environment key into the child at launch. This runner does not retrieve
+  User-level secrets or search/read key values during readiness. A separately
+  approved bounded request may fail; no impossible
   positive account-access confirmation is required in advance. Preflight does not
   use subscription access as an API credential, inspect key values or probe access.
 - Current pricing review: original upper_charge uses historical conservative
@@ -112,17 +121,31 @@ the graph. Both prompt tool list and ToolNode tuple include verify_proposal.
   before launch. No current invoice/price/account entitlement is inferred here.
 - Existing operational-root budget_policy.json and runs/approved-budget.sqlite.
   This task does not open or mutate those real files. Future approved paid mode
-  reads them read-only, requires the existing $5 hard identity/initial policy,
-  active headroom for all remaining requests, and the unchanged **known original
-  historical hold**. The reviewed closed ledger includes that $0.16024 hold in its
-  reserved total; it must not be cleared or reconciled. The review fingerprint
-  anchors the exact closed database before launch. The future read gate pins all
-  historical row tuples, including the hold's actual identity/value/status, and
+  reads them read-only and requires exact initial/active/hard limits **[3,10,10]**,
+  active headroom for all remaining requests, and **both known unknown holds**:
+  the original $0.16024 and the failed-authentication attempt's $0.16024, totaling
+  $0.32048. Neither may be cleared, settled, released or reconciled. The orchestrator
+  reports 164 retained request rows and a carried balance of $4.2886175 following
+  the separately authorized ceiling update; this readiness task does not inspect
+  those real files or infer a fresh allowance.
+
+  A NEW operator-reviewed closed-ledger JSON artifact must set
+  `review_version="ten-dollar-two-holds-v1"`, `initial_active_hard=[3,10,10]`,
+  `existing_unsettled_rows=2`, and `known_unknown_holds` to exactly two full
+  `[id,reserved,charge,status,response_id]` arrays. Each array must contain its
+  actual distinct reviewed ID, `0.16024`, `null`, `"in_flight_or_unknown"`, `null`.
+  It must also contain matching `budget_sha256_before`/`budget_sha256_after`,
+  `unchanged=true` and the reviewed `reserved_including_existing_holds`.
+  The fingerprint anchors every historical row in the exact closed database
+  before launch; the gate independently compares both reviewed hold tuples to
+  actual unknown rows. It never adopts whichever unknowns it happens to find.
+  Old single-hold/$5 reviews and approvals reject; no automatic rebaselining.
+  The future read gate pins all historical row tuples, including both holds, and
   preserves the existing carry balance rather than recomputing it from charges.
   Changed/removed/settled historical holds, modified historical rows/policy,
   unexpected new requests/unknowns, or a concurrent balance change refuse progress.
   Only this smoke's tracked reservations and settlements may add to the baseline.
-  No replacement ledger, ceiling increase or fresh allowance is created.
+  No replacement ledger, further ceiling change or fresh allowance is created.
 - Only after those gates may original Budget be constructed and reserve/settle via
   the original callback Observer. The same read-only headroom/hold gate is checked
   before and after reservation, at the HTTP boundary, and after settlement.
@@ -146,20 +169,23 @@ new authored temporary SQLite/policy files and prove read-only byte preservation
 
 After separate NEW user approval and the above operator checks, an operator must
 prepare approval.json from the false template, preserving exact digests, recording
-required pricing/hold-preservation confirmations, model_account_access=
+required pricing/hold-preservation confirmations, including budget_review=
+'CONFIRMED_TEN_DOLLAR_LEDGER_PRESERVE_BOTH_KNOWN_HOLDS', model_account_access=
 'UNPROBED_CALL_MAY_FAIL_AND_RETAIN_HOLD', a unique approval_id, expiry within one hour and
-launch_output='.local-runs/model-smoke-approved-001'. Only that new output can use
+launch_output='.local-runs/model-ten-approved-001'. Only that new output can use
 it; the new-output guard prevents reuse. Do not auto-create an approved artifact.
 
 ```text
-python -B tools/tradingagents_integration.py --mode paid --output .local-runs/model-smoke-approved-001 --fixture .local-runs/model-ready-scripted-001/fixture.json --approval .local-runs/model-ready-scripted-001/approval.json --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
+python -B tools/tradingagents_integration.py --mode paid --verify-transport injected-cli --output .local-runs/model-ten-approved-001 --fixture .local-runs/model-ten-scripted-001/fixture.json --approval .local-runs/model-ten-scripted-001/approval.json --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
 ```
 
 This command is a proposed future operator action; it has not been run. A paid
 flag alone is rejected before any child/budget/model work. The profile/source/
 fixture bindings or expiry changing requires a new review/approval. A failed
 attempt does not permit automatic rerun: use a newly approved unused output and
-preserve the known historical hold and separately review any new unknown hold first. No wider30min experiment is prepared.
+preserve both known historical holds and separately review any new unknown hold
+first. A third unknown invalidates this exact two-hold review; it is never adopted
+by rerunning preflight. No wider30min experiment is prepared.
 
 ## View / stop / proof and failure criteria
 
@@ -230,7 +256,8 @@ parsing and ToolNode feedback continuation, omitted/ignored/truncated cases,
 exact injected CLI request/envelope/exit/status/assessment/checkpoint checks,
 safe denial, same-ID next-wire feedback and two isolated launch identities.
 No optional integration is counted as PASS when missing. Source/approval expiry/
-one-output bindings, paid-flag denial, read-only authored budget checks (known hold preserved; changed identity/value/state, new
+one-output bindings, old review/approval rejection, paid-flag denial, read-only
+authored budget checks (both known holds preserved; changed identity/value/state, new
 unknown, insufficient headroom and concurrent balance rejected) and parent
 wall/operator stops are separate controls. A/B/D and original runtime bytes stay
 unchanged. Shared CI/README/orchestration updates remain orchestrator-owned.
@@ -240,16 +267,26 @@ Official documentation for discretionary tool choice and call/result sequencing:
 The [selected-model page](https://developers.openai.com/api/docs/models/gpt-6.1-terra)
 does not establish this account's access, key validity or approved budget.
 
-Retained current candidate evidence: `.local-runs/terra-preflight-001` and
+Retained offline $10/two-hold candidate evidence:
+`.local-runs/terra-ten-preflight-001` and `.local-runs/terra-ten-scripted-001`,
+using `.local-runs/ten-dollar-authored-review.json`. This is explicitly authored
+metadata with fictitious hold IDs, not an operator review of the real ledger;
+it cannot authorize a paid attempt. The future closed-ledger hash/hold comparison
+would reject it against a real ledger. Seven stdlib controls and eleven native
+tests validate the candidate, including both hold identities/tuples, historical
+row/carry and policy changes, tracked pending/settled requests and a third
+retained unknown. All native model I/O is authored HTTP.
+
+Historical accepted evidence: `.local-runs/terra-preflight-001` and
 `.local-runs/terra-ready-001` (accepted earlier direct-path snapshot), plus
-`.local-runs/terra-cli-ready-001` for the injected CLI/turn-monitor extension.
-These consume only the supplied review JSON metadata,
+`.local-runs/terra-cli-ready-001` for the earlier injected CLI/turn-monitor extension.
+These historical artifacts consumed only the supplied review JSON metadata,
 not the real ledger. The deterministic artifact reports READY_FOR_APPROVAL with
 execution_enabled=false, provider_generated_verify=false, exact feedback IDs in
 requests 2/3 and visible next action. The old four-Sol-call prototype is superseded.
 
 ```powershell
-Get-Content .local-runs/terra-ready-001/readiness.json
-Get-Content .local-runs/terra-ready-001/VIEW.md
-Get-Content .local-runs/terra-ready-001/runtime-trace/trace.jsonl
+Get-Content .local-runs/terra-ten-scripted-001/readiness.json
+Get-Content .local-runs/terra-ten-scripted-001/VIEW.md
+Get-Content .local-runs/terra-ten-scripted-001/turns-checkpoints.jsonl
 ```
