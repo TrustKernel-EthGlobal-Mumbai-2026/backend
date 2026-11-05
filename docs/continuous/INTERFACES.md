@@ -167,3 +167,62 @@ shared optional MCP dependency declaration and launcher/service factory, CI
 registration, current-state update and generated metadata conflict resolution.
 Central README/orchestration/CI are untouched by this lane. Integrated parity,
 durable cursor behavior and accepted domain validation remain **unexecuted**.
+
+### B operation and error mapping request (proposed, not accepted)
+
+The orchestrator reports A is **NOT ACCEPTED**: an independently reproduced
+same-stream future-parent/causal-cycle packet received two PASS findings. A is
+repairing that defect. Transport tests do not establish correctness of that
+candidate. Wait for reviewed commit references before importing/binding it.
+
+The following specifies the information needed from B, without prescribing a
+second event/checkpoint schema. Every call has an explicit run scope. For verify,
+forward the accepted A request object unchanged; do not wrap it in a competing
+proposal DTO. Other operation dictionaries must be specified and validated by B
+before D binds them. B may propose renames or narrower initial support; unsupported
+operations must fail explicitly rather than return empty successful objects.
+
+| Operation | Input semantics B must specify | Backend result D must preserve |
+|---|---|---|
+| register_run | Trusted collector's run/stream registration request; actor identity comes from host context | Stored run/stream identities and declared coverage limits |
+| ingest_events | Accepted A events and target run; no trace/journal path argument | Durable receipt, idempotent duplicates and integrity/sequence conflicts |
+| checkpoint | Requested registered stream prefix; never agent-issued SERVICE_ESTABLISHED state | Stored immutable checkpoint ID/revision and actual readiness/gaps |
+| verify | Accepted A request, referencing stored checkpoint and registered policy | Validated A result with assessment ID/binding, readiness, findings, issues and disposition |
+| get_assessment | Run plus stable assessment identity | Exact retained assessment; no re-verification or mutable overwrite |
+| get_evidence | Run plus stored evidence identity and any supported bounded span | Permitted retained provenance/content; never arbitrary server file contents |
+| acknowledge_feedback | Assessment/proposal binding and distinct acknowledgement identity; actor from host context | Durable acknowledgement receipt, not proof of correction or model-input inclusion |
+| get_run_state | Run and any supported view/checkpoint selector | Actual ingest/projection/checkpoint state and unresolved coverage/gaps |
+| list_events | Run, opaque after-cursor and bounded page limit | Stable event IDs/order, next cursor and an explicit end/snapshot boundary |
+
+B must define cursor scope, restart stability, invalid/foreign/expired cursor
+handling and whether a page is pinned or follows appends. D will neither parse a
+cursor nor fabricate end-of-feed. Missing optional read support stays unsupported.
+The trusted B service/adapter instance must hold its actor identity and collector
+authority separately from request JSON. SDK run grants are only a preliminary
+check: B must check every nested checkpoint/policy/assessment/evidence/event
+reference belongs to the authorized run before any read or write.
+
+Requested adapter mapping for review:
+
+- Malformed operation/domain input: a safe INVALID_REQUEST failure, with bounded
+  schema issues if the accepted public error contract supports them.
+- Denied actor/run/object: FORBIDDEN; no referenced object contents or paths.
+- Missing permitted object: an explicit NOT_FOUND failure; B defines disclosure
+  policy for denied versus absent objects.
+- Immutable ID/content conflict: an explicit CONFLICT failure; preserve history.
+- Invalid cursor or unsupported operation: explicit INVALID_CURSOR or
+  UNSUPPORTED_OPERATION failure, never an empty successful page/result.
+- Missing service or unexpected execution failure: BACKEND_UNAVAILABLE or generic
+  BACKEND_ERROR; no raw exception text/traceback exposure.
+- A valid core response containing NOT_READY, CAPTURE_GAP, ERROR, FAIL,
+  INCONCLUSIVE, HOLD or RECHECK remains the exact structured result. Transport
+  `ok=true` and CLI exit 0 do not change those meanings.
+
+These additional backend error names are proposed, not implemented/accepted B
+behavior. Prefer a B-owned typed exception with an allowlisted safe code and
+public details; D can translate it to InterfaceError without making B import a
+transport module. Current unrecognized backend exceptions are generic
+BACKEND_ERROR. The current InterfaceError envelope supports code/message only;
+structured schema issues need an accepted extension rather than stringifying
+private diagnostics. Agreement on this mapping and a real injected service
+factory are gates before integrated parity tests.

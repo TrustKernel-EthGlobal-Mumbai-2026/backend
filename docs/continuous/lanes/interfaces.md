@@ -48,6 +48,11 @@ has not been relayed. B's inspected storage facade has no verify/checkpoint-succ
 operation yet. The provisional `Backend.execute(operation, request)` seam is
 transport scaffolding, not a frozen competing DTO/service contract.
 
+Orchestrator follow-up: A is explicitly NOT ACCEPTED while a reproduced causal
+ordering/cycle defect is repaired. INTERFACES.md now includes an operation-by-
+operation B input/result checklist and proposed safe error mapping. Those are
+review requests, not accepted schemas or implemented B behavior.
+
 Await orchestrator follow-up with accepted A/B references. Then bind domain
 validation, stored checkpoint/policy/event resolution, scoped reads and cursor
 semantics, and rerun parity over the actual service. No integrated parity or
