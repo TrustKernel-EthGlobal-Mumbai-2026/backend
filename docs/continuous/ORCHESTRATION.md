@@ -8,6 +8,13 @@ the rationale; it is not evidence that an implementation already exists.
 
 ## Current readiness handoff
 
+The owner subsequently authorized a cumulative $10 ceiling. The local policy and
+ledger active/hard limits are updated to10; initial history, usage, carry and both
+unknown holds are unchanged. This is a budget-policy update, not another model
+run approval. The tested $5/single-hold runner must be adapted and independently
+reviewed for a fresh explicitly pinned baseline preserving both holds. The
+credential still needs local replacement. No additional API request is authorized.
+
 Latest state: the separately approved smoke attempted one API request at15:19:24
 UTC on5 November and stopped with401, expired configured key. No model response,
 CLI invocation, assessment or next-input feedback was observed. This is an
