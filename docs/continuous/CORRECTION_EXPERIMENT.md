@@ -20,7 +20,7 @@ No model request starts without its full 30-second request allowance remaining.
 
 | Phase | Slot or bound | Model/source allowance |
 |---|---|---|
-| Initial research and actual report revision 0 | By 180 seconds | At most 6 model requests, 5 distinct captured source queries |
+| Initial research and actual report revision 0 | By 180 seconds | At most 6 model requests, 5 bounded live source calls |
 | Model-requested CLI checkpoint 0 | At 180 seconds | 1 request from the remaining 5-call pool; host binds the actual report/checkpoint, then offers argument-free `verify_proposal` with auto choice |
 | Finding feedback and actual revision 1 | By 330 seconds | Up to 2 source queries and a model report, retaining the final request for recheck |
 | Model-requested CLI checkpoint 1 | At 350 seconds | Final request offers verification of the newly bound report/checkpoint |
@@ -45,39 +45,40 @@ as agent CLI use. No report means no seed, proposal or verifier invocation.
 The normal pinned TradingAgents market analyst and actual native ToolNode execute
 with the original market/news schemas. This is a market analyst offered native
 news access, not full GraphSetup or a separate news analyst evaluation.
-Both arms replay the same root-captured, approved B manifest and exact native text.
-Nothing fetches fresh sources inside the model process; replay is not continuously
-live. Capture clocks, query/date/timezone, references, coverage, gaps and status
-remain explicit in B's manifest and host trace.
+Paid mode fetches fresh native Yahoo market/news data when each agent calls a
+source, using accepted B's thin live session over the existing live pipeline.
+There is no replay fallback on network failure. Sequential arms may see different
+prices, news, availability and retrieval times. Query/date/timezone, references,
+coverage, gaps, native cache behavior and actual HTTP observations remain explicit
+in per-call provenance. Offline replay/test doubles are for deterministic tests only.
 
-The declared initial catalog is stock data (60 calendar days), RSI and MACD
-(each one exact query, lookback 10), verified snapshot (10 rows), and ETH news
-(7 days). One indicator plus stock, snapshot and news leaves room for a report;
-the second indicator is optional. Global news and close_200_sma stay in the raw
-bundle but are outside this model catalog. Correction may use the existing
-history and one RSI plus one snapshot query. Duplicate queries within a phase
-stop rather than imply new evidence. Dates/defaults are not silently rewritten.
-Unsupported phase/query arguments stop explicitly; no fake source return is made.
+The declared initial catalog is bounded stock data (60 calendar days by default),
+RSI and MACD (each one query, lookback 10), verified snapshot (10 rows), and ETH
+news (7 days). One indicator plus stock, snapshot and news leaves room for a
+report; the second indicator is optional. Global news and close_200_sma are
+outside this model catalog. Correction may use the existing
+history and up to two valid native source calls, freshly fetched on invocation. The native
+source policy bounds dates, query count, HTTP bytes/time and native model exposure.
+Dates/defaults are not silently rewritten.
+B validates native schema/date/range/bytes/count boundaries. Repeated valid
+queries intentionally fetch again under the same caps; they are not automatic
+provider retries. No offline replay is substituted if live fetching fails.
 
 Native ToolMessage success proves a string returned. The snapshot counts as
-SUCCESS only when B's exact full-argument replay record has both status and
+SUCCESS only when B's full-argument live source record has both status and
 source_status AVAILABLE, joined to that intact model call ID. Unavailable,
 NO_DATA, argument mismatch and invocation errors remain distinct source records;
 model omission is a separate behavior. The existing policy checks only required
 snapshot inclusion and report completion, never price truth, TTL or global quality.
 
-Combined-envelope preflight serializes planned histories with actual captured
-strings and declared maximum report/assessment/commentary padding through the
-actual SDK and a local HTTP override. It measures both the 40,000-byte wire bound
-and original Budget's 50,000-byte messages/metadata envelope. Research, full
-feedback/correction and revised-report recheck shapes are checked. Oversize blocks
-the arm before reservation. This estimate is a fitting gate, not model behavior.
-Runtime independently checks every actual serialized envelope and stops on overflow.
-Raw source artifacts remain outside the model context; nothing is silently
-summarized or truncated. Report and assessment continuation limits are 4,096 UTF-8
-bytes each, visible tool commentary 512 bytes, output at most 2,048 tokens/request.
-An oversized actual report/assessment remains retained but cannot be used to force
-a continuation through a smaller envelope.
+Preflight inspects the reviewed live-source policy and dependencies without any
+source fetch or model/provider call. Future live response sizes are unknown.
+The actual 40,000-byte serialized wire bound and original Budget's 50,000-byte
+messages/metadata envelope remain authoritative. Runtime stops on overflow;
+raw source artifacts remain outside model context and nothing is silently
+summarized or truncated to force fit. Source-specific bounded exposure/status
+is B's responsibility and remains distinct from a model choosing not to call.
+No large synthetic estimator is a launch prerequisite.
 
 ## Immutable report, feedback and recheck
 
@@ -88,8 +89,10 @@ existing report_completion check can fail honestly. Verifier omission retains
 the actual response and stops without manufacturing an assessment.
 
 After the real CLI return, the next correction input includes the exact current
-report, immutable finding packet, original intact verify/source ToolMessages,
-and available source catalog. Actual SDK serialization must contain both that
+report already present in AI history, immutable finding in the intact CLI
+ToolMessage, original source ToolMessages, and available live-source catalog.
+The host resume packet references the actual report event/revision/digest; it
+does not copy the whole report a second time. Actual SDK serialization must contain both that
 feedback packet and the same call ID's exact CLI result. Typed delivery/inclusion
 events and wire evidence record this; receipt or continuation does not establish
 understanding or repair.
@@ -114,7 +117,7 @@ Original Budget reservation/settlement machinery is reused unchanged. A new
 operator-reviewed closed ledger must bind initial/active/hard [3,10,10], exact
 file hash, carried balance, all historical rows and both known $0.16024 unknown
 holds by full tuple. Old smoke approvals cannot launch this milestone. New
-approvals bind selected model/profile/cap, source manifest hash, accepted B
+approvals bind selected model/profile/cap, live-source policy/plan hash, accepted B
 dependency, upstream pin, runtime versions, implementation, checkpoint policy,
 operator baseline, one unused absolute output and expiry. Generated templates
 are false. Only credential-name presence is checked by readiness; no secret search.
@@ -125,17 +128,24 @@ two. No hold is cleared, reconciled or released by this harness, and no ceiling
 is raised. No scheduler or automatic retry is installed.
 
 ```powershell
-# No paid call; ROOT supplies accepted source manifest and operator review paths.
-python -B tools/correction_experiment.py --mode preflight --model gpt-6.1-terra --upstream "$env:TRUSTKERNEL_TRADINGAGENTS_UPSTREAM" --source-bundle "$env:CORRECTION_SOURCE_MANIFEST" --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW" --output .local-runs/correction-preflight-terra-001
-# AUTHORED model HTTP responses, exact captured replay, simulated phase schedule:
-python -B tools/correction_experiment.py --mode scripted --model gpt-6.1-sol --upstream "$env:TRUSTKERNEL_TRADINGAGENTS_UPSTREAM" --source-bundle "$env:CORRECTION_SOURCE_MANIFEST" --output .local-runs/correction-authored-sol-001
+# No paid call; ROOT supplies accepted live-source plan and operator review paths.
+python -B tools/correction_experiment.py --mode preflight --model gpt-6.1-terra --upstream "$env:TRUSTKERNEL_TRADINGAGENTS_UPSTREAM" --source-plan "$env:CORRECTION_SOURCE_PLAN" --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW" --output .local-runs/correction-preflight-terra-001
+# AUTHORED source/model responses and simulated phase schedule; no live fetch:
+python -B tools/correction_experiment.py --mode scripted --model gpt-6.1-sol --upstream "$env:TRUSTKERNEL_TRADINGAGENTS_UPSTREAM" --source-plan "$env:CORRECTION_SOURCE_PLAN" --output .local-runs/correction-authored-sol-001
 ```
 
 Root alone prepares the reviewed per-arm operator approval and invokes `--mode
 paid --approval <matching-operator-artifact>` after all gates. Do not substitute
-smoke outputs, an authored source bundle or stale budget metadata. Ctrl+C stops
+smoke outputs, an authored source fixture or stale budget metadata. Ctrl+C stops
 the supervisor/child and retains unknown reservations; hard timeout also retains
-partial files. Read result.json, envelope-preflight.json, phases-turns.jsonl,
+partial files. Read result.json, phases-turns.jsonl,
 runtime-trace/trace.jsonl and feedback.sqlite read-only. CLI request/envelope/exit,
 model/source call IDs, source status/provenance and feedback next-wire references
 remain inspectable. Failure is an outcome, never automatic permission to rerun.
+
+The frozen live socket/process boundary is `live_experiment.safety.network_guard`;
+B's reviewed HTTP/CFFI source guard additionally restricts Yahoo methods/routes.
+The correction child installs a separate output/SQLite/credential-file guard.
+It never installs the old permanent API-only network audit before live sources.
+The model transport remains Responses-only. Native HTTP/raw artifacts and fresh
+session caches must stay beneath the new arm output, outside the frozen source tree.

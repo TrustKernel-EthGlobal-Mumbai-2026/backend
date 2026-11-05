@@ -64,17 +64,17 @@ class Controls(unittest.TestCase):
             output=experiment.ROOT/".local-runs/authored-never-launched"
             template=experiment.approval_template(profile,source,baseline)
             with self.assertRaises(PermissionError):
-                experiment.validate_approval(template,profile=profile,bundle_sha256=source,review=baseline,output=output)
+                experiment.validate_approval(template,profile=profile,binding_sha256=source,review=baseline,output=output)
             approved=dict(template,approved=True,approval_id="authored-test-not-human-approval",launch_output=str(output),
                 expires_at=(datetime.now(timezone.utc)+timedelta(minutes=5)).isoformat(),
                 budget_review="CONFIRMED_BOTH_KNOWN_HOLDS_ALL_ROWS_CARRY_PRESERVED",pricing_review="CONFIRMED_CONSERVATIVE_FOR_SELECTED_MODEL",
-                source_review="CONFIRMED_REAL_FRESH_MARKET_NEWS_SAME_BUNDLE_FOR_BOTH_ARMS")
-            experiment.validate_approval(approved,profile=profile,bundle_sha256=source,review=baseline,output=output)
+                source_review="CONFIRMED_LIVE_PER_CALL_YAHOO_POLICY_NO_REPLAY_FALLBACK")
+            experiment.validate_approval(approved,profile=profile,binding_sha256=source,review=baseline,output=output)
             for key,value in (("milestone","actual-imported-analyst-smoke-v1"),("model","gpt-6.1-sol"),
-                    ("source_bundle_sha256","b"*64),("policy_digest","other"),("implementation_digest","edited"),
+                    ("source_binding_sha256","b"*64),("policy_digest","other"),("implementation_digest","edited"),
                     ("budget_review_digest","other"),("incremental_limit_usd",10),("profile_digest","other")):
                 with self.subTest(key=key),self.assertRaises(PermissionError):
-                    experiment.validate_approval(dict(approved,**{key:value}),profile=profile,bundle_sha256=source,review=baseline,output=output)
+                    experiment.validate_approval(dict(approved,**{key:value}),profile=profile,binding_sha256=source,review=baseline,output=output)
 
     def test_budget_two_full_hold_tuples_old_review_third_hold_carry_and_own_writes(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -122,6 +122,8 @@ class Controls(unittest.TestCase):
         with patch.object(sys,"argv",["experiment","--mode","paid","--source-bundle","unused","--output","unused"]),patch.object(experiment.subprocess,"run") as child:
             with self.assertRaises(SystemExit): experiment.main()
             child.assert_not_called()
+        with patch.object(Path,"read_bytes",side_effect=AssertionError("Paid replay must reject before fixture read")):
+            with self.assertRaises(PermissionError): experiment.load_source("unused",mode="paid",live_plan=False)
 
 
 class AuthoredSource:
@@ -133,16 +135,17 @@ class AuthoredSource:
         ("get_indicators",dict(symbol="ETH-USD",indicator="macd",curr_date="2026-11-05",look_back_days=10,trade_date="2026-11-05")),
         ("get_verified_market_snapshot",dict(symbol="ETH-USD",curr_date="2026-11-05",look_back_days=10,trade_date="2026-11-05")),
         ("get_news",dict(ticker="ETH-USD",start_date="2026-10-29",end_date="2026-11-05",trade_date="2026-11-05"))]]
-    bundle_sha256="a"*64
+    binding_sha256="a"*64
     manifest={"origin":"AUTHORED_OFFLINE_ONLY","coverage":["market","news"],"gaps":[]}
-    def __init__(self,status="AVAILABLE",size=0): self.status=status;self.size=size
+    def __init__(self,status="AVAILABLE",size=0): self.status=status;self.size=size;self.count=0
     def native_tools(self,runtime):
         from tradingagents.agents.analysts import news_analyst
         return (*runtime["market"].TOOLS,news_analyst.TOOLS[0])
-    def replay(self,name,args):
+    def retrieve(self,name,args):
         if self.status=="RAISE": raise RuntimeError("AUTHORED invocation failure, no source response")
+        self.count+=1
         return dict(text="AUTHORED source "+name+" "+"x"*self.size,status=self.status,source_status=self.status,
-            arguments=args,source_refs=["authored-only"],captured_at="2026-11-05T00:00:00Z")
+            arguments=args,source_refs=["authored-only-"+str(self.count)],captured_at="2026-11-05T00:00:00Z")
 
 
 def responses(scenario):
@@ -158,7 +161,9 @@ def responses(scenario):
             if scenario=="omit_verify": name=None
         elif state["revision"]==0:
             research+=1
-            if scenario=="clean_sequence" and research<=4:
+            if scenario=="repeat_query" and research<=2:
+                name,args="get_verified_market_snapshot",dict(curr_date="2026-11-05",look_back_days=10)
+            elif scenario=="clean_sequence" and research<=4:
                 name,args=[("get_stock_data",dict(start_date="2026-09-06",end_date="2026-11-05")),
                     ("get_indicators",dict(indicator="rsi",curr_date="2026-11-05",look_back_days=10)),
                     ("get_verified_market_snapshot",dict(curr_date="2026-11-05",look_back_days=10)),
@@ -229,6 +234,16 @@ class ImportedProtocol(unittest.TestCase):
         self.assertFalse(any(e["kind"]=="checkpoint.cli_request" for e in events))
         self.assertLess(result["observation_seconds"],420)
 
+    def test_repeated_valid_native_query_has_two_distinct_calls_under_caps(self):
+        result,events,_=self.run_case("repeat_query")
+        self.assertEqual(result["outcome"],"NO_CORRECTION_NEEDED")
+        self.assertEqual(result["sources"]["research"],2)
+        calls=[e["payload"] for e in events if e["kind"]=="source.call"]
+        self.assertEqual(calls[0]["arguments"],calls[1]["arguments"])
+        self.assertNotEqual(calls[0]["call_id"],calls[1]["call_id"])
+        records=list(result["source_records"].values())
+        self.assertNotEqual(records[0]["source_refs"],records[1]["source_refs"])
+
     def test_returned_unavailable_string_never_establishes_snapshot_success(self):
         result,events,_=self.run_case("clean_sequence",status="NO_DATA")
         self.assertEqual(result["assessments"][0]["findings"][0]["outcome"],"FAIL")
@@ -262,14 +277,5 @@ class ImportedProtocol(unittest.TestCase):
         self.assertEqual(len(result["reports"]),1)
         self.assertTrue(any(e["kind"]=="model.input_bound_exceeded" for e in events))
 
-    def test_combined_envelope_preflight_serializes_actual_full_history_and_blocks_oversize(self):
-        with real_runtime(checked_upstream(self.upstream)) as runtime:
-            estimate=experiment.envelope_preflight(runtime,AuthoredSource(),experiment.model_profile())
-            self.assertTrue(estimate["fits"],estimate)
-            self.assertEqual(len(estimate["measurements"]),3)
-            self.assertEqual(estimate["provider_requests"],0)
-            blocked=experiment.envelope_preflight(runtime,AuthoredSource(size=5000),experiment.model_profile())
-            self.assertFalse(blocked["fits"],blocked)
-            self.assertTrue(any(m["wire_bytes"]>40000 or m["budget_envelope_bytes"]>50000 for m in blocked["measurements"]))
 
 if __name__=="__main__": unittest.main()

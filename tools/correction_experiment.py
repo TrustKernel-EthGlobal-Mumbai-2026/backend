@@ -21,10 +21,10 @@ sys.dont_write_bytecode = True
 from continuous_verification import canonical_json, digest
 from continuous_verification.tradingagents import BoundaryError, UPSTREAM_COMMIT
 from tools.continuous_demo import new_output, write_new
-from tools.tradingagents_integration import checked_upstream, real_runtime, child_guards, _complete
+from tools.tradingagents_integration import checked_upstream, real_runtime, _complete
 
 MILESTONE = "provider-report-checkpoint-correction-v1"
-SOURCE_DEPENDENCY = "PENDING_ACCEPTED_B_SOURCE_COMMIT"
+SOURCE_DEPENDENCY = "PENDING_ACCEPTED_B_LIVE_SOURCE_COMMIT"
 POLICY = dict(contract_version="continuous-verification-0.2", policy_id="correction-report-procedure", version="1",
     required_tool="get_verified_market_snapshot", checks=[dict(check_id=name, on_fail="HOLD", on_inconclusive="RECHECK")
     for name in ("required_snapshot_before_market_report", "report_completion")])
@@ -36,11 +36,10 @@ def model_profile(model="gpt-6.1-terra"):
         wall_seconds=420, research_seconds=180, checkpoint0_seconds=180, checkpoint1_seconds=350,
         correction_report_seconds=330, supervisor_shutdown_grace_seconds=5, request_timeout_seconds=30, max_model_calls=11,
         research_calls=6, correction_calls=5, max_output_tokens=2048, max_input_bytes=40000,
-        max_report_bytes=4096,max_assessment_bytes=4096,max_tool_commentary_bytes=512,
         source_calls=7, research_source_calls=5, correction_source_calls=2, verify_calls=2, remediations=1,
         max_concurrency=1, retries=0, cumulative_hard_limit_usd=10.0,
         proposed_incremental_limit_usd=1.77 if model.endswith("terra") else 3.53,
-        source_mode="ACCEPTED_B_EXACT_REPLAY", tool_choice="auto", policy_digest=digest(POLICY))
+        source_mode="LIVE_NATIVE_PER_AGENT_CALL", tool_choice="auto", policy_digest=digest(POLICY))
 
 def checked_profile(profile=None):
     expected = model_profile(profile["model"] if profile is not None else "gpt-6.1-terra")
@@ -150,7 +149,7 @@ def read_existing_budget(operational_root, *, review, baseline=None, owned_ids=(
 def implementation_digest():
     paths = [Path(__file__), ROOT / "tools/tradingagents_integration.py", ROOT / "tools/continuous_demo.py",
              ROOT / "tools/correction_sources.py"]
-    for folder in ("continuous_verification", "trustkernel"):
+    for folder in ("continuous_verification", "trustkernel", "live_experiment"):
         paths += [p for p in (ROOT/folder).rglob("*") if p.is_file() and p.suffix in {".py", ".json", ".md"}]
     return digest({p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)})
 
@@ -164,27 +163,27 @@ def runtime_fingerprint():
     return dict(python=sys.version,packages=versions,upstream_commit=UPSTREAM_COMMIT)
 
 
-def approval_template(profile, bundle_sha256, review):
+def approval_template(profile, binding_sha256, review):
     profile = checked_profile(profile)
     return dict(milestone=MILESTONE, approved=False, approval_id=None, expires_at=None, launch_output=None,
-        model=profile["model"], profile_digest=digest(profile), source_bundle_sha256=bundle_sha256,
+        model=profile["model"], profile_digest=digest(profile), source_binding_sha256=binding_sha256,
         source_dependency=SOURCE_DEPENDENCY, upstream_commit=UPSTREAM_COMMIT,
         implementation_digest=implementation_digest(), runtime_digest=digest(runtime_fingerprint()),
         policy_digest=digest(POLICY), budget_review_digest=digest(review),
         incremental_limit_usd=profile["proposed_incremental_limit_usd"],
         budget_review="REQUIRED_EXACT_TEN_DOLLAR_TWO_HOLD_REVIEW", pricing_review="REQUIRED_CURRENT_CONSERVATIVE_RATES",
-        source_review="REQUIRED_REAL_FRESH_MARKET_NEWS_BUNDLE", account_access="UNPROBED_REPLACEMENT_KEY_MAY_FAIL")
+        source_review="REQUIRED_REVIEWED_LIVE_YAHOO_MARKET_NEWS_POLICY", account_access="UNPROBED_REPLACEMENT_KEY_MAY_FAIL")
 
 
-def validate_approval(approval, *, profile, bundle_sha256, review, output, now=None):
-    expected = approval_template(profile, bundle_sha256, review)
+def validate_approval(approval, *, profile, binding_sha256, review, output, now=None):
+    expected = approval_template(profile, binding_sha256, review)
     mutable = {"approved", "approval_id", "expires_at", "launch_output", "budget_review", "pricing_review", "source_review"}
     if any(approval.get(k) != v for k,v in expected.items() if k not in mutable):
         raise PermissionError("Correction approval exact binding mismatch; smoke approvals cannot launch")
     if (approval.get("approved") is not True or not isinstance(approval.get("approval_id"), str) or not approval["approval_id"]
             or approval.get("budget_review") != "CONFIRMED_BOTH_KNOWN_HOLDS_ALL_ROWS_CARRY_PRESERVED"
             or approval.get("pricing_review") != "CONFIRMED_CONSERVATIVE_FOR_SELECTED_MODEL"
-            or approval.get("source_review") != "CONFIRMED_REAL_FRESH_MARKET_NEWS_SAME_BUNDLE_FOR_BOTH_ARMS"
+            or approval.get("source_review") != "CONFIRMED_LIVE_PER_CALL_YAHOO_POLICY_NO_REPLAY_FALLBACK"
             or approval.get("launch_output") != str(Path(output).resolve())):
         raise PermissionError("Explicit correction operator approval required")
     instant = datetime.fromtimestamp(time.time() if now is None else now, timezone.utc)
@@ -269,8 +268,8 @@ def cli_checkpoint(host, report, *, revision, emit):
 def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=None, authored=None, wall_deadline=None, window_start=None):
     """Normal pinned market analyst + native ToolNode, two bounded report phases.
 
-    source is the accepted B replay adapter (no fetching in this process). The
-    authored HTTP callback is test-only and unavailable in paid mode.
+    Paid source calls use the accepted B native live session. Authored/replay
+    adapters and the authored HTTP callback are test-only in offline modes.
     """
     import httpx
     from langchain_core.messages import HumanMessage
@@ -293,7 +292,7 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
         def __init__(self): self.secrets = []
     with patch.object(trace_module, "Redactor", NoCredentialEnumeration):
         trace = trace_module.Trace(output/"runtime-trace", run_id, dict(milestone=MILESTONE, profile=profile,
-            source_bundle_sha256=source.bundle_sha256, response_origin="PROVIDER" if mode=="paid" else "AUTHORED_HTTP_OVERRIDE"))
+            source_binding_sha256=source.binding_sha256, response_origin="PROVIDER" if mode=="paid" else "AUTHORED_HTTP_OVERRIDE"))
     sink = (output/"phases-turns.jsonl").open("x",encoding="utf-8")
     observations = []
     def emit(kind, payload):
@@ -319,9 +318,9 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
     host = StoredFeedbackHost(backend=backend,run_id=run_id,stream_id="host",producer_id="correction-host",
         redaction_profile="correction-regex",redact=lambda text:trace.redactor.clean(text),proposal_id=run_id+":proposal",
         policy=POLICY,limits=Limits(profile["source_calls"],2,1),observe=emit)
-    state = dict(revision=0,current_input=None,active_call=None,source_records={},messages=[],reports=[],requests=[],
+    state = dict(revision=0,current_input=None,active_call=None,source_records={},messages=[],reports=[],raw_reports=[],requests=[],
         assessments=[],feedback_text=None,feedback_call_id=None,delivery=None,wire=[],error=None,outcome="PARTIAL_NO_REPORT",
-        inference_seconds=0.0,scheduled_wait_seconds=0.0,query_keys={"research":set(),"correction":set()})
+        inference_seconds=0.0,scheduled_wait_seconds=0.0)
     budget = None
     if mode=="paid":
         from trustkernel.safety import Budget
@@ -368,12 +367,17 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
         feedback_call_in_wire = state["feedback_call_id"] is not None and any(item.get("type")=="function_call_output"
             and item.get("call_id")==state["feedback_call_id"] and item.get("output")==canonical_json(state["assessments"][0])
             for item in body.get("input",[]) if isinstance(item,dict))
+        current_report_in_wire = bool(state["raw_reports"]) and any(item.get("role")=="assistant" and (
+            item.get("content")==state["raw_reports"][-1] or isinstance(item.get("content"),list) and any(
+                isinstance(part,dict) and part.get("text")==state["raw_reports"][-1] for part in item["content"]))
+            for item in body.get("input",[]) if isinstance(item,dict))
         proof = dict(turn=sum(limits.calls.values()),phase=limits.phase,model=profile["model"],
             input_event_id=state["current_input"]["event_id"],feedback_in_wire=feedback_in_wire,
             feedback_call_id=state["feedback_call_id"],feedback_call_in_wire=feedback_call_in_wire,
+            current_report_in_wire=current_report_in_wire,
             assessment_id=state["assessments"][0]["assessment_id"] if state["assessments"] else None,
             origin="PROVIDER_REQUEST" if mode=="paid" else "AUTHORED_HTTP_OVERRIDE",body=body)
-        if state["feedback_text"] is not None and not (feedback_in_wire and feedback_call_in_wire):
+        if state["feedback_text"] is not None and not (feedback_in_wire and feedback_call_in_wire and current_report_in_wire):
             raise BoundaryError("Exact feedback packet absent from actual next serialized request")
         state["wire"].append(proof); emit("model.wire_request",proof)
     class ApiOnly(httpx.HTTPTransport):
@@ -411,13 +415,11 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
             emit("model.turn_result",dict(turn=sum(limits.calls.values()),phase=limits.phase,response_id=result.response_metadata.get("id"),
                 content=result.content,tool_calls=result.tool_calls,completion=_complete(result)))
             if len(result.tool_calls)>1: raise BoundaryError("One native tool call per model turn; no batch splitting")
-            if result.tool_calls and len(canonical_json(result.content).encode("utf-8"))>profile["max_tool_commentary_bytes"]:
-                raise BoundaryError("Visible tool commentary exceeds declared context allowance; never truncate")
             return result
     try:
-        emit("experiment.start",dict(profile=profile,source_bundle_sha256=source.bundle_sha256,source_manifest=source.manifest,
+        emit("experiment.start",dict(profile=profile,source_binding_sha256=source.binding_sha256,source_manifest=source.manifest,
             scope="market analyst with native news tool; not full GraphSetup or standalone news analyst"))
-        # The accepted adapter supplies native schemas and exact status-aware replay.
+        # Accepted B supplies native schemas and per-call status/provenance.
         tools=[]
         for native in source.native_tools(runtime):
             def serve(_native=native,**arguments):
@@ -428,13 +430,9 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
                 if (call is None or call["name"]!=_native.name or call["args"]!=model_arguments
                         or any(v!=(source.as_of if k=="trade_date" else source.ticker) for k,v in injected.items())):
                     raise BoundaryError("Source call arguments/ID are not the observed model invocation")
-                if hasattr(source,"allowed") and not source.allowed(_native.name,arguments,limits.phase):
+                if mode!="paid" and hasattr(source,"allowed") and not source.allowed(_native.name,arguments,limits.phase):
                     raise BoundaryError("Query outside declared phase-specific exact source catalog")
-                key=digest([_native.name,arguments])
-                if key in state["query_keys"][limits.phase]:
-                    raise BoundaryError("Repeated query in phase; exact original evidence already retained, no refresh or retry")
-                state["query_keys"][limits.phase].add(key)
-                try: record=source.replay(_native.name,arguments)
+                try: record=source.retrieve(_native.name,arguments)
                 except Exception as error:
                     emit("source.invocation_error",dict(call_id=call["id"],tool_name=_native.name,arguments=arguments,error_type=type(error).__name__))
                     raise
@@ -474,11 +472,10 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
                     report=host.capture.report(content=output_state["market_report"],report_id=run_id+":report",revision=state["revision"],
                         input_event_id=state["current_input"]["event_id"],completion=_complete(result),phase="CLOSED")
                     state["reports"].append(report)
+                    state["raw_reports"].append(output_state["market_report"])
                     backend.record_coverage(run_id,"host",[dict(name=name,state="CAPTURED",basis_event_ids=[report["event_id"] if name in {"phase_boundaries","report_completion"} else state["current_input"]["event_id"]])
                         for name in ("model_input","tool_lifecycle","phase_boundaries","report_completion")])
                     emit("report.closed",dict(report=report,origin="PROVIDER" if mode=="paid" else "AUTHORED_HTTP_OVERRIDE"))
-                    if len(report["content"].encode("utf-8"))>profile["max_report_bytes"]:
-                        raise BoundaryError("Actual report retained but exceeds declared continuation envelope; never truncate")
                     return messages,report
         def model_checkpoint(messages,report,revision):
             limits.phase="correction";limits.check()
@@ -506,8 +503,6 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
             assessment=host.boundary.feedback
             if assessment is None: raise BoundaryError("No bound assessment returned from actual model tool dispatch")
             state["assessments"].append(deepcopy(assessment))
-            if len(canonical_json(assessment).encode("utf-8"))>profile["max_assessment_bytes"]:
-                raise BoundaryError("Actual CLI assessment retained but exceeds declared feedback envelope")
             messages=[*messages,*returned];state["messages"]=messages
             return messages,assessment,call["id"]
         with runtime["config"].run_config({**runtime["defaults"].DEFAULT_CONFIG,"output_language":"English"}):
@@ -522,8 +517,9 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
             else:
                 limits.phase="correction";limits.check();state["revision"]=1
                 state["feedback_call_id"]=verify_call
-                packet=dict(origin="HOST_CHECKPOINT_FEEDBACK",report=report,assessment=assessment,
-                    source_bundle_sha256=source.bundle_sha256,available_evidence=source.catalog,
+                packet=dict(origin="HOST_CHECKPOINT_FEEDBACK",report_event_id=report["event_id"],report_id=report["payload"]["report_id"],
+                    report_revision=report["payload"]["revision"],report_digest=report["content_digest"],assessment_id=assessment["assessment_id"],
+                    source_binding_sha256=source.binding_sha256,available_evidence=source.catalog,
                     instruction="Review this exact current report and immutable scoped assessment alongside the actual source ToolMessages above. "
                         "Use up to two further source calls if needed, then produce a revised report. Reserve one model call for the later checkpoint verifier. "
                         "If evidence unavailable, say so; never invent a repair. "
@@ -556,7 +552,8 @@ def run_arm(runtime, output, source, *, profile, mode, launch_id, budget_info=No
         wire_proofs=state["wire"],source_records=state["source_records"],service_state=service,
         provider_generated_reports=bool(mode=="paid" and state["reports"]),hidden_reasoning=False,semantic_or_price_clearance=False,elapsed_seconds=time.time()-actual_start,
         observation_seconds=clock()-start,inference_seconds=state["inference_seconds"],scheduled_wait_seconds=state["scheduled_wait_seconds"],
-        timing_mode="REAL_CLOCK" if mode=="paid" else "AUTHORED_SIMULATED_SCHEDULE"))
+        timing_mode="REAL_CLOCK" if mode=="paid" else "AUTHORED_SIMULATED_SCHEDULE",
+        source_execution_mode=getattr(source,"mode","AUTHORED_TEST_DOUBLE")))
 
 
 def authored_http(scenario, source):
@@ -589,16 +586,35 @@ def authored_http(scenario, source):
     return respond
 
 
-def load_source(path, *, mode):
-    # Bound to the accepted B module/interface before publication. No source
-    # retrieval belongs in this runner or in its model/ToolNode process.
-    if mode=="paid" and SOURCE_DEPENDENCY.startswith("PENDING"):
-        raise PermissionError("Accepted B source dependency not yet bound")
+def load_source(path, *, mode, live_plan=False):
+    if mode=="paid":
+        # Never fall back to the old replay loader for an authorized live arm.
+        raise PermissionError("Accepted B live session API/commit pending; paid replay is forbidden")
+    if live_plan:
+        from tools.correction_sources import make_plan
+        policy=json.loads(Path(path).read_text("utf-8"))
+        if policy!=make_plan(policy["as_of"],policy["stock_days"]):
+            raise PermissionError("Source plan differs from bounded B policy")
+        class OfflinePlan:
+            binding_sha256=hashlib.sha256(Path(path).read_bytes()).hexdigest()
+            manifest=policy
+            ticker=policy["symbol"];as_of=policy["as_of"];asset_type="crypto"
+            mode="AUTHORED_OFFLINE_NO_SOURCE_FETCH"
+            catalog=[dict(call,status="NOT_PROBED") for call in policy["calls"]]
+            context="Bounded live query examples; this offline test performs NO fetch: "+canonical_json(catalog)
+            def native_tools(self,runtime):
+                from tradingagents.agents.analysts import news_analyst
+                return tuple({tool.name:tool for tool in (*runtime["market"].TOOLS,*news_analyst.TOOLS)}.values())
+            def retrieve(self,name,args):
+                return dict(text="AUTHORED offline source response; no market fact or fetch: "+name,status="AVAILABLE",source_status="AVAILABLE",
+                    text_origin="AUTHORED_OFFLINE_ONLY",source_refs=[],http_refs=[],arguments=args)
+        return OfflinePlan()
     from tools.correction_sources import ReplayBundle
     raw_hash=hashlib.sha256(Path(path).read_bytes()).hexdigest()
     bundle=ReplayBundle(path,expected_sha256=raw_hash)
     class BoundReplay:
-        bundle_sha256=raw_hash
+        mode="OFFLINE_CAPTURED_REPLAY_ONLY"
+        binding_sha256=raw_hash
         manifest=bundle.manifest
         ticker=manifest["plan"]["symbol"]
         as_of=manifest["as_of"]
@@ -611,82 +627,39 @@ def load_source(path, *, mode):
             originals={tool.name:tool for tool in (*runtime["market"].TOOLS,*news_analyst.TOOLS)}
             return bundle.bind_tools(tuple(tool for tool in originals.values() if tool.name in {o["tool"] for o in self.catalog}),
                 on_result=lambda name,args,result:None)
-        def replay(self,name,args): return bundle.resolve(name,args)
+        def retrieve(self,name,args): return bundle.resolve(name,args)
         def allowed(self,name,args,phase):
             return any(o["tool"]==name and o["args"]==args and (phase=="research" or name=="get_verified_market_snapshot"
                 or name=="get_indicators" and args.get("indicator")=="rsi") for o in self.catalog)
     return BoundReplay()
 
 
-def envelope_preflight(runtime,source,profile):
-    """Serialize combined real-source histories locally; no model/provider I/O.
+def filesystem_guards(output, *, paid=False, budget_path=None):
+    """File/SQLite guard only, deliberately installs NO network audit; restrict writes to new output (and future approved ledger)."""
+    output = Path(output).resolve()
+    def audit(event, args):
+        if event == "sqlite3.connect":
+            raw = str(args[0])
+            if raw.startswith("file:"):
+                from urllib.parse import urlsplit, unquote
+                raw = unquote(urlsplit(raw).path)
+                if os.name == "nt" and raw.startswith("/"):
+                    raw = raw[1:]
+            path = Path(raw).resolve()
+            if not path.is_relative_to(output) and not (paid and budget_path and path == budget_path):
+                raise PermissionError("No external SQLite access in smoke child")
+        if event == "open" and isinstance(args[0], (str, bytes, os.PathLike)):
+            path = Path(os.fsdecode(args[0])).resolve()
+            mode, flags = args[1], args[2]
+            writing = bool((flags or 0) & (os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_TRUNC | os.O_APPEND))
+            budget_allowed = paid and budget_path and str(path) in {str(budget_path) + suffix for suffix in ("", "-journal", "-wal", "-shm")}
+            if writing and not path.is_relative_to(output) and not budget_allowed:
+                raise PermissionError("Smoke child refuses external file writes")
+            policy_read = paid and budget_path and path == budget_path.parent.parent / "budget_policy.json"
+            if not writing and (path.name.startswith(".env") or path.name in {".netrc", "budget_policy.json", "approved-budget.sqlite"}) and not (budget_allowed or policy_read):
+                raise PermissionError("Credential/private budget file access disabled")
+    sys.addaudithook(audit)
 
-    Padding represents declared hard report/assessment/commentary limits, not
-    actual generated research. Both wire and unchanged Budget envelopes measured.
-    """
-    import httpx
-    from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
-    from langchain_core.callbacks import BaseCallbackHandler
-    from langchain_core.runnables import Runnable
-    from tradingagents.llm_clients.openai_client import NormalizedChatOpenAI
-    from continuous_verification.tradingagents import make_verify_tool
-    from trustkernel.trace import plain
-    profile=checked_profile(profile)
-    measurements=[]; budget_bytes=[]
-    class Measure(BaseCallbackHandler):
-        def on_chat_model_start(self,serialized,messages,**kwargs):
-            budget_bytes.append(len(json.dumps(plain([messages,kwargs.get("invocation_params")]),ensure_ascii=False).encode()))
-    def mocked(request):
-        measurements.append(dict(wire_bytes=len(request.content),budget_envelope_bytes=budget_bytes[-1]))
-        return httpx.Response(200,json=dict(id="resp_authored_preflight",object="response",created_at=0,status="completed",model=profile["model"],
-            output=[dict(type="message",id="msg_preflight",role="assistant",status="completed",content=[dict(type="output_text",text="AUTHORED ENVELOPE ONLY",annotations=[])])],
-            usage=dict(input_tokens=1,output_tokens=1,total_tokens=2)))
-    http=httpx.Client(transport=httpx.MockTransport(mocked),trust_env=False,timeout=30)
-    model=NormalizedChatOpenAI(model=profile["model"],base_url=profile["endpoint"],reasoning_effort="medium",use_responses_api=True,
-        store=False,service_tier="default",max_tokens=2048,max_retries=0,http_client=http,api_key="authored-envelope-placeholder-not-a-credential")
-    tools=source.native_tools(runtime)
-    history=[HumanMessage(content="HOST ENVELOPE PREFLIGHT ONLY "+"H"*2000)]
-    for index,offer in enumerate(source.catalog):
-        args={k:v for k,v in offer["args"].items() if k not in {"symbol","ticker","trade_date"}}
-        call_id=f"preflight-source-{index}"
-        history += [AIMessage(content="C"*(profile["max_tool_commentary_bytes"]-2),tool_calls=[dict(id=call_id,name=offer["tool"],args=args,type="tool_call")]),
-            ToolMessage(content=source.replay(offer["tool"],offer["args"])["text"],name=offer["tool"],tool_call_id=call_id)]
-    class Capture(Runnable):
-        def bind_tools(self,offered,**kwargs): return self
-        def invoke(self,prompt,config=None,**kwargs):
-            return model.bind_tools(tools,tool_choice="auto",parallel_tool_calls=False).invoke(prompt.to_messages(),config=dict(callbacks=[Measure()]))
-    def native(messages):
-        with patch.object(runtime["market"],"TOOLS",tuple(tools)):
-            runtime["market"].create_market_analyst(Capture())(dict(messages=messages,company_of_interest=source.ticker,asset_type=source.asset_type,
-                trade_date=source.as_of,instrument_context=source.context))
-    try:
-        native(history);measurements[-1]["phase"]="research_report_max_source_history"
-        report="R"*profile["max_report_bytes"]
-        assessment="A"*profile["max_assessment_bytes"]
-        history += [AIMessage(content=report),HumanMessage(content="HOST CHECKPOINT REQUEST "+"H"*2000),
-            AIMessage(content="C"*(profile["max_tool_commentary_bytes"]-2),tool_calls=[dict(id="preflight-verify",name="verify_proposal",args={},type="tool_call")]),
-            ToolMessage(content=assessment,name="verify_proposal",tool_call_id="preflight-verify"),
-            HumanMessage(content=canonical_json(dict(report=dict(content=report,metadata="M"*2048),assessment=assessment,
-                source_bundle_sha256=source.bundle_sha256,available_evidence=source.catalog,instruction="I"*1024)))]
-        remedies=[o for o in source.catalog if o["tool"]=="get_verified_market_snapshot" or o["tool"]=="get_indicators" and o["args"].get("indicator")=="rsi"]
-        for index,offer in enumerate(remedies):
-            args={k:v for k,v in offer["args"].items() if k not in {"symbol","ticker","trade_date"}}
-            call_id=f"preflight-remedy-{index}"
-            history += [AIMessage(content="C"*(profile["max_tool_commentary_bytes"]-2),tool_calls=[dict(id=call_id,name=offer["tool"],args=args,type="tool_call")]),
-                ToolMessage(content=source.replay(offer["tool"],offer["args"])["text"],name=offer["tool"],tool_call_id=call_id)]
-        native(history);measurements[-1]["phase"]="correction_report_full_prior_report_finding_and_evidence"
-        history += [AIMessage(content=report),HumanMessage(content="HOST NEW CHECKPOINT REQUEST "+"H"*2000)]
-        # Only serialize the no-argument verifier; this preflight executes no CLI.
-        class NoVerification:
-            def verify(self,**kw): raise AssertionError("Envelope preflight cannot verify")
-        model.bind_tools([make_verify_tool(NoVerification())],tool_choice="auto",parallel_tool_calls=False).invoke(history,config=dict(callbacks=[Measure()]))
-        measurements[-1]["phase"]="model_recheck_full_revision_history"
-    finally: http.close()
-    fits=all(m["wire_bytes"]<=profile["max_input_bytes"] and m["budget_envelope_bytes"]<=50000 for m in measurements)
-    return dict(status="FITS_DECLARED_COMBINED_ENVELOPES" if fits else "BLOCKED_COMBINED_CONTEXT_TOO_LARGE",fits=fits,
-        measurements=measurements,source_bundle_sha256=source.bundle_sha256,source_catalog=source.catalog,
-        estimation="Actual captured strings plus hard report/assessment/tool-commentary caps and explicit metadata padding; no truncation. Runtime checks remain authoritative.",
-        model_inference_calls=0,provider_requests=0,cli_invocations=0)
 
 
 def child(args):
@@ -695,40 +668,46 @@ def child(args):
     if not output.is_relative_to(ROOT/".local-runs") or output==ROOT/".local-runs":
         raise PermissionError("Unsupervised output")
     marker = json.loads((output/"parent.json").read_text("utf-8"))
-    bundle_path = Path(args.source_bundle).resolve()
+    bundle_path = Path(args.source_plan or args.source_bundle).resolve()
     actual_hash = hashlib.sha256(bundle_path.read_bytes()).hexdigest()
     if (marker["nonce"]!=args.nonce or marker["profile"]!=profile or marker["mode"]!=args.mode
-            or marker["source_bundle_sha256"]!=actual_hash or time.time()>=marker["deadline"]):
+            or marker["source_binding_sha256"]!=actual_hash or time.time()>=marker["deadline"]):
         raise PermissionError("Parent/source/model/deadline binding mismatch")
     args.output_authorized = True
+    if args.mode=="paid" and SOURCE_DEPENDENCY.startswith("PENDING"):
+        raise PermissionError("Accepted B live source dependency pending; no budget/key/model/source access")
     write_new(output/"child-started.json",json.dumps(dict(mode=args.mode,model=args.model))+"\n")
     review = json.loads(Path(args.budget_review).read_text("utf-8")) if args.budget_review else None
     plan=dict(milestone=MILESTONE,profile=profile,execution_enabled=False,model_access="UNPROBED",
         credential_status="ENV_NAME_PRESENT_VALUE_UNREAD" if "OPENAI_API_KEY" in os.environ else "ENV_NAME_ABSENT",
-        budget_status="NOT_OPENED_OR_MUTATED",source_bundle_sha256=actual_hash,source_dependency=SOURCE_DEPENDENCY)
+        budget_status="NOT_OPENED_OR_MUTATED",source_binding_sha256=actual_hash,source_dependency=SOURCE_DEPENDENCY)
     if review: plan["budget_review_summary"]=reviewed_budget_summary(review,profile=profile)
     upstream=checked_upstream(args.upstream)
     budget_info=None
     if args.mode=="paid":
         if not args.approval or not review: raise PermissionError("Correction approval and operator baseline required")
         approval=json.loads(Path(args.approval).read_text("utf-8"))
-        expiry=validate_approval(approval,profile=profile,bundle_sha256=actual_hash,review=review,output=output)
+        expiry=validate_approval(approval,profile=profile,binding_sha256=actual_hash,review=review,output=output)
         if "OPENAI_API_KEY" not in os.environ: raise PermissionError("Credential name absent")
         budget_info=read_existing_budget(upstream.parent.parent,review=review,profile=profile)
         budget_info["approval_expires_epoch"]=expiry
         plan.update(execution_enabled=True,budget_status="EXACT_OPERATOR_BASELINE_PINNED")
-    child_guards(output,paid=args.mode=="paid",budget_path=budget_info["path"] if budget_info else None)
-    source=load_source(bundle_path,mode=args.mode)
-    if source.bundle_sha256!=actual_hash: raise PermissionError("Source replay identity differs from approved bytes")
+    filesystem_guards(output,paid=args.mode=="paid",budget_path=budget_info["path"] if budget_info else None)
+    if args.mode=="paid":
+        # B's accepted live session must additionally gate every HTTP/CFFI route.
+        # Narrow the immutable live safety implementation's input before install.
+        from live_experiment import source_http
+        source_http.SOURCE_HOSTS=frozenset({"query1.finance.yahoo.com","query2.finance.yahoo.com","finance.yahoo.com","fc.yahoo.com"})
+        from live_experiment.safety import network_guard
+        network_guard()
+    else:
+        from trustkernel.safety import network_guard
+        network_guard(False)
+    source=load_source(bundle_path,mode=args.mode,live_plan=bool(args.source_plan))
+    if source.binding_sha256!=actual_hash: raise PermissionError("Source policy/fixture identity differs from approved bytes")
     with real_runtime(upstream) as runtime:
         plan.update(import_proof=runtime["import_proof"],runtime=runtime_fingerprint(),implementation_digest=implementation_digest(),
-            checkpoint_policy=POLICY,source_manifest=source.manifest)
-        estimate=envelope_preflight(runtime,source,profile)
-        plan["combined_envelope_preflight"]=estimate
-        write_new(output/"envelope-preflight.json",json.dumps(estimate,indent=2)+"\n")
-        if not estimate["fits"]:
-            write_new(output/"result.json",json.dumps(dict(plan,outcome="PREFLIGHT_CONTEXT_BLOCKED"),indent=2)+"\n")
-            return 1
+            checkpoint_policy=POLICY,source_manifest=source.manifest,source_execution_mode=source.mode)
         write_new(output/"approval-required.json",json.dumps(approval_template(profile,actual_hash,review),indent=2)+"\n")
         if args.mode=="preflight":
             plan["outcome"]="NO_PAID_PREFLIGHT_COMPLETE"
@@ -744,7 +723,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode",choices=("preflight","scripted","paid"),default="preflight")
     parser.add_argument("--model",choices=("gpt-6.1-terra","gpt-6.1-sol"),default="gpt-6.1-terra")
-    parser.add_argument("--source-bundle",required=True)
+    sources=parser.add_mutually_exclusive_group(required=True)
+    sources.add_argument("--source-plan",help="Reviewed live B source policy; paid path only ever fetches live")
+    sources.add_argument("--source-bundle",help="Offline deterministic replay fixture ONLY; forbidden in paid mode")
     parser.add_argument("--output",required=True)
     parser.add_argument("--upstream",default=os.environ.get("TRUSTKERNEL_TRADINGAGENTS_UPSTREAM"))
     parser.add_argument("--budget-review")
@@ -753,7 +734,7 @@ def main():
     parser.add_argument("--child",action="store_true",help=argparse.SUPPRESS)
     parser.add_argument("--nonce",help=argparse.SUPPRESS)
     args=parser.parse_args()
-    if args.mode=="paid" and (not args.approval or not args.budget_review or args.scenario!="clean"):
+    if args.mode=="paid" and (not args.approval or not args.budget_review or args.scenario!="clean" or not args.source_plan):
         parser.error("Paid correction needs exact new approval/review; authored scenarios unavailable")
     if args.child:
         try: return child(args)
@@ -765,11 +746,14 @@ def main():
     profile=model_profile(args.model)
     output=new_output(args.output,ROOT)
     nonce=uuid.uuid4().hex
-    marker=dict(nonce=nonce,mode=args.mode,profile=profile,source_bundle_sha256=hashlib.sha256(Path(args.source_bundle).read_bytes()).hexdigest(),
+    source_path=Path(args.source_plan or args.source_bundle).resolve()
+    marker=dict(nonce=nonce,mode=args.mode,profile=profile,source_kind="LIVE_POLICY" if args.source_plan else "OFFLINE_REPLAY",
+        source_binding_sha256=hashlib.sha256(source_path.read_bytes()).hexdigest(),
         start=time.time(),deadline=time.time()+profile["wall_seconds"])
     write_new(output/"parent.json",json.dumps(marker)+"\n")
     command=[sys.executable,"-B",str(Path(__file__).resolve()),"--child","--nonce",nonce,"--mode",args.mode,"--model",args.model,
-        "--output",str(output),"--source-bundle",str(Path(args.source_bundle).resolve()),"--upstream",str(Path(args.upstream).resolve()),"--scenario",args.scenario]
+        "--output",str(output),"--source-plan" if args.source_plan else "--source-bundle",str(source_path),
+        "--upstream",str(Path(args.upstream).resolve()),"--scenario",args.scenario]
     for field in ("budget_review","approval"):
         if getattr(args,field): command += ["--"+field.replace("_","-"),str(Path(getattr(args,field)).resolve())]
     try: code=subprocess.run(command,cwd=ROOT,timeout=max(.01,marker["deadline"]-time.time())+profile["supervisor_shutdown_grace_seconds"],check=False).returncode
