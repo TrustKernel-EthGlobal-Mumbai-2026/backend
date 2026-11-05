@@ -19,6 +19,8 @@ The [active orchestration board](docs/continuous/ORCHESTRATION.md) records sourc
 
 **Primary next milestone:** a bounded real-model TradingAgents smoke with a reviewed runnable preflight and explicit budget/time/tool limits. New work is isolated on `codex/tradingagents-integration-smoke`; no paid launch is authorized by the merge. **Side milestone:** a host-ready SDK or MCP integration for another agent, with declared capture/gating coverage. Frontend implementation and independent model-quality evaluation remain deferred.
 
+Foundation delivery: [#2 contracts](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2) -> [#3 capture/backend](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3) -> [#5 SDK/MCP](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5) -> [#4 TradingAgents/demo](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), collected by [integration PR #1](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/1) for main. All four workstreams passed review; future model-smoke readiness is a separate change.
+
 The repository handoff is published. The [initial offline CI run](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/actions/runs/41722496087) passed on a fresh GitHub checkout, including BB8 verification and rebuilding/checking the committed context index. This is repository/mechanism validation, not another agent experiment.
 
 | Workstream | What exists now | Boundary / next action |
@@ -109,7 +111,7 @@ On systems using `python3`, substitute that command. Output paths must be new. T
 
 | Path | Purpose and current scope |
 |---|---|
-| `continuous_verification/` | Accepted successor contract/verifier0.2 and local stored-reference capture/checkpoint service; cross-lane adapter/transport integration in progress |
+| `continuous_verification/` | Reviewed contract/verifier0.2, local capture/checkpoint service, stored TradingAgents feedback adapter and SDK/CLI/MCP access; actual-model smoke remains next |
 | `trustkernel/` | Original instrumented runtime, trace/observer, billing guards, analysis and local viewer; native dependencies required |
 | `verification/` | Historical v1–v3 ledger/refinement source, tests, schemas and declared rules; private corpus needed for data-backed builds |
 | `procedural_loop/` | Standard-library synthetic dynamic loop, frozen contract, adapters, verifier, recorder and tests |

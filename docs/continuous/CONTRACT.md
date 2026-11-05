@@ -2,7 +2,7 @@
 
 Status: accepted for scoped offline integration, 5 November 2026. Reviewed source
 commit: `e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2`; integration source placement:
-`29f038f`. PR #2 remains draft; the runtime milestone is incomplete.
+`29f038f`. PR #2 records this accepted foundation; actual-model test readiness is the next milestone.
 This successor does not change historical builders or the procedural-loop API.
 
 ## Public Python API
