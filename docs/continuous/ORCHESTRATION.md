@@ -8,6 +8,15 @@ the rationale; it is not evidence that an implementation already exists.
 
 ## Current readiness handoff
 
+Latest state: the separately approved smoke attempted one API request at15:19:24
+UTC on5 November and stopped with401, expired configured key. No model response,
+CLI invocation, assessment or next-input feedback was observed. This is an
+authentication blocker, not evidence of model omission or refusal. The attempt's
+unknown reservation remains held alongside the original hold. Before any retry,
+replace the local credential, independently review a new pinned budget baseline
+and gate preserving both holds, and obtain new explicit launch approval. No retry
+or schedule is running. [Outcome](SMOKE_ATTEMPT_2026-11-05.md).
+
 Foundation PRs #2 -> #3 -> #5 -> #4 -> #1 are merged to main at `b365415`.
 [Draft PR #6](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/6)
 contains the separate bounded actual-import test package. Candidate `f3c679b`
