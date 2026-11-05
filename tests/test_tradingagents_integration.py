@@ -29,6 +29,38 @@ def authored_review(path=None, total=4.288617500000004):
 
 
 class ReadinessPlanTests(unittest.TestCase):
+    def test_selected_model_caps_and_approval_bindings_never_mutate_default(self):
+        terra = deepcopy(PROFILE)
+        sol = integration.model_profile("gpt-6.1-sol")
+        self.assertEqual(sol, dict(terra, model="gpt-6.1-sol", proposed_incremental_limit_usd=1.30))
+        self.assertEqual(preflight_plan(profile=sol)["profile"], sol)
+        self.assertEqual(reviewed_budget_summary(authored_review(), profile=sol)["proposed_worst_reserve"], 1.28192)
+        reviewed_budget_summary(authored_review(total=9), profile=terra)
+        with self.assertRaises(PermissionError):
+            reviewed_budget_summary(authored_review(total=9), profile=sol)
+        with self.assertRaises(ValueError):
+            integration.model_profile("unreviewed-model")
+        with self.assertRaises(PermissionError):
+            preflight_plan(profile=dict(sol, max_model_calls=5))
+        fixture, review = dict(origin="AUTHORED"), authored_review()
+        output = ROOT / ".local-runs/authored-sol-approval-never-launched"
+        approval = dict(approval_template(fixture, review, profile=sol, verify_transport="injected-cli"),
+            approved=True, approval_id="authored-test-not-human-approval", launch_output=str(output),
+            expires_at=(datetime.now(timezone.utc)+timedelta(minutes=5)).isoformat(),
+            budget_review="CONFIRMED_TEN_DOLLAR_LEDGER_PRESERVE_BOTH_KNOWN_HOLDS",
+            pricing_review="CONFIRMED_ORIGINAL_UPPER_RATES_CONSERVATIVE",
+            model_account_access="UNPROBED_CALL_MAY_FAIL_AND_RETAIN_HOLD")
+        validate_approval(approval, fixture, output=output, review=review, profile=sol, verify_transport="injected-cli")
+        for changed in (dict(approval, model="gpt-6.1-terra"), dict(approval, incremental_limit_usd=.65),
+                        dict(approval, profile_digest=digest(terra))):
+            with self.assertRaises(PermissionError):
+                validate_approval(changed, fixture, output=output, review=review, profile=sol, verify_transport="injected-cli")
+        with self.assertRaises(PermissionError):
+            validate_approval(approval, fixture, output=output, review=review, profile=terra, verify_transport="injected-cli")
+        sol["max_model_calls"] = 100
+        self.assertEqual(PROFILE, terra)
+        self.assertEqual(integration.model_profile("gpt-6.1-sol")["max_model_calls"], 4)
+
     def test_default_plan_disables_paid_and_preserves_unknowns(self):
         plan = preflight_plan()
         self.assertFalse(plan["execution_enabled"])
@@ -178,6 +210,24 @@ class ReadinessPlanTests(unittest.TestCase):
                 allowed = read_existing_budget(root, review=review, baseline=baseline, owned_ids={"our-request"},remaining_calls=3)
                 for identity in baseline["hold_ids"]:
                     self.assertEqual(allowed["baseline"]["rows"][identity], baseline["rows"][identity])
+                # A separately reviewed sequential Sol arm includes settled Terra
+                # rows, but still only the same two known unknown holds.
+                sol = integration.model_profile("gpt-6.1-sol")
+                second_review = authored_review(path, total=baseline["total"]+.01)
+                second = read_existing_budget(root, review=second_review, profile=sol)
+                self.assertAlmostEqual(second["required_reserve"], 1.28192)
+                self.assertIn("our-request", second["baseline"]["rows"])
+                db.execute("INSERT INTO requests VALUES('sol-request',.32048,NULL,'in_flight_or_unknown',NULL)")
+                db.execute("UPDATE budget SET reserved=?", (second["baseline"]["total"]+.32048,))
+                db.commit()
+                read_existing_budget(root, review=second_review, profile=sol, baseline=second["baseline"],
+                    owned_ids={"sol-request"}, allow_pending={"sol-request"}, remaining_calls=3)
+                with self.assertRaises(PermissionError):
+                    read_existing_budget(root, review=second_review, baseline=second["baseline"],
+                        owned_ids={"sol-request"}, allow_pending={"sol-request"}, remaining_calls=3)
+                with self.assertRaises(PermissionError):
+                    read_existing_budget(root, review=second_review, profile=sol, baseline=second["baseline"],
+                        owned_ids={"sol-request"}, remaining_calls=3)
             finally:
                 db.close()
 
@@ -376,3 +426,36 @@ class RealImportedRunnerTests(unittest.TestCase):
         self.assertEqual(json.loads(feedback["output"]),cli["cli_envelope"]["result"])
         self.assertEqual(report["allowances"],dict(source_rounds=1,verify_calls=2,remediations=1))
         self.assertFalse(report["provider_generated_verify"])
+
+    def test_sol_real_client_graph_cli_profile_and_same_fixture_no_paid(self):
+        process, report, target = self.invoke("sol-cli", "--mode", "scripted", "--model", "gpt-6.1-sol",
+            "--verify-transport", "injected-cli")
+        self.assertEqual(process.returncode, 0, process.stdout+process.stderr)
+        self.assertEqual(report["profile"], integration.model_profile("gpt-6.1-sol"))
+        parent = json.loads((target/"parent.json").read_text("utf-8"))
+        self.assertEqual(parent["profile"], report["profile"])
+        self.assertEqual(parent["profile_digest"], digest(report["profile"]))
+        self.assertEqual(report["budget_review_summary"]["proposed_worst_reserve"], 1.28192)
+        self.assertEqual(report["cli_parser_invocations"], 1)
+        self.assertFalse(report["execution_enabled"])
+        self.assertFalse(report["provider_generated_verify"])
+        self.assertTrue(report["original_preserved"])
+        approval = json.loads((target/"approval-required.json").read_text("utf-8"))
+        self.assertEqual((approval["model"], approval["incremental_limit_usd"], approval["approved"]),
+            ("gpt-6.1-sol", 1.30, False))
+        trace = [json.loads(line) for line in (target/"runtime-trace/trace.jsonl").read_text("utf-8").splitlines()]
+        wires = [e["payload"]["body"] for e in trace if e["kind"]=="smoke.wire_request"]
+        self.assertEqual(len(wires), 3)
+        self.assertTrue(all(w["model"]=="gpt-6.1-sol" and w["reasoning"]["effort"]=="medium"
+            and w["max_output_tokens"]==1024 for w in wires))
+        checkpoints = [e["payload"] for e in report["state"]["monitor_events"] if e["kind"]=="smoke.checkpoint_result"]
+        cli, host = checkpoints
+        self.assertEqual(cli["cli_envelope"], {"ok":True,"result":report["original"]})
+        self.assertEqual((cli["cli_exit_code"], host["transport"]), (0,"DIRECT_NATIVE_HOST"))
+        feedback = next(item for item in wires[1]["input"] if item.get("type")=="function_call_output"
+            and item["call_id"]==cli["model_call_id"])
+        self.assertEqual(json.loads(feedback["output"]), cli["cli_envelope"]["result"])
+        terra_process, terra, terra_target = self.invoke("terra-fixture")
+        self.assertEqual(terra_process.returncode, 0)
+        self.assertEqual(terra["profile"], PROFILE)
+        self.assertEqual((target/"fixture.json").read_bytes(), (terra_target/"fixture.json").read_bytes())

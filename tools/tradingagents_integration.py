@@ -34,9 +34,27 @@ PROFILE = dict(model="gpt-6.1-terra", endpoint="https://api.openai.com/v1", effo
     tool_choice="auto", live_sources=False)
 
 
-def preflight_plan(verify_transport="direct"):
+MODEL_CAPS = {"gpt-6.1-terra": 0.65, "gpt-6.1-sol": 1.30}
+
+
+def model_profile(model="gpt-6.1-terra"):
+    """Return one exact allowlisted arm profile; never mutate the default."""
+    if model not in MODEL_CAPS:
+        raise ValueError("Only reviewed Terra or Sol models are allowed")
+    return dict(deepcopy(PROFILE), model=model, proposed_incremental_limit_usd=MODEL_CAPS[model])
+
+
+def checked_profile(profile=None):
+    expected = model_profile(profile["model"] if profile is not None else "gpt-6.1-terra")
+    if profile is not None and profile != expected:
+        raise PermissionError("Selected arm profile differs from the reviewed fixed limits")
+    return expected
+
+
+def preflight_plan(verify_transport="direct", *, profile=None):
     """Presence/status only; never open budget files or inspect credential values."""
-    return dict(profile=deepcopy(PROFILE), profile_digest=digest(PROFILE), execution_enabled=False, verify_transport=verify_transport,
+    profile = checked_profile(profile)
+    return dict(profile=deepcopy(profile), profile_digest=digest(profile), execution_enabled=False, verify_transport=verify_transport,
         credential_status="ENV_NAME_PRESENT_VALUE_UNREAD" if "OPENAI_API_KEY" in os.environ else "ENV_NAME_ABSENT",
         budget_status="NOT_OPENED_OR_MUTATED; existing cumulative ledger/unknown holds require separate review",
         model_access="NOT_CHECKED; no account/provider request", new_user_approval="REQUIRED",
@@ -106,21 +124,23 @@ def frozen_fixture(runtime):
         tools={name: dict(origin="AUTHORED", text="AUTHORED provider-row defect: Close=99 Low=100; do not reconcile or replace") for name in sorted(names)})
 
 
-def approval_template(fixture, review=None, *, verify_transport="direct"):
+def approval_template(fixture, review=None, *, verify_transport="direct", profile=None):
+    profile = checked_profile(profile)
     return dict(approved=False, approval_id=None, expires_at=None, launch_output=None, milestone="actual-imported-analyst-smoke-v1",
-        profile_digest=digest(PROFILE), implementation_digest=implementation_digest(), verify_transport=verify_transport,
+        model=profile["model"], profile_digest=digest(profile), implementation_digest=implementation_digest(), verify_transport=verify_transport,
         fixture_digest=digest(fixture), upstream_commit=UPSTREAM_COMMIT,
-        incremental_limit_usd=PROFILE["proposed_incremental_limit_usd"],
+        incremental_limit_usd=profile["proposed_incremental_limit_usd"],
         budget_review="REQUIRED_TEN_DOLLAR_REVIEW_AND_BOTH_KNOWN_HOLDS",
         budget_review_digest=digest(review) if review else None,
         pricing_review="REQUIRED_ORIGINAL_UPPER_RATES_STILL_CONSERVATIVE",
         model_account_access="UNPROBED_ACKNOWLEDGEMENT_REQUIRED")
 
 
-def validate_approval(approval, fixture, *, output, review=None, verify_transport="direct", now=None):
+def validate_approval(approval, fixture, *, output, review=None, verify_transport="direct", now=None, profile=None):
     """A reviewed operator artifact is required; this does not create approval."""
-    template = approval_template(fixture, review, verify_transport=verify_transport)
-    for key in ("milestone", "profile_digest", "implementation_digest", "fixture_digest", "upstream_commit", "incremental_limit_usd", "budget_review_digest", "verify_transport"):
+    profile = checked_profile(profile)
+    template = approval_template(fixture, review, verify_transport=verify_transport, profile=profile)
+    for key in ("milestone", "model", "profile_digest", "implementation_digest", "fixture_digest", "upstream_commit", "incremental_limit_usd", "budget_review_digest", "verify_transport"):
         if approval.get(key) != template[key]:
             raise PermissionError("Approval binding mismatch")
     if (approval.get("approved") is not True or not isinstance(approval.get("approval_id"), str) or not approval["approval_id"]
@@ -128,7 +148,7 @@ def validate_approval(approval, fixture, *, output, review=None, verify_transpor
             or approval.get("pricing_review") != "CONFIRMED_ORIGINAL_UPPER_RATES_CONSERVATIVE"
             or approval.get("model_account_access") != "UNPROBED_CALL_MAY_FAIL_AND_RETAIN_HOLD"):
         raise PermissionError("New explicit approval and launch reviews required")
-    reviewed_budget_summary(review)
+    reviewed_budget_summary(review, profile=profile)
     launch = approval.get("launch_output")
     if (not isinstance(launch, str) or not launch or (ROOT / launch).resolve() != Path(output).resolve()
             or not Path(output).resolve().is_relative_to(ROOT / ".local-runs")):
@@ -142,8 +162,9 @@ def validate_approval(approval, fixture, *, output, review=None, verify_transpor
         raise PermissionError("Approval needs a future explicit-timezone expiry within one hour") from None
 
 
-def reviewed_budget_summary(review):
+def reviewed_budget_summary(review, *, profile=None):
     """Validate an operator's closed/read-only review artifact, not the ledger."""
+    profile = checked_profile(profile)
     from trustkernel.billing import upper_charge
     try:
         fingerprint = review["budget_sha256_before"]
@@ -159,11 +180,11 @@ def reviewed_budget_summary(review):
                     or row[1:] != [0.16024, None, "in_flight_or_unknown", None] for row in holds)
                 or len({row[0] for row in holds}) != 2):
             raise ValueError()
-        required = upper_charge(PROFILE["model"], dict(input_tokens=60000, output_tokens=2048)) * PROFILE["max_model_calls"]
+        required = upper_charge(profile["model"], dict(input_tokens=60000, output_tokens=2048)) * profile["max_model_calls"]
         if (review["unchanged"] is not True or fingerprint != review["budget_sha256_after"]
                 or len(fingerprint) != 64 or any(c not in "0123456789abcdef" for c in fingerprint)
                 or review["existing_unsettled_rows"] != 2 or [initial, active, hard] != [3, 10, 10]
-                or not 0 <= total <= active or required > PROFILE["proposed_incremental_limit_usd"]
+                or not 0 <= total <= active or required > profile["proposed_incremental_limit_usd"]
                 or total + required > active):
             raise ValueError()
     except (KeyError, TypeError, ValueError):
@@ -175,7 +196,7 @@ def reviewed_budget_summary(review):
 
 
 def read_existing_budget(operational_root, *, review, baseline=None, owned_ids=(), allow_pending=(),
-                         remaining_calls=PROFILE["max_model_calls"]):
+                         remaining_calls=4, profile=None):
     """Future paid launch only: pin historical rows; permit only this run's writes.
 
     Review SHA binds the closed DB before the first read. Both known unknown
@@ -183,10 +204,11 @@ def read_existing_budget(operational_root, *, review, baseline=None, owned_ids=(
     with all settled rows/carry. New unknowns or unrelated changes refuse a call.
     Never called against real files by preflight/scripted readiness modes.
     """
+    profile = checked_profile(profile)
     import math
     root = Path(operational_root).resolve()
-    reviewed = reviewed_budget_summary(review)
-    if type(remaining_calls) is not int or not 0 <= remaining_calls <= PROFILE["max_model_calls"]:
+    reviewed = reviewed_budget_summary(review, profile=profile)
+    if type(remaining_calls) is not int or not 0 <= remaining_calls <= profile["max_model_calls"]:
         raise PermissionError("Invalid remaining request allowance")
     policy_path, db_path = root / "budget_policy.json", root / "runs/approved-budget.sqlite"
     if not policy_path.is_file() or not db_path.is_file() or any(Path(str(db_path)+suffix).exists() for suffix in ("-wal", "-journal")):
@@ -202,7 +224,7 @@ def read_existing_budget(operational_root, *, review, baseline=None, owned_ids=(
     if baseline is None and (hashlib.sha256(db_path.read_bytes()).hexdigest() != reviewed["ledger_sha256"]
             or any(Path(str(db_path)+suffix).exists() for suffix in ("-wal", "-journal"))):
         raise PermissionError("Closed ledger changed while baseline was read")
-    if (policy.get("hard_limit_usd") != PROFILE["cumulative_hard_limit_usd"]
+    if (policy.get("hard_limit_usd") != profile["cumulative_hard_limit_usd"]
             or policy.get("initial_limit_usd") != limits[0]
             or limits != [reviewed["initial"], reviewed["active"], reviewed["hard"]]):
         raise PermissionError("Existing cumulative/active policy changed")
@@ -218,7 +240,7 @@ def read_existing_budget(operational_root, *, review, baseline=None, owned_ids=(
     if extra != set(owned_ids):
         raise PermissionError("Unexpected concurrent budget requests")
     from trustkernel.billing import upper_charge
-    reserve = upper_charge(PROFILE["model"], dict(input_tokens=60000, output_tokens=2048))
+    reserve = upper_charge(profile["model"], dict(input_tokens=60000, output_tokens=2048))
     expected_total = baseline["total"]
     for identity in extra:
         row = rows[identity]
@@ -233,7 +255,7 @@ def read_existing_budget(operational_root, *, review, baseline=None, owned_ids=(
     if not math.isclose(total,expected_total,rel_tol=0,abs_tol=1e-9):
         raise PermissionError("Concurrent cumulative balance change")
     required = reserve * remaining_calls
-    if not 0 <= total <= limits[1] or total+required > limits[1] or total-baseline["total"]+required > PROFILE["proposed_incremental_limit_usd"]:
+    if not 0 <= total <= limits[1] or total+required > limits[1] or total-baseline["total"]+required > profile["proposed_incremental_limit_usd"]:
         raise PermissionError("Existing active/cumulative/incremental headroom refused")
     return dict(path=db_path,policy=policy,committed_upper=total,active_limit=limits[1],required_reserve=required,
         baseline=baseline,review=review)
@@ -328,8 +350,9 @@ class CheckpointTransport:
         return result
 
 
-def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", budget_info=None, verify_transport="direct"):
+def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", budget_info=None, verify_transport="direct", profile=None):
     """One shared real-import/client/ToolNode path; only HTTP model I/O differs."""
+    profile = checked_profile(profile)
     import httpx
     from langchain_core.messages import HumanMessage
     from langchain_core.runnables import Runnable
@@ -375,29 +398,29 @@ def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", b
             state["checkpoint_context"] = dict(origin=origin, turn=state["model_calls"] if origin == "MODEL_TOOL_DISPATCH" else None,
                 model_call_id=call_id if origin == "MODEL_TOOL_DISPATCH" else None)
     start = time.time()
-    deadline = min(start + PROFILE["wall_seconds"], budget_info["approval_expires_epoch"]) if budget_info else start + PROFILE["wall_seconds"]
+    deadline = min(start + profile["wall_seconds"], budget_info["approval_expires_epoch"]) if budget_info else start + profile["wall_seconds"]
     budget = None
     if mode == "paid":
         from trustkernel.safety import Budget
-        budget = Budget(budget_info["path"], PROFILE["cumulative_hard_limit_usd"], PROFILE["model"], deadline, Path(budget_info["path"]).parent.parent / "STOP", trace,
-            PROFILE["max_model_calls"], initial_limit=budget_info["policy"]["initial_limit_usd"])
+        budget = Budget(budget_info["path"], profile["cumulative_hard_limit_usd"], profile["model"], deadline, Path(budget_info["path"]).parent.parent / "STOP", trace,
+            profile["max_model_calls"], initial_limit=budget_info["policy"]["initial_limit_usd"])
     class Observer(trace_module.Observer):
         def on_tool_start(self, serialized, input_str, **kw):
             super().on_tool_start(serialized, input_str, **kw)
             state["dispatches"].append(serialized.get("name"))
     def before_paid(messages, metadata):
-        read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], baseline=budget_info["baseline"],
-            owned_ids=set(budget.pending.values()), remaining_calls=PROFILE["max_model_calls"] - budget.calls)
+        read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], profile=profile, baseline=budget_info["baseline"],
+            owned_ids=set(budget.pending.values()), remaining_calls=profile["max_model_calls"] - budget.calls)
         budget.before(messages, metadata)
         # Detect a writer racing the initial check before the HTTP request. If
         # rejected, our just-created hold stays reserved; never roll it back.
-        read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], baseline=budget_info["baseline"],
+        read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], profile=profile, baseline=budget_info["baseline"],
             owned_ids=set(budget.pending.values()), allow_pending=[budget.pending[str(metadata.get("run_id"))]],
-            remaining_calls=PROFILE["max_model_calls"] - budget.calls)
+            remaining_calls=profile["max_model_calls"] - budget.calls)
     def after_paid(response, metadata):
         budget.settle(response, metadata)
-        read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], baseline=budget_info["baseline"],
-            owned_ids=set(budget.pending.values()), remaining_calls=PROFILE["max_model_calls"] - budget.calls)
+        read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], profile=profile, baseline=budget_info["baseline"],
+            owned_ids=set(budget.pending.values()), remaining_calls=profile["max_model_calls"] - budget.calls)
     observer = Observer(trace, before_paid if budget else None, after_paid if budget else None)
     policy = dict(contract_version="continuous-verification-0.2", policy_id="authored-smoke-procedure", version="1",
         required_tool="get_verified_market_snapshot", checks=[dict(check_id=name, on_fail="HOLD", on_inconclusive="RECHECK")
@@ -408,7 +431,7 @@ def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", b
     backend.install_policy(run_id, policy)
     host = StoredFeedbackHost(backend=backend, run_id=run_id, stream_id="host", producer_id="smoke-host", redaction_profile="smoke-redacted",
         redact=lambda text: trace.redactor.clean(text), proposal_id="smoke-paper-proposal", policy=policy,
-        limits=Limits(PROFILE["source_rounds"], PROFILE["verify_calls"], PROFILE["remediations"]), observe=boundary_observation)
+        limits=Limits(profile["source_rounds"], profile["verify_calls"], profile["remediations"]), observe=boundary_observation)
     checkpoint_transport = CheckpointTransport(backend, run_id, selection=verify_transport, emit=monitor)
     def assess(request, *, checkpoint, events, policy):
         return checkpoint_transport.verify(request, **state["checkpoint_context"])
@@ -431,12 +454,12 @@ def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", b
         if request.url.scheme != "https" or request.url.host != "api.openai.com" or request.url.path != "/v1/responses":
             raise PermissionError("Only configured OpenAI Responses endpoint is allowed")
         body = json.loads(request.content)
-        if len(request.content) > PROFILE["max_input_bytes"]:
+        if len(request.content) > profile["max_input_bytes"]:
             raise PermissionError("Wire input bound exceeded")
         if budget:
-            read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], baseline=budget_info["baseline"],
+            read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], profile=profile, baseline=budget_info["baseline"],
                 owned_ids=set(budget.pending.values()), allow_pending=[list(budget.pending.values())[-1]],
-                remaining_calls=PROFILE["max_model_calls"] - budget.calls)
+                remaining_calls=profile["max_model_calls"] - budget.calls)
         matched = [item["call_id"] for item in body.get("input", []) if isinstance(item, dict)
             and item.get("type") == "function_call_output" and item.get("call_id") in host.boundary.delivered
             and item.get("output") == host.boundary.delivered[item["call_id"]]]
@@ -462,7 +485,7 @@ def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", b
         else:
             result = [dict(type="message", id="msg_authored_report", role="assistant", status="completed",
                 content=[dict(type="output_text", text="AUTHORED model-I/O override: abstain; provider-row defect or omitted source remains unresolved", annotations=[])])]
-        response = dict(id=f"resp_authored_{step}", object="response", created_at=0, status="completed", model=PROFILE["model"],
+        response = dict(id=f"resp_authored_{step}", object="response", created_at=0, status="completed", model=profile["model"],
             output=result, usage=dict(input_tokens=100, output_tokens=50, total_tokens=150,
                 input_tokens_details=dict(cached_tokens=0), output_tokens_details=dict(reasoning_tokens=0)))
         if scenario == "truncated" and step > 1:
@@ -473,10 +496,10 @@ def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", b
             observe_wire(request)
             return super().handle_request(request)
     transport = ApiOnlyTransport(retries=0) if mode == "paid" else httpx.MockTransport(authored_http)
-    client = httpx.Client(transport=transport, trust_env=False, timeout=PROFILE["request_timeout_seconds"])
-    model_options = dict(model=PROFILE["model"], base_url=PROFILE["endpoint"], reasoning_effort=PROFILE["effort"],
-        use_responses_api=True, store=False, service_tier=PROFILE["service_tier"], max_tokens=PROFILE["max_output_tokens"],
-        max_retries=0, timeout=PROFILE["request_timeout_seconds"], http_client=client)
+    client = httpx.Client(transport=transport, trust_env=False, timeout=profile["request_timeout_seconds"])
+    model_options = dict(model=profile["model"], base_url=profile["endpoint"], reasoning_effort=profile["effort"],
+        use_responses_api=True, store=False, service_tier=profile["service_tier"], max_tokens=profile["max_output_tokens"],
+        max_retries=0, timeout=profile["request_timeout_seconds"], http_client=client)
     if mode != "paid":
         model_options["api_key"] = "authored-offline-placeholder-not-a-credential"
     model = NormalizedChatOpenAI(**model_options)
@@ -487,7 +510,7 @@ def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", b
             trace.emit("smoke.tools_offered", dict(definitions=[convert_to_openai_tool(t) for t in tools], tool_choice="auto"))
             return ObservedModel(self.delegate.bind_tools(tools, tool_choice="auto", parallel_tool_calls=False))
         def invoke(self, messages, config=None, **kwargs):
-            if state["model_calls"] >= PROFILE["max_model_calls"] or time.time() >= deadline:
+            if state["model_calls"] >= profile["max_model_calls"] or time.time() >= deadline:
                 raise PermissionError("Model call or wall-time bound reached")
             state["model_calls"] += 1
             monitor("smoke.turn_start", dict(turn=state["model_calls"], phase="ENTERING_MODEL_CLIENT", verify_transport=verify_transport))
@@ -534,13 +557,13 @@ def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", b
                         reports.append(host.capture.report(content=output_state["market_report"], report_id="smoke-market-report", revision=1,
                             input_event_id=captured_inputs[-1]["event_id"], completion=_complete(message), phase="CLOSED"))
                     return output_state
-                graph = runtime["setup"]._analyst_graph(spec, agent, max_tool_rounds=PROFILE["graph_tool_rounds"])
+                graph = runtime["setup"]._analyst_graph(spec, agent, max_tool_rounds=profile["graph_tool_rounds"])
                 graph.invoke(dict(messages=[HumanMessage(content="AUTHORED checkpoint setup: the host registered a seed report with an omitted snapshot. "
                     "Review that report, voluntarily call verify_proposal before source remediation, then react to its returned findings. "
                     "No tool call is forced. All sources are frozen authored fixtures; abstain on unresolved provider defects.")],
                     company_of_interest="ETH-USD", asset_type="crypto", trade_date=fixture["as_of"],
                     instrument_context="AUTHORED frozen ETH-USD research fixture; no current-price or order authority"),
-                    config=dict(callbacks=[observer], recursion_limit=PROFILE["recursion_limit"], max_concurrency=1))
+                    config=dict(callbacks=[observer], recursion_limit=profile["recursion_limit"], max_concurrency=1))
         if host.boundary.pending_returns:
             original = next(iter(host.boundary.pending_returns.values()))
         if original and reports:
@@ -592,19 +615,20 @@ def run_cycle(runtime, output, fixture, *, mode, launch_id, scenario="normal", b
 
 
 def child(args):
+    profile = model_profile(args.model)
     output = Path(args.output).resolve()
     if output == ROOT / ".local-runs" or not output.is_relative_to(ROOT / ".local-runs"):
         raise PermissionError("Child output outside supervised new-output root")
     marker = json.loads((output / "parent.json").read_text("utf-8"))
-    if (marker["nonce"] != args.nonce or marker["profile_digest"] != digest(PROFILE) or marker["mode"] != args.mode
+    if (marker["nonce"] != args.nonce or marker["profile_digest"] != digest(profile) or marker["profile"] != profile or marker["mode"] != args.mode
             or marker["verify_transport"] != args.verify_transport):
         raise PermissionError("Supervisor binding mismatch")
     write_new(output / "child-started.json", json.dumps(dict(mode=args.mode, paid_authorized=False)) + "\n")
     args.output_authorized = True
-    plan = preflight_plan(args.verify_transport)
+    plan = preflight_plan(args.verify_transport, profile=profile)
     review = json.loads(Path(args.budget_review).read_text("utf-8")) if args.budget_review else None
     if review:
-        plan["budget_review_summary"] = reviewed_budget_summary(review)
+        plan["budget_review_summary"] = reviewed_budget_summary(review, profile=profile)
     root = checked_upstream(args.upstream)
     budget_info = approved_fixture = None
     if args.mode == "paid":
@@ -612,10 +636,10 @@ def child(args):
             raise PermissionError("NEW approval, reviewed fixture and closed-ledger review artifact required")
         approved_fixture = json.loads(Path(args.fixture).read_text("utf-8"))
         approval = json.loads(Path(args.approval).read_text("utf-8"))
-        validate_approval(approval, approved_fixture, output=output, review=review, verify_transport=args.verify_transport)
+        validate_approval(approval, approved_fixture, output=output, review=review, verify_transport=args.verify_transport, profile=profile)
         if "OPENAI_API_KEY" not in os.environ:
             raise PermissionError("API credential environment name absent; no credentials searched")
-        budget_info = read_existing_budget(root.parent.parent, review=review)
+        budget_info = read_existing_budget(root.parent.parent, review=review, profile=profile)
         budget_info["approval_expires_epoch"] = datetime.fromisoformat(approval["expires_at"].replace("Z", "+00:00")).timestamp()
         plan.update(execution_enabled=True, new_user_approval="VALIDATED_OPERATOR_ARTIFACT",
             budget_status="PINNED_CUMULATIVE_READ_CHECK_PASSED; both historical unknown holds remain reserved",
@@ -628,12 +652,12 @@ def child(args):
         plan.update(upstream_commit=UPSTREAM_COMMIT, import_proof=runtime["import_proof"], dotenv_discovery="DISABLED",
             actual_import=True, implementation_digest=implementation_digest(), fixture_digest=digest(fixture))
         write_new(output / "fixture.json", json.dumps(fixture, indent=2) + "\n")
-        write_new(output / "approval-required.json", json.dumps(approval_template(fixture, review, verify_transport=args.verify_transport), indent=2) + "\n")
+        write_new(output / "approval-required.json", json.dumps(approval_template(fixture, review, verify_transport=args.verify_transport, profile=profile), indent=2) + "\n")
         if args.mode == "preflight":
             plan.update(readiness="NEEDS_SCRIPTED_REAL_IMPORT_PROOF", outcome="NO_PAID_PREFLIGHT_COMPLETE")
         else:
             result = run_cycle(runtime, output, fixture, mode=args.mode, launch_id=marker["nonce"], scenario=args.scenario, budget_info=budget_info,
-                verify_transport=args.verify_transport)
+                verify_transport=args.verify_transport, profile=profile)
             plan.update(result)
             mechanism_ready = args.mode == "scripted" and args.scenario == "normal" and result["outcome"] == "PROGRESSION_OBSERVED" and result["original_preserved"]
             plan["readiness"] = "READY_FOR_APPROVAL" if mechanism_ready and review else "MECHANISM_READY_REVIEW_ARTIFACT_REQUIRED" if mechanism_ready else "OUTCOME_RECORDED_NOT_APPROVAL"
@@ -663,6 +687,7 @@ unchanged and separate from this transport distinction.
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=("preflight", "scripted", "paid"), default="preflight")
+    parser.add_argument("--model", choices=tuple(MODEL_CAPS), default="gpt-6.1-terra")
     parser.add_argument("--output", required=True, help="NEW directory under checkout .local-runs")
     parser.add_argument("--upstream", default=os.environ.get("TRUSTKERNEL_TRADINGAGENTS_UPSTREAM"))
     parser.add_argument("--scenario", choices=("normal", "omit", "ignore", "truncated"), default="normal")
@@ -673,6 +698,7 @@ def main():
     parser.add_argument("--child", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--nonce", help=argparse.SUPPRESS)
     args = parser.parse_args()
+    profile = model_profile(args.model)
     if args.mode == "paid" and args.scenario != "normal":
         parser.error("Authored response scenarios are never available in paid mode")
     if args.mode == "paid" and not args.child and (not args.approval or not args.fixture or not args.budget_review):
@@ -697,16 +723,16 @@ def main():
     except (OSError, ValueError) as exc:
         parser.exit(1, f"New-output guard refused ({type(exc).__name__}).\n")
     nonce = uuid.uuid4().hex
-    write_new(output / "parent.json", json.dumps(dict(nonce=nonce, mode=args.mode, profile_digest=digest(PROFILE),
-        verify_transport=args.verify_transport)) + "\n")
+    write_new(output / "parent.json", json.dumps(dict(nonce=nonce, mode=args.mode, profile_digest=digest(profile),
+        verify_transport=args.verify_transport, profile=profile)) + "\n")
     command = [sys.executable, "-B", str(Path(__file__).resolve()), "--child", "--nonce", nonce,
         "--mode", args.mode, "--output", str(output), "--upstream", str(Path(args.upstream).resolve()), "--scenario", args.scenario,
-        "--verify-transport", args.verify_transport]
+        "--verify-transport", args.verify_transport, "--model", args.model]
     for name in ("approval", "fixture", "budget_review"):
         if getattr(args, name):
             command.extend(["--" + name.replace("_", "-"), str(Path(getattr(args, name)).resolve())])
     try:
-        code = subprocess.run(command, cwd=ROOT, timeout=PROFILE["wall_seconds"], check=False).returncode
+        code = subprocess.run(command, cwd=ROOT, timeout=profile["wall_seconds"], check=False).returncode
     except (subprocess.TimeoutExpired, KeyboardInterrupt) as stopped:
         write_new(output / "supervisor-stop.json", json.dumps(dict(outcome=
             "WALL_TIMEOUT_NOT_PASS" if isinstance(stopped, subprocess.TimeoutExpired) else "OPERATOR_STOP_NOT_PASS",

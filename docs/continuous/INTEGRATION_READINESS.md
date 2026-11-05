@@ -1,8 +1,10 @@
 # Actual-model TradingAgents integration-smoke readiness
 
-Status: **offline retry-readiness candidate; PAID EXECUTION DISABLED pending NEW
-explicit user approval and launch checks**. 5 November 2026. The user-authorized
-cumulative ceiling is now $10; this does not authorize another smoke attempt.
+Status: **selected-model retry-readiness candidate; no paid execution by this
+implementation lane**. 5 November 2026. The user authorized the retry when ready
+and added Sol to the experiment. The orchestrator alone will launch after
+independent review and model-specific operator approval/baseline gates. The
+cumulative $10 ceiling retains all prior spending, carry and holds.
 
 Branch codex/tradingagents-integration-smoke is based on main
 b365415f072eaf9d9b475662f56c7c7c441c6fc9 after the foundation merges. PR4 stayed
@@ -57,6 +59,7 @@ From the checkout run with NEW output directories:
 ```text
 python -B tools/tradingagents_integration.py --output .local-runs/model-ten-preflight-001 --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
 python -B tools/tradingagents_integration.py --mode scripted --verify-transport injected-cli --output .local-runs/model-ten-scripted-001 --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
+python -B tools/tradingagents_integration.py --mode scripted --model gpt-6.1-sol --verify-transport injected-cli --output .local-runs/model-sol-scripted-001 --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
 ```
 
 Alternatively pass --upstream explicitly. The budget-review argument is an operator
@@ -82,14 +85,29 @@ are unavailable in paid mode.
 
 | Boundary | Configured limit / distinction |
 |---|---|
-| Model | Single existing gpt-6.1-terra; medium effort; default service tier |
+| Model | Explicit --model gpt-6.1-terra (default) or gpt-6.1-sol; medium effort; default service tier |
 | API | https://api.openai.com/v1/responses only; store=false; no live sources |
 | Model calls/output | 4 calls maximum; 1024 total output tokens/request; 40k-byte wire/input cap |
 | Requests/wall time | No retry; 25s request timeout; parent process kills child at 120s |
 | Model tool choice | auto, parallel_tool_calls=false; one call per returned AI turn; a batch is stopped, not split |
 | Native tool-bearing turns | 3, shared by source and verifier as in the pinned graph; forced wrap-up can lose call identity |
 | Source/verification/remediation | 1 frozen-source dispatch round, 2 verification calls (initial voluntary + host recheck), 1 proposal/report remediation |
-| Money proposal | Incremental ceiling $0.65 under the user-authorized cumulative/active $10 ceiling; original initial limit $3, all prior spending/carry/holds retained |
+| Money proposal | Terra incremental ceiling $0.65; Sol $1.30; paired allowance $1.95 within the cumulative/active $10 ceiling; original initial limit $3 and all prior spending/carry/holds retained |
+
+Each invocation selects one exact fixed profile at CLI startup and passes it to
+the supervisor/child, preflight, approval, budget checks and actual model client.
+Selection never mutates global PROFILE; unreviewed models or modified profiles
+reject. Approval binds the exact selected model, full profile digest and per-arm
+cap as well as implementation/fixture/review digests. A Terra approval cannot
+launch Sol or vice versa. The frozen fixture bytes are identical for both arms.
+
+The orchestrator runs arms sequentially, never concurrently: launch Terra once,
+audit read-only, then prepare a new closed-ledger review including all settled
+first-arm rows before launching Sol once. Each arm has its own unused output,
+approval and 4-call/120-second cap. Any new unknown usage/hold from the first arm
+stops the experiment; do not adopt a third hold or start the second arm. Foreign
+rows/concurrent changes still reject. There is no multi-arm scheduler or automatic
+retry/rebaseline; $10 is a cumulative ceiling, not a new allowance for either arm.
 
 Source schemas remain the original market tuple. Frozen wrapper bodies replace
 native source functions using original fixture_tools; one source function call per
@@ -101,14 +119,17 @@ the graph. Both prompt tool list and ToolNode tuple include verify_proposal.
 
 ## What remains to be checked/approved before any paid call
 
-- NEW explicit user approval for this one output-bound smoke, exact profile,
+- User authorization covering the selected arm and one exact output-bound operator
+  approval artifact for its profile,
   implementation/fixture digests and upstream pin. Generated approval-required.json
   has approved=false, no approval ID/expiry/output and incomplete confirmations.
   It cannot launch anything as generated. An operator artifact is a local execution
-  guard; it is not proof of human authorization without the separate user approval.
+  guard; it is not proof of human authorization without the separate user instruction.
+  The current retry/Sol instruction supplies that intent; launch remains the
+  orchestrator's action after independent review and the remaining gates.
 - Credential-name presence and an acknowledgement that replacement-key/model access
-  is unprobed. The prior key failed authentication; the user must replace it before
-  a newly approved attempt. A future operator may inject the replacement Windows
+  is unprobed. The prior key failed authentication; the orchestrator now reports
+  that the user replaced it. The operator may inject the replacement Windows
   User environment key into the child at launch. This runner does not retrieve
   User-level secrets or search/read key values during readiness. A separately
   approved bounded request may fail; no impossible
@@ -116,7 +137,9 @@ the graph. Both prompt tool list and ToolNode tuple include verify_proposal.
   use subscription access as an API credential, inspect key values or probe access.
 - Current pricing review: original upper_charge uses historical conservative
   reservations (Terra maximum 60k input/2048 output envelope; $0.16024 per
-  request, four totaling $0.64096 under the proposed $0.65 incremental cap).
+  Terra request, four totaling $0.64096 under its $0.65 incremental cap; Sol
+  $0.32048/request, four totaling $1.28192 under its $1.30 cap). Combined conservative
+  reserves are $1.92288 under the proposed paired $1.95 allowance.
   Operator must confirm those legacy upper rates remain conservative
   before launch. No current invoice/price/account entitlement is inferred here.
 - Existing operational-root budget_policy.json and runs/approved-budget.sqlite.
@@ -165,9 +188,10 @@ can detect a racing writer and leave this run's new hold reserved on refusal.
 No real budget files were read by this readiness task. Budget-gate tests use only
 new authored temporary SQLite/policy files and prove read-only byte preservation.
 
-## Future launch command — NOT AUTHORIZED NOW
+## Operator launch after independent review — not executed by this lane
 
-After separate NEW user approval and the above operator checks, an operator must
+After independent review, the user-authorized scope and the above operator checks,
+the orchestrator must
 prepare approval.json from the false template, preserving exact digests, recording
 required pricing/hold-preservation confirmations, including budget_review=
 'CONFIRMED_TEN_DOLLAR_LEDGER_PRESERVE_BOTH_KNOWN_HOLDS', model_account_access=
@@ -179,7 +203,12 @@ it; the new-output guard prevents reuse. Do not auto-create an approved artifact
 python -B tools/tradingagents_integration.py --mode paid --verify-transport injected-cli --output .local-runs/model-ten-approved-001 --fixture .local-runs/model-ten-scripted-001/fixture.json --approval .local-runs/model-ten-scripted-001/approval.json --budget-review "$env:TRUSTKERNEL_BUDGET_REVIEW"
 ```
 
-This command is a proposed future operator action; it has not been run. A paid
+The example selects default Terra. For the Sol arm, use `--model gpt-6.1-sol` with
+its own reviewed Sol fixture/approval output and a NEW post-Terra closed-ledger
+review; never reuse the first arm's baseline or approval. Every prior hold must
+remain exact, and every new first-arm request must have settled before that review.
+
+This command is a future operator action; it has not been run by this lane. A paid
 flag alone is rejected before any child/budget/model work. The profile/source/
 fixture bindings or expiry changing requires a new review/approval. A failed
 attempt does not permit automatic rerun: use a newly approved unused output and
@@ -249,12 +278,17 @@ python -S -B -m unittest discover -s tests -p test_tradingagents_integration.py 
 python -B -m unittest discover -s tests -p test_tradingagents_integration.py -v
 ```
 
-The stdlib suite has 7 controls; actual-import tests explicitly SKIP if pinned
-source/framework dependencies are unavailable. Cached native execution has 11 tests,
+The stdlib suite has 8 controls; actual-import tests explicitly SKIP if pinned
+source/framework dependencies are unavailable. Cached native execution has 13 tests,
 including default no-paid imports, real NormalizedChatOpenAI HTTP serialization/
 parsing and ToolNode feedback continuation, omitted/ignored/truncated cases,
 exact injected CLI request/envelope/exit/status/assessment/checkpoint checks,
 safe denial, same-ID next-wire feedback and two isolated launch identities.
+Sol uses the actual imported client/graph/injected CLI with authored HTTP and
+asserts the serialized model/medium effort, same fixture bytes, model/cap/profile
+approval rejection, exact feedback and the unchanged Terra default. Temporary
+budget controls include Sol's doubled reserve, sequential settled-row review and
+refusal of a retained third unknown.
 No optional integration is counted as PASS when missing. Source/approval expiry/
 one-output bindings, old review/approval rejection, paid-flag denial, read-only
 authored budget checks (both known holds preserved; changed identity/value/state, new
@@ -267,13 +301,22 @@ Official documentation for discretionary tool choice and call/result sequencing:
 The [selected-model page](https://developers.openai.com/api/docs/models/gpt-6.1-terra)
 does not establish this account's access, key validity or approved budget.
 
-Retained offline $10/two-hold candidate evidence:
+Retained selected-model evidence: `.local-runs/terra-selected-scripted-001` and
+`.local-runs/sol-selected-scripted-001`. Both use fictitious authored review
+metadata and real imported client/graph/CLI code with authored HTTP only; each
+retains 69 runtime/15 monitor observations and its own nonce-based run ID. The
+actual serialized requests select the named model at medium effort, with identical
+frozen fixture bytes and exact CLI-result continuation. Generated approvals remain
+false. Thirteen native tests and eight stdlib controls validate this candidate;
+no real budget or key was accessed by this implementation work.
+
+Earlier offline $10/two-hold candidate evidence (commit e9fed8a):
 `.local-runs/terra-ten-preflight-001` and `.local-runs/terra-ten-scripted-001`,
 using `.local-runs/ten-dollar-authored-review.json`. This is explicitly authored
 metadata with fictitious hold IDs, not an operator review of the real ledger;
 it cannot authorize a paid attempt. The future closed-ledger hash/hold comparison
 would reject it against a real ledger. Seven stdlib controls and eleven native
-tests validate the candidate, including both hold identities/tuples, historical
+tests validated that earlier candidate, including both hold identities/tuples, historical
 row/carry and policy changes, tracked pending/settled requests and a third
 retained unknown. All native model I/O is authored HTTP.
 
