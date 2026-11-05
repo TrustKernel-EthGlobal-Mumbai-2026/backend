@@ -1,6 +1,6 @@
 # Wire TradingAgents proposals to verification feedback and bounded recheck
 
-Lane C. Updated 5 November 2026. Status: QUEUED; implementation chat being created.
+Lane C. Updated 5 November 2026. Status: INSPECTED; offline slice in progress.
 
 Branch: `codex/tradingagents-feedback`, draft PR base: `codex/continuous-verification`.
 
@@ -9,5 +9,12 @@ Inspect pinned framework tool dispatch and safe resume boundaries; add a trusted
 Owned paths (new paths are proposed, not implemented): continuous_verification/tradingagents.py and prompts/; tests/test_continuous_tradingagents.py; docs/continuous/TRADINGAGENTS.md.
 
 Dependency gate: Inspection and authored host tests can begin now. Integrated dispatch depends on lane A verify API and lane B checkpoint backend.
+
+Pinned seams and implementation sequence: [TRADINGAGENTS.md](../TRADINGAGENTS.md).
+The pin and clean upstream state were verified read-only. Cached native framework
+dependencies are present; no dependency installation or runner execution occurred.
+The existing graph counts every tool-bearing turn together and returns only the
+analyst report. Verification therefore needs separate accounting before report
+release. Trusted instruction added under `continuous_verification/prompts/`.
 
 Read ../ORCHESTRATION.md and ../../CONTINUOUS_VERIFICATION_PLAN.md before implementation. Update this file with actual changed files, commands, tests, blockers and next action. Keep machine-specific state and full chat transcripts out of the repository. No paid model/provider calls, original-budget mutation, live run, trading, signing or on-chain operation. Do not merge or modify another lane's files.
