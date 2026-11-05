@@ -1,0 +1,10 @@
+{
+  "config_version": "trustkernel-host-1",
+  "mode": "existing",
+  "database": "copied-journal.sqlite",
+  "service_id": "authored-service",
+  "client_id": "authored-reader",
+  "run_ids": [
+    "authored-run"
+  ]
+}

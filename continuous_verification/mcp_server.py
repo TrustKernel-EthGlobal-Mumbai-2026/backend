@@ -7,7 +7,11 @@ from .sdk import Client, OPERATIONS
 MCP_REQUIREMENT = "mcp>=1.28,<2"
 
 
-def build_server(client: Client | None = None):
+def build_server(client: Client | None = None, *, operations=None):
+    """Trusted hosts may narrow discovery; requests never select this allowlist."""
+    selected = tuple(OPERATIONS) if operations is None else tuple(operations)
+    if not selected or len(set(selected)) != len(selected) or any(name not in OPERATIONS for name in selected):
+        raise ValueError("Expected a nonempty known operation allowlist.")
     try:
         installed = version("mcp")
     except PackageNotFoundError:
@@ -32,7 +36,7 @@ def build_server(client: Client | None = None):
         )
         server.tool(name=operation)(invoke)
 
-    for operation in OPERATIONS:
+    for operation in selected:
         register(operation)
     return server
 

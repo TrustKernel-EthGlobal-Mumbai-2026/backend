@@ -1,0 +1,40 @@
+{
+  "config_version": "trustkernel-host-1",
+  "mode": "new",
+  "state_directory": "authored-state",
+  "service_id": "authored-service",
+  "collector_id": "authored-collector",
+  "client_id": "authored-reader",
+  "runs": [
+    {
+      "run_id": "authored-run",
+      "registration_id": "authored-registration",
+      "streams": [
+        {
+          "stream_id": "host",
+          "producer_id": "authored-host",
+          "adapter_version": "fixture-1",
+          "redaction_profile": "authored-public"
+        }
+      ],
+      "policy": {
+        "contract_version": "continuous-verification-0.2",
+        "policy_id": "authored-procedure",
+        "version": "1",
+        "checks": [
+          {
+            "check_id": "required_snapshot_before_market_report",
+            "on_fail": "HOLD",
+            "on_inconclusive": "RECHECK"
+          },
+          {
+            "check_id": "report_completion",
+            "on_fail": "HOLD",
+            "on_inconclusive": "RECHECK"
+          }
+        ],
+        "required_tool": "market_snapshot"
+      }
+    }
+  ]
+}
