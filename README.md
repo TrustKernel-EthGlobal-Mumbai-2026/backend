@@ -6,11 +6,18 @@ TrustKernel exists to catch agent decisions that depend on stale evidence, fault
 
 ## Active state — 5 November 2026
 
-**Current phase: completed live-source recording, completed offline ledger/verification, and repository handoff. No research experiment is running.** The next product milestone is an actual agent receiving a finding, holding a proposal, refreshing/correcting its evidence and passing a scoped recheck. That live corrective loop has not yet been demonstrated.
+**Current phase: the continuous-verification offline foundation is implemented and reviewed. We are preparing the actual-model TradingAgents integration test. No paid research experiment is running.** The immediate milestone is an actual model generating a TrustKernel tool call, receiving its feedback in the next runtime input, and taking an observable next action. Scripted tests have proven the mechanism; that actual-model behavior has not yet been demonstrated.
 
-**New owner focus:** asynchronous capture into an incremental atomic ledger; verification at an explicit agent checkpoint; an actual TradingAgents feedback/revision experiment; and portable CLI/SDK/MCP access with declared per-harness coverage. The [continuous verification plan](docs/CONTINUOUS_VERIFICATION_PLAN.md) records the proposed boundaries, replay-first milestones and frontend data contract. Architecture is proposed; no new runtime, experiment or cross-harness integration is claimed. Frontend implementation and independent model evaluation remain deferred.
+Implemented and reviewed across four separate workstream chats:
 
-**Parallel implementation authorized:** four separate chats own contracts/verifier, capture/ledger, TradingAgents feedback, and SDK/CLI/MCP. This chat remains the orchestrator. The [active orchestration board](docs/continuous/ORCHESTRATION.md) records branch ownership, dependency gates, status and draft PR scope. Integration targets `codex/continuous-verification`; the actual-model smoke test remains separately approval-gated.
+- **Contracts and verifier:** versioned0.2 events, registered-stream checkpoints, exact report/proposal/policy bindings and prerequisite-aware scoped checks. Cycles, stale substitutions, gaps and lag cannot become a positive assessment.
+- **Capture and storage:** durable native JSONL receipts, incremental visible-text inventory, typed procedural records, frozen checkpoint/event views, stored verification results and run-authorized reads. This is a local single-worker backend; native-to-typed mapping, a background collector and complete semantic-ledger readiness remain unimplemented.
+- **TradingAgents feedback plumbing:** stored finding delivery, next-input observations, bounded revision/abstention and recheck. Exact pinned function subsets run with real LangGraph/ToolNode and authored responses; ambiguous flattened-message provenance remains UNKNOWN. Full GraphSetup and actual model behavior remain separate readiness gates.
+- **SDK/CLI/MCP:** actual persisted-backend parity through the Python SDK, trusted injected CLI and genuine official-SDK stdio MCP, including errors, foreign references and restart-stable pinned reads. Standalone defaults fail unavailable until a trusted host supplies the configured service; arbitrary harness installation is not claimed.
+
+The [active orchestration board](docs/continuous/ORCHESTRATION.md) records source commits, independent reviews, dependency gates and PRs. Combined tests exercise the optional MCP and pinned native cases in separate cached environments. A [durable authored demo](tools/continuous_demo.py) retains25 events, SQLite and source-linked summaries: original omission FAIL -> delivered feedback -> scripted revision -> scoped recheck. Its provider-row defect stays unresolved and semantic readiness stays false. It makes zero model/provider calls.
+
+**Primary next milestone:** a bounded real-model TradingAgents smoke with a reviewed runnable preflight and explicit budget/time/tool limits. New work is isolated on `codex/tradingagents-integration-smoke`; no paid launch is authorized by the merge. **Side milestone:** a host-ready SDK or MCP integration for another agent, with declared capture/gating coverage. Frontend implementation and independent model-quality evaluation remain deferred.
 
 The repository handoff is published. The [initial offline CI run](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/actions/runs/41722496087) passed on a fresh GitHub checkout, including BB8 verification and rebuilding/checking the committed context index. This is repository/mechanism validation, not another agent experiment.
 
@@ -21,9 +28,9 @@ The repository handoff is published. The [initial offline CI run](https://github
 | Live-source baseline | Three paired checkpoints with native Yahoo/Polymarket/FRED paths; all six workflows completed, 84 responses, all paper **Underweight** | Evidence differs by request/time; FRED credentials and some sources were unavailable; TrustKernel feedback remained disabled |
 | Atomic ledger | Historical v1/v2 and corrected refinement v3.0.1 preserved; a separate live-corpus adapter now produces **39,448 canonical rows**, including **3,217 provisional candidates** | All narrative characters are accounted for; semantic completeness and accepted factual support remain unestablished |
 | Verification | Live ledger produced **2,185 scoped findings**; normalization/rules replay, exact spans, source bindings and SQLite parity checked | Results do not grant global decision clearance; freshness/authority/dependency policies remain open |
-| Corrective-loop mechanism | An authored offline loop runs single-command and multi-agent shapes through hold, finding delivery, acknowledgement, refresh/revision and recheck; wrong-value and old-clearance controls rejected | Scripted synthetic mechanism only; actual Claude command/live-framework intervention is not implemented |
+| Corrective-loop mechanism | Authored offline loop and successor stored TradingAgents adapter preserve finding delivery, next-input observations, revision and scoped recheck; durable25-event demo included | Scripted responses and pinned native function subsets; actual model intervention is the immediate next milestone |
 | Recorded-log replay | Original framework logs can be reviewed with source-bound findings and new reviewer receipts | A later reviewer receipt does not repair an original omitted call or invent a revised agent decision |
-| Compatibility | Common observation/finding contracts and two example adapter shapes | Compatibility with arbitrary agent systems remains a design target, not a completed integration |
+| Compatibility | Versioned contracts and SDK/injected CLI/genuine MCP stdio parity over the actual persisted local backend | Trusted host configuration required; per-harness installation, capture and enforcement still need validation |
 | Frontend | Draft graph-led observability/transparency concepts: execution graph, evidence, TrustKernel intervention points and post-verification gaps | Draft; no production UI, intervention or usability claim |
 | Sponsor exploration | Owner declared **New Project** as the selected track and prefers CRE/0G; conditional Arkiv ideas are preserved | Owner selection is not organizer acceptance; eligibility/current terms remain unverified; no integration, credits, deployment or signing executed |
 | Independent model evaluation | Deferred by the project owner | No comparative intelligence or capability-uplift claim |
@@ -47,10 +54,10 @@ The offline ledger/rules run passed 35 dedicated tests, rebuilt both canonical o
 
 ### Next decisions and work
 
-1. Specify which findings **hold**, **request refresh** or merely **annotate** a proposal. Keep provider-row defects, omitted obligations and asynchronous price changes distinct.
-2. Bind an explicit source-time/finality/version policy and declared decision dependencies. Do not transfer the synthetic loop's 60-second TTL to live daily candles.
-3. Integrate one bounded real-agent finding → hold → refresh/correction → recheck loop, with observable delivery and a version-bound result. Any paid run needs its own explicit approval; no longer run is scheduled.
-4. Keep frontend exploration and sponsor execution deferred until the verification path is ready. Independent model-quality evaluation remains deferred.
+1. **Immediate readiness:** prepare a short actual-model TradingAgents smoke using real imported pinned runtime modules, deterministic no-paid preflight tests, and exact launch/stop/trace-view commands. The accepted AST-subset tests do not establish full runner readiness.
+2. **On explicit approval:** observe provider-generated TrustKernel call -> dispatch/result -> feedback present in the next model request -> runtime continuation/revision/abstention. Preserve all original findings and scoped rechecks. Review current cumulative budget and unresolved holds read-only; the existing $5 ceiling is not a fresh allowance.
+3. **Side milestone:** make SDK or MCP access usable from a second configured harness with least-privilege host grants. Capture and host enforcement need their own coverage declarations; tool connectivity alone cannot establish either.
+4. **Later:** background capture/service lifecycle, source-specific freshness/finality/authority and material-dependency policies. Do not transfer the authored TTL60 to live candles. Frontend implementation, sponsor execution and independent model-quality evaluation remain deferred.
 
 ### Preserved decisions
 
@@ -88,12 +95,21 @@ python -B tools/offline_demo.py --output .local-runs/demo-001
 python -B tools/check_export.py
 ```
 
+For the successor retained host loop, use a NEW output directory:
+
+```powershell
+python -S -B tools/continuous_demo.py --output .local-runs/continuous-demo-001
+```
+
+Read its `summary.md`, `summary.json` and UTF-8 `events.jsonl`; open `feedback.sqlite` read only. Every source/response is authored; this command does not call a model or provider. Optional genuine MCP tests use `requirements-mcp.txt` in an isolated environment. See [continuous capture](docs/continuous/CAPTURE.md), [TradingAgents scope](docs/continuous/TRADINGAGENTS.md) and [interface scope](docs/continuous/INTERFACES.md).
+
 On systems using `python3`, substitute that command. Output paths must be new. The two suites comprise66procedural and35live-ledger/rules tests; the latter author temporary recorded-like inputs and do not require private recordings. The demo actually runs two adapter shapes through initial PASS -> expired FAIL -> delivered finding/acknowledgement -> explicit refresh/revision -> recheck. Failed assessments remain in JSONL and queryable SQLite. Its TTL60, values and scripted host are authored test parameters, not live market rules or real framework enforcement. See [setup](docs/SETUP.md).
 
 ## Code and work map
 
 | Path | Purpose and current scope |
 |---|---|
+| `continuous_verification/` | Accepted successor contract/verifier0.2 and local stored-reference capture/checkpoint service; cross-lane adapter/transport integration in progress |
 | `trustkernel/` | Original instrumented runtime, trace/observer, billing guards, analysis and local viewer; native dependencies required |
 | `verification/` | Historical v1–v3 ledger/refinement source, tests, schemas and declared rules; private corpus needed for data-backed builds |
 | `procedural_loop/` | Standard-library synthetic dynamic loop, frozen contract, adapters, verifier, recorder and tests |

@@ -1,12 +1,25 @@
 # Continuous verification: active orchestration
 
-Updated: 5 November 2026. Status: implementation workstreams being launched.
+Updated: 5 November 2026. Status: all four offline gates and durable demo reviewed; authorized merge sequence in progress; actual-model test readiness is the primary next milestone.
 Owner approved parallel work in separate chats, coordinated by the existing
 orchestrator chat. This file is the repository's current coordination record.
 The earlier [architecture proposal](../CONTINUOUS_VERIFICATION_PLAN.md) supplies
 the rationale; it is not evidence that an implementation already exists.
 
 ## Objective and gates
+
+The owner clarified the immediate target: an actual model in TradingAgents calls
+TrustKernel, receives feedback in its next runtime input, and visibly progresses.
+SDK/MCP access is secondary. Offline/scripted/native-subset proofs are completed
+foundations, not actual-model behavior. Readiness work continues separately on
+`codex/tradingagents-integration-smoke`; no paid execution is authorized.
+
+The owner explicitly authorized merging the existing PRs to main. Preserve the
+stacked dependency order: #2 contracts -> #3 capture/service -> #5 interfaces ->
+#4 TradingAgents/demo, each into the integration branch, then #1 to main. Resolve
+generated context/manifest conflicts by rebuilding from the combined sources;
+do not overwrite implementation to resolve derived-file conflicts. New smoke
+readiness work is excluded from these reviewed PR heads.
 
 Deliver one offline, checkpoint-bound capture -> ledger -> verification ->
 feedback -> revision -> recheck integration, then prepare a separately approved
@@ -23,6 +36,7 @@ dependency. They do not merge PRs or claim another lane's work is complete.
 ## Branch and dependency map
 
 Integration branch: `codex/continuous-verification`, targeting `main`.
+Draft [integration PR #1](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/1) contains the shared plan and current-state records. Initial plan commit `be4e17f926c0fb90e289b415a8e1e0ffc754cebd` passed GitHub offline CI. This is plan/package validation, not runtime implementation validation.
 Each workstream branches from this integration branch and opens a draft PR back
 to it. Retarget to main only after the integration plan is deliberately changed.
 Do not auto-merge any branch. PR descriptions must distinguish implemented work
@@ -92,15 +106,110 @@ of scope; retain stable graph/event IDs and a cursor-based read contract.
 
 | Lane | State | Latest verified evidence | Next action |
 |---|---|---|---|
-| A | PREPARING | Repository/implementation handoff prepared | Launch implementation chat and publish contract candidate |
-| B | PREPARING | Existing inline callbacks/closed-run builder inspected | Launch capture chat; prepare replay independently of A |
-| C | PREPARING | Pinned upstream recorded in repository | Launch adapter chat; inspect tool dispatch and safe pause/resume |
-| D | PREPARING | Official transport routes recorded in architecture plan | Launch interface chat; define thin transport test harness |
+| A | ACCEPTED FOR SCOPED OFFLINE INTEGRATION | [PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2), corrected `e088970` / contract0.2: orchestrator independently reran all29 tests and original false-PASS control now rejects | B/C/D bind exact accepted API; A stays available for concrete integration defects |
+| B | STORED SERVICE ACCEPTED FOR SCOPED LOCAL INTEGRATION | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3), `251b3b0`: orchestrator independently reran78 tests (A29+B49); reviewed source imported here | C/D bind actual backend; B stays available for concrete integration defects; semantic readiness remains false |
+| C | PERSISTED/NATIVE SEAM ACCEPTED | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), `1e4e8bd`: orchestrator independently reran100 tests with exact pinned native source/dependencies; base95 generic PASS, native class skipped | Durable authored demo and final shared review pending; no full GraphSetup or actual-model behavior claim |
+| D | PERSISTED TRANSPORT PARITY ACCEPTED | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5), `02a9568`: orchestrator independently reran100 tests with official MCP; base98 PASS/2 explicit MCP skips | Exact A/B dependencies; SDK/injected CLI/stdio MCP verified over actual local stored core; standalone/default host setup remains deferred |
 
 The orchestrator updates states after actual chat snapshots and artifact review.
 Public status deliberately omits private machine paths, account data and chat
 transcripts. Exact local chat/checkout identifiers live in the orchestrator's
 private coordination record. Pending or blocked work is never reported as PASS.
+
+Every workstream PR started with a scope/status commit. Initial implementations
+are now appearing, but completion is recorded only after actual code and test
+evidence review. All four PRs target the integration branch, not main. None is merged.
+
+First orchestrator review: immutable A candidate `8eadcb15da76873edd3d5e32c30065087516dc4a`
+passes its seven committed tests. Setting the authored first tool event's parents
+to the later report creates a same-stream future dependency and a cycle through
+tool -> model input -> report -> tool, yet both procedural checks still PASS.
+A received a bounded regression/repair request; no candidate contract has been
+accepted or relayed as frozen at that first review. Other lanes continued independent work using
+explicitly provisional interfaces. This is a development finding on authored
+packets, not a defect asserted about historical market evidence.
+
+Corrected review: source commit `e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2`
+defines `continuous-verification-0.2`. All29 contract/verifier tests independently
+pass from an isolated immutable snapshot. The original causal-cycle packet now
+returns ERROR/CAUSALITY with no binding or positive findings. Cross-stream cycles,
+unknown parents, lag/gaps and report ID/revision substitutions have dedicated
+controls. The orchestrator accepts this API for named offline report-procedure
+integration and imports the exact reviewed files, without merging PRs or main.
+Collector/service authentication, complete registered streams, actual native
+input exposure and any live policy remain backend/host obligations, not schema
+guarantees. Proposal content is a separate downstream decision; these checks
+assess the explicitly bound upstream report only.
+
+Storage review: immutable B milestone `1f6256275d7ce5dcede610935dde23efcbe67f8c`
+was inspected and all26 dedicated tests independently reran successfully. Tests
+cover complete-line durable receipt, commit/ack crashes including actual abrupt
+subprocess exit, identity conflicts, sequence gaps, file changes, exact text
+spans, restart and incremental/full visible-inventory replay. This verifies that
+storage slice only; it has no public checkpoint/verification backend and keeps
+atomic semantic readiness unavailable. B's successor service implementation and
+all cross-lane integration still require review.
+
+Transport review: immutable D milestone `c7e486f19b005ffe8308ec12303bc8062d526938`
+was inspected and independently rerun against the cached official MCP SDK, with
+all16 tests passing. The dependency-free run passes15 and explicitly skips the
+genuine MCP integration test. A dependency files match the accepted source bytes.
+Tests cover real stdio tool discovery/invocation over an authored backend, absent
+backend behavior, request/result validation, stale/foreign bindings, permissions,
+JSON limits and safe errors. This accepts transport mechanics and validation,
+not persisted B service parity or compatibility with every host installation.
+
+Adapter review: immutable C milestone `7961d398fef693d33e4682188dcff5099e6922ff`
+passes9 independently rerun generic tests; native tests are explicitly unexecuted
+in this audit. A negative control records two successful same-name/same-content
+tool calls, then gives the capture helper one flattened human message without a
+call ID. The helper marks both distinct calls as included. This overstates exact
+origin linkage; text equality cannot identify both call occurrences. C received
+a bounded repair request to retain exact input while qualifying ambiguity or
+using explicit host-observed transformation lineage. B was asked to expose the
+exact frozen checkpoint/event/policy view for C's binding validation. No C capture
+or full runtime integration acceptance is claimed yet.
+
+Corrected C review: `9478a61dd8a84009bd53829c19399568c030382c` passes13 generic
+tests and the original duplicate-return control independently. It withholds
+flattened marker-to-call linkage, retains raw input, and marks uncertain input
+boundary UNKNOWN. Ordinary human marker text also cannot establish call origin.
+This bounded repair is accepted; no native framework run was exercised in that
+independent audit. Exact transformed call lineage remains future work.
+
+Callable B review: `251b3b02c63e860020f94ce0b2962472eb0979fe` passes78 tests
+independently from immutable source, including the unchanged A29 suite and49 B
+storage/service controls. Reviewed local backend supports trusted registry and
+collector bindings, durable typed receipts, frozen checkpoints, installed policy
+lookup, retained verification results, exact read-authorized resolve_view and
+run-scoped pinned reads. Exact reviewed owned files are imported here. This
+accepts a single-worker local procedural backend, not a background daemon, native
+trace-to-typed conversion, remote authentication or complete semantic ledger.
+The accepted commit/API was relayed to C/D; their actual-core integration tests
+remain pending. No PR or main merge, model/provider call or budget change.
+
+Final D parity review: `02a9568a9fe1e28bc9a7cb14a5264e60acf107da` was inspected
+and independently rerun with exact accepted A/B dependency bytes. All100 tests
+pass with cached official MCP1.30.0 (A29+B49+D22); base Python passes98 with two
+explicit genuine-MCP skips. Actual local stored results survive SDK, trusted
+in-process CLI and real MCP stdio, including foreign-reference denial, six
+assessment states, unsupported acknowledgement and restart-stable pinned cursors.
+Exact owned files are imported here and optional MCP CI is registered. Standalone
+default commands still fail unavailable without trusted service injection;
+arbitrary host installation, daemon lifecycle and actual-model response are not
+claimed. C's final persisted/native loop and durable authored demo remain pending.
+
+Final C core review: `1e4e8bd367508b99588f11f43534de32c84d28eb` was inspected
+and independently exercised from immutable files with exact accepted A/B bytes.
+Cached native environment runs all100 A/B/C tests successfully; base Python runs
+95 generic tests successfully and explicitly skips the native class (five cases
+not exercised there). The test verifies exact pinned source before executing
+selected AST functions with real LangGraph/ToolNode and authored responses.
+Normal tool delivery reaches revision/recheck; capped ambiguous text remains
+INCONCLUSIVE. Original failure and unready checkpoints survive persistence.
+C owns an in-process serialized service worker for SQLite thread affinity; it
+is not a durable background scheduler or full GraphSetup integration. Exact core
+owned files are imported here; durable demo and combined checkout review follow.
 
 ## Draft PR descriptions
 
