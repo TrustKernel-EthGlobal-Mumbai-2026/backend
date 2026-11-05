@@ -808,22 +808,22 @@
     {
       "destination": "context-index/catalog.json",
       "previous_source_ref": "repository-authoring/context-index/catalog.json",
-      "previous_staged_sha256": "5c196187cedaeb5efe2521a348c628387bd59a4750a7404f033796cffb3f29f9",
+      "previous_staged_sha256": "dd15640396b5f26cbf345aa24f8f43a48eec8a1054f8f93b22bca58d4aeb19d8",
       "source_ref": "repository-authoring/context-index/catalog.json",
-      "source_sha256": "980b81402a868ab841395d0ebf9727482266124122f843e408ccd1a0e41b5039",
-      "staged_bytes": 75486,
-      "staged_sha256": "980b81402a868ab841395d0ebf9727482266124122f843e408ccd1a0e41b5039",
+      "source_sha256": "a92367370c9f88415011671a5055d9479b86fa3a92a7c5b5f5a5f64e058037b1",
+      "staged_bytes": 75831,
+      "staged_sha256": "a92367370c9f88415011671a5055d9479b86fa3a92a7c5b5f5a5f64e058037b1",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
     {
       "destination": "context-index/chunks.jsonl",
       "previous_source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "previous_staged_sha256": "d05888678aed3560fb849667fa4b0151122eb07212635be98ebee388ca73246c",
+      "previous_staged_sha256": "5f75bf449b8983e8517deaf57fcdeaff67b19026e4669e2183c29ec5731470c9",
       "source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "source_sha256": "7e3f345d35dbfb0c3a5d9921fe3adac82226fd3a0f71052d7d402c826bf9d49e",
-      "staged_bytes": 350757,
-      "staged_sha256": "7e3f345d35dbfb0c3a5d9921fe3adac82226fd3a0f71052d7d402c826bf9d49e",
+      "source_sha256": "2cf078923b6467028b83830025837ad830a19303170fd0ecba58a35a234ff666",
+      "staged_bytes": 351734,
+      "staged_sha256": "2cf078923b6467028b83830025837ad830a19303170fd0ecba58a35a234ff666",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
@@ -865,13 +865,11 @@
     },
     {
       "destination": "continuous_verification/journal.py",
-      "previous_source_ref": "repository-authoring/continuous_verification/journal.py",
-      "previous_staged_sha256": "bbab93269810afd70e9c3aef424abfdd3a258558ac940ccdf3b9d8daf2688b37",
       "source_ref": "repository-authoring/continuous_verification/journal.py",
       "source_sha256": "0ef50552d0c2f135b3860f7977cf9649c1f243192dfba2dd3e389cf60354885a",
       "staged_bytes": 13963,
       "staged_sha256": "0ef50552d0c2f135b3860f7977cf9649c1f243192dfba2dd3e389cf60354885a",
-      "treatment": "repository_handoff_adaptation",
+      "treatment": "repository_handoff_addition",
       "workstream": "continuous_verification"
     },
     {
@@ -885,13 +883,11 @@
     },
     {
       "destination": "continuous_verification/projection.py",
-      "previous_source_ref": "repository-authoring/continuous_verification/projection.py",
-      "previous_staged_sha256": "c5fbb8561e6e530b745a8988a4ab5cf18cfcda199b987674b86b182a616040fd",
       "source_ref": "repository-authoring/continuous_verification/projection.py",
       "source_sha256": "c24a4892af1dcb1ed333bf8dbba8d4fcaef7856fc257431100a044d11d35d5b4",
       "staged_bytes": 6985,
       "staged_sha256": "c24a4892af1dcb1ed333bf8dbba8d4fcaef7856fc257431100a044d11d35d5b4",
-      "treatment": "repository_handoff_adaptation",
+      "treatment": "repository_handoff_addition",
       "workstream": "continuous_verification"
     },
     {
@@ -923,22 +919,22 @@
     },
     {
       "destination": "continuous_verification/sdk.py",
+      "previous_source_ref": "repository-authoring/continuous_verification/sdk.py",
+      "previous_staged_sha256": "8f1be76f9a5b031d034c772ca45f812402b585421c03a387910821393d5d8f62",
       "source_ref": "repository-authoring/continuous_verification/sdk.py",
       "source_sha256": "c3cee7d8612d474df932775c8f18b00928739387ab0325450c8410c83c8826c0",
       "staged_bytes": 9042,
       "staged_sha256": "c3cee7d8612d474df932775c8f18b00928739387ab0325450c8410c83c8826c0",
-      "treatment": "repository_handoff_addition",
+      "treatment": "repository_handoff_adaptation",
       "workstream": "continuous_verification"
     },
     {
       "destination": "continuous_verification/service.py",
-      "previous_source_ref": "repository-authoring/continuous_verification/service.py",
-      "previous_staged_sha256": "30478c6e9669d831a57ffb42547765efdf318ee54ff1ba181fbeaf0f7366324a",
       "source_ref": "repository-authoring/continuous_verification/service.py",
       "source_sha256": "ca54897c8d26d73371f10afe9f8cffd41b47f4b567374921629f081443d8344a",
       "staged_bytes": 38467,
       "staged_sha256": "ca54897c8d26d73371f10afe9f8cffd41b47f4b567374921629f081443d8344a",
-      "treatment": "repository_handoff_adaptation",
+      "treatment": "repository_handoff_addition",
       "workstream": "continuous_verification"
     },
     {
@@ -1085,13 +1081,11 @@
     },
     {
       "destination": "docs/continuous/CAPTURE.md",
-      "previous_source_ref": "repository-authoring/docs/continuous/CAPTURE.md",
-      "previous_staged_sha256": "7c6309d9951cd1c6f65e80f0089955fb3622b4d2b9f723898e47edecff302c80",
       "source_ref": "repository-authoring/docs/continuous/CAPTURE.md",
       "source_sha256": "56407c537970396c8ff8ac089f12bcf99a8fff9da1b28d36484a9c9f183f77fc",
       "staged_bytes": 14796,
       "staged_sha256": "56407c537970396c8ff8ac089f12bcf99a8fff9da1b28d36484a9c9f183f77fc",
-      "treatment": "repository_handoff_adaptation",
+      "treatment": "repository_handoff_addition",
       "workstream": "docs"
     },
     {
@@ -1107,11 +1101,13 @@
     },
     {
       "destination": "docs/continuous/INTERFACES.md",
+      "previous_source_ref": "repository-authoring/docs/continuous/INTERFACES.md",
+      "previous_staged_sha256": "f81a18059a811925e5143a83ea774cc458a5849c9c097be7b107c27d19718d1b",
       "source_ref": "repository-authoring/docs/continuous/INTERFACES.md",
       "source_sha256": "37312e7533e4f408e17239245afb8453caaf39827f4e7277d859a82dd8d52178",
       "staged_bytes": 12647,
       "staged_sha256": "37312e7533e4f408e17239245afb8453caaf39827f4e7277d859a82dd8d52178",
-      "treatment": "repository_handoff_addition",
+      "treatment": "repository_handoff_adaptation",
       "workstream": "docs"
     },
     {
@@ -1136,13 +1132,11 @@
     },
     {
       "destination": "docs/continuous/lanes/capture.md",
-      "previous_source_ref": "repository-authoring/docs/continuous/lanes/capture.md",
-      "previous_staged_sha256": "d4056fec7ec3f13786755b4ea55211df7ab148f46cb7dfcefd46270caec26ed7",
       "source_ref": "repository-authoring/docs/continuous/lanes/capture.md",
       "source_sha256": "14cd00dbc43a312604fb27120257325339e579175be1d1aa2368ee1461c71c8e",
       "staged_bytes": 3233,
       "staged_sha256": "14cd00dbc43a312604fb27120257325339e579175be1d1aa2368ee1461c71c8e",
-      "treatment": "repository_handoff_adaptation",
+      "treatment": "repository_handoff_addition",
       "workstream": "docs"
     },
     {
@@ -1152,6 +1146,17 @@
       "staged_bytes": 3695,
       "staged_sha256": "dc7225694810acacefe94ddbbc2b6a1db9193148ab514c5f3391c40191449be1",
       "treatment": "repository_handoff_addition",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/continuous/lanes/interfaces.md",
+      "previous_source_ref": "repository-authoring/docs/continuous/lanes/interfaces.md",
+      "previous_staged_sha256": "ca531a825877c356e27ecb1ef51fb376400c684f124a48ad8cf932b8d3ffdbd8",
+      "source_ref": "repository-authoring/docs/continuous/lanes/interfaces.md",
+      "source_sha256": "bc7ed8bb032195061b1e684ba8154c995f0a2efb8cd190d732f7c17b088df5af",
+      "staged_bytes": 4888,
+      "staged_sha256": "bc7ed8bb032195061b1e684ba8154c995f0a2efb8cd190d732f7c17b088df5af",
+      "treatment": "repository_handoff_adaptation",
       "workstream": "docs"
     },
     {
@@ -1952,13 +1957,11 @@
     },
     {
       "destination": "tests/test_continuous_capture.py",
-      "previous_source_ref": "repository-authoring/tests/test_continuous_capture.py",
-      "previous_staged_sha256": "c23b434ece972929a6969de92b2f70971c4d0186cfa550acdd4d54e16f5467cf",
       "source_ref": "repository-authoring/tests/test_continuous_capture.py",
       "source_sha256": "adf162be6e547beef5a35d1c85920f5fefccb78bc934e5816e6f65e457300950",
       "staged_bytes": 10816,
       "staged_sha256": "adf162be6e547beef5a35d1c85920f5fefccb78bc934e5816e6f65e457300950",
-      "treatment": "repository_handoff_adaptation",
+      "treatment": "repository_handoff_addition",
       "workstream": "tests"
     },
     {
@@ -1972,22 +1975,22 @@
     },
     {
       "destination": "tests/test_continuous_interfaces.py",
+      "previous_source_ref": "repository-authoring/tests/test_continuous_interfaces.py",
+      "previous_staged_sha256": "5e0a4ecb5f7c5a7d510417ef08459367824b10e72329525a6371607163aba83e",
       "source_ref": "repository-authoring/tests/test_continuous_interfaces.py",
       "source_sha256": "80a281fc3fbd8ee95ba2895063b29b80ed359290770aad5f1f13748655ab87fa",
       "staged_bytes": 39552,
       "staged_sha256": "80a281fc3fbd8ee95ba2895063b29b80ed359290770aad5f1f13748655ab87fa",
-      "treatment": "repository_handoff_addition",
+      "treatment": "repository_handoff_adaptation",
       "workstream": "tests"
     },
     {
       "destination": "tests/test_continuous_projection.py",
-      "previous_source_ref": "repository-authoring/tests/test_continuous_projection.py",
-      "previous_staged_sha256": "55e28effc71d0b36d3f7131eaeb7a85ef6faf659ef4a906a886be9a959ed8768",
       "source_ref": "repository-authoring/tests/test_continuous_projection.py",
       "source_sha256": "12419107145826c38e9a73eadbfe94623b93678cf06aa6b4f1b9a37636b6c86d",
       "staged_bytes": 32121,
       "staged_sha256": "12419107145826c38e9a73eadbfe94623b93678cf06aa6b4f1b9a37636b6c86d",
-      "treatment": "repository_handoff_adaptation",
+      "treatment": "repository_handoff_addition",
       "workstream": "tests"
     },
     {
