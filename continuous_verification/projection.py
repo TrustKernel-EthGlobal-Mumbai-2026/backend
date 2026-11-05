@@ -5,6 +5,8 @@ only from its own captured envelope; no cross-event inferred exposure edges.
 """
 from __future__ import annotations
 
+import copy
+
 from .journal import CaptureError, canonical, sha
 
 VERSION = "native-visible-inventory-1"
@@ -79,24 +81,41 @@ class Projection:
     def __init__(self):
         self.position = 0
         self._rows = []
+        self.journal_identity = None
 
     def advance(self, journal, through=None):
         target = journal.watermark() if through is None else through
+        if type(target) is not int:
+            raise CaptureError("Invalid projection prefix")
         if target < self.position:
             raise CaptureError("Projection cannot rewind; use replay")
-        for position, event in journal.events(target):
-            if position > self.position:
-                self._rows.extend(project_event(position, event))
+        if self.journal_identity not in (None, journal.identity):
+            raise CaptureError("Projection belongs to another journal")
+        events = journal.events(target, after=self.position)
+        for position, event in events:
+            self._rows.extend(project_event(position, event))
         self.position = target
+        self.journal_identity = journal.identity
         return self
 
     def rows(self, *, streams=None):
         # Stream watermarks are optional storage filters, not public checkpoints.
-        return sorted((row for row in self._rows if streams is None or
-                       row["run_id"] in streams and row["seq"] <= streams[row["run_id"]]),
-                      key=lambda row: (row["table"], row["id"]))
+        self._validate_streams(streams)
+        return copy.deepcopy(sorted((row for row in self._rows if streams is None or
+                                     row["run_id"] in streams and row["seq"] <= streams[row["run_id"]]),
+                                    key=lambda row: (row["table"], row["id"])))
+
+    @staticmethod
+    def _validate_streams(streams):
+        if streams is not None and (not isinstance(streams, dict) or any(
+                not isinstance(run, str) or not run or type(seq) is not int or seq < 0
+                for run, seq in streams.items())):
+            raise CaptureError("Invalid stream watermarks")
 
     def snapshot(self, journal, *, required_position, streams=None):
+        self._validate_streams(streams)
+        if self.journal_identity not in (None, journal.identity):
+            raise CaptureError("Projection belongs to another journal")
         if type(required_position) is not int or required_position < 0 or required_position > journal.watermark():
             raise CaptureError("Unavailable requested prefix")
         reasons = []

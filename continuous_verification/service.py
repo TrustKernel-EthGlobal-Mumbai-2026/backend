@@ -10,7 +10,11 @@ from .projection import Projection
 class CaptureService:
     def __init__(self, journal_path):
         self.journal = Journal(journal_path)
-        self.journal.audit()
+        try:
+            self.journal.audit()
+        except BaseException:
+            self.journal.close()
+            raise
         self.projection = Projection()
 
     def ingest_trace(self, source_id, path):

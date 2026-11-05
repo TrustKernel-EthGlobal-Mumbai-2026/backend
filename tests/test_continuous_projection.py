@@ -1,5 +1,4 @@
 """Prefix/replay tests over temporary authored trace inputs only."""
-import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -109,6 +108,47 @@ class ProjectionTests(unittest.TestCase):
                 service.storage_snapshot(2)
         finally:
             service.close()
+
+    def test_projection_is_bound_to_journal_and_rows_are_detached(self):
+        self.append(event())
+        p = replay(self.journal)
+        before = canonical(p.rows())
+        rows = p.rows()
+        rows[0]["event"]["payload"]["output"] = "client mutation"
+        self.assertEqual(canonical(p.rows()), before)
+        other = Journal(self.root / "other.sqlite")
+        try:
+            with self.assertRaisesRegex(CaptureError, "another journal"):
+                p.advance(other, 1)
+            with self.assertRaisesRegex(CaptureError, "another journal"):
+                p.snapshot(other, required_position=0)
+        finally:
+            other.close()
+
+    def test_invalid_watermarks_and_projection_rewind_rejected(self):
+        self.append(event())
+        p = replay(self.journal)
+        for streams in ({"authored": True}, {"authored": -1}, {"": 1}, ["authored"]):
+            with self.subTest(streams=streams), self.assertRaises(CaptureError):
+                p.snapshot(self.journal, required_position=1, streams=streams)
+        for target in (0, "1", True, 2):
+            with self.subTest(target=target), self.assertRaises(CaptureError):
+                p.advance(self.journal, target)
+
+    def test_incremental_reader_requests_only_unprojected_suffix(self):
+        one = event()
+        self.append(one)
+        p = replay(self.journal)
+        self.append(event(2, one["event_hash"]))
+        actual = self.journal.events
+        calls = []
+        def record(through=None, *, after=0):
+            calls.append((through, after))
+            return actual(through, after=after)
+        self.journal.events = record
+        p.advance(self.journal)
+        self.assertEqual(calls, [(2, 1)])
+        self.assertEqual(canonical(p.rows()), canonical(replay(self.journal).rows()))
 
 
 if __name__ == "__main__":

@@ -25,16 +25,25 @@ index/packaging metadata are refreshed before publication; orchestrator resolves
 generated conflicts. Central README/orchestration/CI were not changed.
 
 Validation: `py -3.11 -S -B -m unittest tests.test_continuous_capture
-tests.test_continuous_projection -v` — 18 authored temporary-input tests pass.
+tests.test_continuous_projection -v` — 26 authored temporary-input tests pass,
+including actual subprocess crashes before/after durable commit. Initial storage
+milestone published at `4105abd`; hardening adds suffix reads, detached projection
+rows, journal binding, explicit gap ranges and unrelated-database refusal.
 No original corpus/history build, optional native integration or provider call.
 Detailed boundaries and test risks: [CAPTURE.md](../CAPTURE.md).
 
-Blocker: A's candidate `continuous-verification-0.1` (`8eadcb1`) exists but awaits
-orchestrator acceptance. Need accepted event/checkpoint/verifier schema revision,
+Blocker: A's candidate `continuous-verification-0.1` (`8eadcb1`) is NOT ACCEPTED;
+orchestrator requested future-parent/causal-cycle repairs. Need corrected accepted event/checkpoint/verifier schema revision,
 native trace mapping, registered-stream/coverage ownership and extraction versus
 procedural readiness agreement. These are recorded in CAPTURE.md; no competing
 public event contract or fake successful verifier was created.
 
-Next: independent storage hardening, then await accepted contract follow-up for
-public service binding. Orchestrator needs to register the new suites in shared
+Read-only inspected D's INTERFACES.md and sdk.py. CAPTURE.md now proposes exact
+nine-operation stored-reference DTOs, host-bound principal construction, registered
+streams, collector-only coverage, immutable checkpoint/policy resolution, stable
+paginated read semantics and B-owned typed errors. Proposal only: current service
+does not implement these operations or claim atomic ledger readiness.
+
+Next: await corrected accepted A commit and orchestrator/C/D agreement on the
+facade before public service binding. Orchestrator needs to register the new suites in shared
 CI and update central active-state documentation when the integration is ready.

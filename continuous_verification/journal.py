@@ -8,7 +8,12 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import uuid
+from contextlib import closing
 from pathlib import Path
+
+STORAGE_VERSION = "native-receipt-journal-1"
+APPLICATION_ID = 0x544B4331  # TKC1, stored in the SQLite header.
 
 
 def canonical(value):
@@ -40,7 +45,7 @@ def decode_trace(raw):
                            parse_constant=lambda _: (_ for _ in ()).throw(CaptureError("Nonfinite JSON")))
         if not isinstance(event, dict):
             raise CaptureError("Trace event must be an object")
-        if event.get("schema_version") != 1 or type(event.get("seq")) is not int or event["seq"] < 1:
+        if type(event.get("schema_version")) is not int or event["schema_version"] != 1 or type(event.get("seq")) is not int or event["seq"] < 1:
             raise CaptureError("Unsupported native trace envelope")
         for key in ("run_id", "event_id", "kind", "timestamp", "event_hash"):
             if not isinstance(event.get(key), str) or not event[key]:
@@ -58,12 +63,29 @@ def decode_trace(raw):
 
 class Journal:
     def __init__(self, path):
-        self.path = Path(path)
+        self.path = Path(path).resolve()
+        if self.path.exists():
+            # Inspect before changing journal mode or executing any DDL. Never
+            # adopt a historical trace/index DB merely because its name matches.
+            with self.path.open("rb") as stream:
+                header = stream.read(100)
+            if header[:16] != b"SQLite format 3\x00" or int.from_bytes(header[68:72], "big") != APPLICATION_ID:
+                # Do not even open unrelated WAL databases through SQLite: a
+                # read-only connection can otherwise create shared-memory files.
+                raise CaptureError("Not a continuous capture journal")
+            with closing(sqlite3.connect(self.path.as_uri() + "?mode=ro", uri=True)) as existing:
+                try:
+                    row = existing.execute("SELECT value FROM metadata WHERE key='storage_version'").fetchone()
+                except sqlite3.DatabaseError as exc:
+                    raise CaptureError("Not a continuous capture journal") from exc
+                if not row or row[0] != STORAGE_VERSION:
+                    raise CaptureError("Unsupported capture storage version")
         self.db = sqlite3.connect(self.path, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA synchronous=FULL")
         self.db.executescript("""
+            CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS events (
               position INTEGER PRIMARY KEY, event_id TEXT UNIQUE NOT NULL,
               run_id TEXT NOT NULL, seq INTEGER NOT NULL, event_json TEXT NOT NULL,
@@ -80,6 +102,12 @@ class Journal:
               offset INTEGER NOT NULL, detail TEXT NOT NULL,
               UNIQUE(source_id,code,offset,detail));
         """)
+        self.db.execute("INSERT OR IGNORE INTO metadata VALUES('storage_version',?)", (STORAGE_VERSION,))
+        self.db.execute("INSERT OR IGNORE INTO metadata VALUES('journal_id',?)", (str(uuid.uuid4()),))
+        self.identity = self.db.execute("SELECT value FROM metadata WHERE key='journal_id'").fetchone()[0]
+        self.db.execute(f"PRAGMA application_id={APPLICATION_ID}")
+        # Persist the format marker before this journal can issue any receipts.
+        self.db.execute("PRAGMA wal_checkpoint(FULL)")
 
     def close(self):
         self.db.close()
@@ -101,6 +129,10 @@ class Journal:
         hook is a failure-injection seam for authored recovery tests. An exception
         after_commit represents a lost acknowledgement; retry is safe.
         """
+        if (type(start) is not int or start < 0 or type(end) is not int or
+                type(line) is not int or line < 1 or not isinstance(raw, bytes) or
+                not raw.endswith(b"\n") or end != start + len(raw)):
+            raise CaptureError("Invalid complete-line receipt")
         event = decode_trace(raw)
         encoded = canonical(event)
         self.db.execute("BEGIN IMMEDIATE")
@@ -148,12 +180,14 @@ class Journal:
             hook("after_commit")
         return {"cursor": cursor, "position": position, "source_id": source_id, "end": end}
 
-    def events(self, through=None):
+    def events(self, through=None, *, after=0):
         limit = self.watermark() if through is None else through
         if type(limit) is not int or limit < 0 or limit > self.watermark():
             raise CaptureError("Unavailable journal prefix")
+        if type(after) is not int or after < 0 or after > limit:
+            raise CaptureError("Invalid journal cursor")
         return [(row["position"], json.loads(row["event_json"])) for row in self.db.execute(
-            "SELECT position,event_json FROM events WHERE position<=? ORDER BY position", (limit,))]
+            "SELECT position,event_json FROM events WHERE position>? AND position<=? ORDER BY position", (after, limit))]
 
     def watermark(self):
         return self.db.execute("SELECT COALESCE(MAX(position),0) FROM events").fetchone()[0]
@@ -164,17 +198,25 @@ class Journal:
             streams.setdefault(event["run_id"], {})[event["seq"]] = event
         result = {}
         for run, events in sorted(streams.items()):
-            contiguous, previous, reasons = 0, None, []
+            contiguous, previous, reasons, gaps, mismatches = 0, None, [], [], []
+            expected = 1
             for seq in sorted(events):
+                if seq > expected:
+                    gaps.append([expected, seq - 1])
+                expected = seq + 1
                 event = events[seq]
-                if seq != contiguous + 1:
-                    reasons.append("SEQUENCE_GAP")
-                    break
-                if event["previous_hash"] != previous:
-                    reasons.append("SOURCE_CHAIN_MISMATCH")
-                    break
-                contiguous, previous = seq, event["event_hash"]
-            result[run] = {"observed": max(events), "contiguous": contiguous, "reasons": reasons}
+                predecessor = events.get(seq - 1)
+                if (seq == 1 and event["previous_hash"] is not None or predecessor is not None and
+                        event["previous_hash"] != predecessor["event_hash"]):
+                    mismatches.append(seq)
+                if seq == contiguous + 1 and event["previous_hash"] == previous:
+                    contiguous, previous = seq, event["event_hash"]
+            if gaps:
+                reasons.append("SEQUENCE_GAP")
+            if mismatches:
+                reasons.append("SOURCE_CHAIN_MISMATCH")
+            result[run] = {"observed": max(events), "contiguous": contiguous, "reasons": reasons,
+                           "gap_ranges": gaps, "chain_mismatch_positions": mismatches}
         return result
 
     def audit(self):

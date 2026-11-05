@@ -1,7 +1,11 @@
 """Authored temporary native traces; no private corpus or native dependencies."""
 import json
+import sqlite3
+import subprocess
+import sys
 import tempfile
 import unittest
+from contextlib import closing
 from pathlib import Path
 
 from continuous_verification.capture import TraceTailer
@@ -114,6 +118,7 @@ class CaptureTests(unittest.TestCase):
         self.path.write_bytes(line(one) + line(three))
         self.poll()
         self.assertEqual(self.journal.stream_state()["authored"]["reasons"], ["SEQUENCE_GAP"])
+        self.assertEqual(self.journal.stream_state()["authored"]["gap_ranges"], [[2, 2]])
         with self.path.open("ab") as stream:
             stream.write(line(two))
         self.poll()
@@ -145,6 +150,83 @@ class CaptureTests(unittest.TestCase):
         self.path.write_bytes(line(event()))
         with self.assertRaisesRegex(CaptureError, "LINE_TOO_LARGE"):
             TraceTailer(self.journal, "small", self.path, max_line_bytes=5).poll()
+
+    def test_acknowledged_receipt_retry_cannot_rewind_or_change_bytes(self):
+        one = event()
+        two = event(2, one["event_hash"])
+        raw = line(one)
+        self.path.write_bytes(raw + line(two))
+        self.poll()
+        source = self.journal.source("trace")
+        receipt = dict(source_id="trace", path=source["path"], identity=source["identity"],
+                       start=0, end=len(raw), line=1, prefix_hash=sha(raw), raw=raw)
+        self.journal.receive(**receipt)
+        self.assertEqual(self.journal.source("trace"), source)
+        changed = line(event(payload={"output": "Changed text"}))
+        with self.assertRaisesRegex(CaptureError, "collision"):
+            self.journal.receive(**{**receipt, "raw": changed, "end": len(changed)})
+        self.assertEqual(self.journal.audit(), {"events": 2, "receipts": 2})
+
+    def test_direct_storage_rejects_partial_receipt_and_schema_bool(self):
+        raw = line(event())
+        kwargs = dict(source_id="direct", path=str(self.path), identity="authored",
+                      start=0, end=len(raw) - 1, line=1, prefix_hash=sha(raw[:-1]), raw=raw[:-1])
+        with self.assertRaisesRegex(CaptureError, "complete-line"):
+            self.journal.receive(**kwargs)
+        self.path.write_bytes(line(event(schema_version=True)))
+        with self.assertRaises(CaptureError):
+            self.poll()
+
+    def test_event_and_cursor_corruption_detected_on_audit(self):
+        self.path.write_bytes(line(event()))
+        self.poll()
+        self.journal.db.execute("UPDATE events SET chain_hash='corrupted'")
+        with self.assertRaisesRegex(CaptureError, "Journal chain"):
+            self.journal.audit()
+        self.journal.db.execute("UPDATE events SET chain_hash=?", (sha(json.dumps(
+            [None, self.journal.db.execute('SELECT event_json FROM events').fetchone()[0]],
+            ensure_ascii=False, sort_keys=True, separators=(',', ':'))),))
+        self.journal.audit()
+        self.journal.db.execute("UPDATE sources SET offset=offset+1")
+        with self.assertRaisesRegex(CaptureError, "cursor"):
+            self.journal.audit()
+
+    def test_abrupt_process_exit_before_and_after_commit(self):
+        self.path.write_bytes(line(event()))
+        script = """
+import os, sys
+from continuous_verification.capture import TraceTailer
+from continuous_verification.journal import Journal
+journal = Journal(sys.argv[1])
+def crash(stage):
+    if stage == sys.argv[3]:
+        os._exit(23)
+TraceTailer(journal, 'process', sys.argv[2]).poll(hook=crash)
+"""
+        for stage, count in (("before_commit", 0), ("after_commit", 1)):
+            with self.subTest(stage=stage):
+                path = self.root / f"{stage}.sqlite"
+                result = subprocess.run([sys.executable, "-S", "-B", "-c", script,
+                                         str(path), str(self.path), stage], capture_output=True, timeout=20)
+                self.assertEqual(result.returncode, 23, result.stderr.decode())
+                journal = Journal(path)
+                try:
+                    self.assertEqual(journal.audit()["events"], count)
+                    self.assertEqual(TraceTailer(journal, "process", self.path).poll()["accepted_lines"], 1 - count)
+                    self.assertEqual(journal.audit(), {"events": 1, "receipts": 1})
+                finally:
+                    journal.close()
+
+    def test_existing_unrelated_sqlite_is_refused_without_changes(self):
+        path = self.root / "historical-like.sqlite"
+        with closing(sqlite3.connect(path)) as db, db:
+            db.execute("CREATE TABLE events(seq INTEGER PRIMARY KEY)")
+            db.execute("INSERT INTO events VALUES(1)")
+        before = path.read_bytes()
+        with self.assertRaisesRegex(CaptureError, "Not a continuous capture journal"):
+            Journal(path)
+        self.assertEqual(path.read_bytes(), before)
+        self.assertFalse(path.with_name(path.name + "-wal").exists())
 
 
 if __name__ == "__main__":
