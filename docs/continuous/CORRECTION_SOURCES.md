@@ -1,4 +1,86 @@
-# Common captured sources for the correction experiment
+# Live native sources and audit replay for the correction experiment
+
+## Current user direction: LIVE fetch on every source invocation
+
+The common pre-capture experiment plan below is superseded. It remains an audit
+and offline replay utility only. The user selected fresh native reads when each
+agent calls a source; timings, availability and evidence can differ across arms.
+No real source fetch or model call has been performed by lane B.
+
+Implemented live API candidate (independent root review pending):
+
+```python
+with live_source_session(new_arm_source_dir, as_of=run_date,
+                         upstream=checked_native_checkout,
+                         original_tools=original_native_tools,
+                         on_result=host_source_observer, trace=runtime_trace) as session:
+    native_schema_preserving_tools = session.tools
+    # Model/ToolNode chooses actual calls; no proactive source call on enter.
+    observation = session.call(tool_name, full_native_arguments)
+```
+
+`on_result(name, actual_arguments, result)` retains the previous metadata shape:
+text/status/source_status/source_refs/http_refs/coverage/captured_at/as_of/
+as_of_timezone, with mode LIVE_NATIVE_PER_CALL and explicit HTTP/cache observations.
+The wrapped tool returns native text, while C records actual availability and
+source refs. Each valid invocation executes the native function with its actual
+validated arguments. There is no fixed-query unavailable/replay substitute for
+a valid live request. Repeated identical arguments still execute again.
+
+Proposed live bounds: fixed ETH-USD and trusted run date; stock ranges within
+trailing90 days, native indicator1..3 names and lookback1..30, snapshot1..30rows,
+news windows<=30days and limit<=5, no future dates. Native argument defaults are
+honored inside these bounds. Fresh per-call caches and cleared known yfinance
+response memoization prevent silently reusing old quote responses. Actual HTTP
+presence remains observable; no HTTP means no new-network-retrieval claim.
+
+C must install `live_experiment.safety.network_guard` with Yahoo-only source
+hosts, equivalent file/SQLite write guards and its modelApiOnlyTransport.
+It must **not** first install old trustkernel's API-only `child_guards`, since
+audit hooks cannot be relaxed. Upstream git checks finish before guards. The B
+context reuses existing `sources.live_tools`/`source_http.data_http` unchanged,
+preserves original tool schemas, and never handles model credentials or budget.
+Live calls are serialized because native cache/tool patching is process-global.
+Root's420-second arm deadline is authoritative; proposed source limits are12
+native calls,96HTTP requests,12HTTP per call,8sec/2MB per response,48MB retained,
+16KB model text, and a30sec soft boundary before another HTTP request.
+
+The remaining common-capture sections document the earlier audit-only utility;
+they are **not** the selected paid experiment path. Root reviews the new immutable
+live implementation/tests before any fetch. There is no identical-evidence claim.
+`capture_once`/`ReplayBundle` are not prerequisites for this paid path.
+
+The live result adds `native_executed`, `retrieval_status` (HTTP_OBSERVED versus
+NO_HTTP_OBSERVED), `cache_status`, `fresh_per_call_cache`, `fresh_bar_artifacts`,
+`requested_at` and `native_error_type`. Valid calls preserve the native text;
+unavailable native strings keep unavailable source_status even when ToolNode
+returns successfully. Invalid bounded arguments return NOT_FETCHED with no source
+receipt and native_executed=false. Each executed call gets a unique source ref
+and durable receipt.json; its relative content descriptor is qualified by
+artifact_root. Callback signature is unchanged: `(name, args, result)`.
+
+The wrapper uses the existing live_tools context for each native invocation,
+with fresh disk cache and cleared inspected yfinance response memoization/cache
+managers. It copies new CSV/HTTP artifacts before closing/removing only the new
+private cache. If no HTTP was observed, the result makes no new-network-retrieval
+claim. Context creation performs no source fetch. It does not run upstream git
+subprocesses after C installs its guards: C supplies its already checked pinned
+checkout, and receipts explicitly label HOST_CHECKED_BEFORE_GUARDS.
+
+Current validation: **21 tests pass** in the cached native environment with no
+skips; base Python has **19 passes and 2 explicit optional skips**. The new native
+test uses authored HTTP only: repeated identical arguments cause two actual
+wrapper/native invocations, two new cache paths, two HTTP receipts and independently
+observed SOURCE_UNAVAILABLE/AVAILABLE results. It checks unchanged schema identity,
+native strings, no fetch on entry, invalid future arguments without native execution
+or source refs, and removal of each new private cache. Existing replay/date-metadata
+tests remain for audits. No live provider or model request was performed by B.
+
+The single integration dependency is C's guard selection: use the existing
+live-capable network guard before source invocations, plus equivalent write/SQLite
+guards and modelApiOnlyTransport. Installing old API-only child_guards first
+cannot be repaired by this context. No new source broker or worker is required
+for the selected live path. C passes session.tools into its existing ToolNode.
 
 Status: implemented offline source API candidate, 5 November 2026; independent root review
 required before fresh data capture or C binding. No model/source call by lane B.
