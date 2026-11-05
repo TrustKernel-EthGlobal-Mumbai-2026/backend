@@ -324,6 +324,51 @@ class AuthoredHttpTests(unittest.TestCase):
 class NativeSchemaTests(unittest.TestCase):
     setUp = SourceTests.setUp
     capture = SourceTests.capture
+
+    def test_real_native_cache_store_lookup_across_deleted_call_directories(self):
+        import shutil
+        import yfinance.cache as cache
+        previous_cookie_object = None
+        for index in (1, 2):
+            call = self.root/f"real-cache-call-{index}"
+            call.mkdir()
+            private = call/"private-cache"
+            sources.LiveSourceSession._cache_reset(private)
+            cache.set_cache_location(str(private/"native"))
+            try:
+                timezone_cache = cache.get_tz_cache()
+                timezone_cache.store("AUTHORED", "UTC")
+                self.assertEqual(timezone_cache.lookup("AUTHORED"), "UTC")
+                cookie_cache = cache.get_cookie_cache()
+                self.assertIsNot(cookie_cache, previous_cookie_object)
+                previous_cookie_object = cookie_cache
+                # Only authored values in these new local test databases.
+                cookie_cache.store("authored-test", {"fixture": index})
+                self.assertEqual(cookie_cache.lookup("authored-test")["cookie"], {"fixture": index})
+                isin_cache = cache.get_isin_cache()
+                isin_cache.store("AUTHORED", "ETH-USD")
+                self.assertEqual(isin_cache.lookup("AUTHORED"), "ETH-USD")
+                for manager in (cache._TzDBManager, cache._CookieDBManager, cache._ISINDBManager):
+                    self.assertTrue(Path(manager.get_location()).resolve().is_relative_to(private))
+            finally:
+                sources.LiveSourceSession._cache_reset(private, close_only=True)
+                if private.exists():
+                    shutil.rmtree(private)
+            self.assertFalse(private.exists())
+            self.assertIsNone(cache._CookieCacheManager._Cookie_cache)
+            self.assertNotIn("_cookie_cache", vars(cache._CookieCacheManager))
+
+    def test_native_cache_reset_refuses_missing_real_field_without_creating_alias(self):
+        import yfinance.cache as cache
+        manager = cache._CookieCacheManager
+        original = manager._Cookie_cache
+        delattr(manager, "_Cookie_cache")
+        try:
+            with self.assertRaisesRegex(sources.SourceBundleError, "manager contract"):
+                sources.LiveSourceSession._cache_reset(self.root/"missing-field"/"private-cache")
+            self.assertNotIn("_cookie_cache", vars(manager))
+        finally:
+            manager._Cookie_cache = original
     def test_actual_pinned_schema_and_description_are_preserved_without_native_execution(self):
         from tools.tradingagents_integration import checked_upstream, real_runtime
         upstream = checked_upstream(os.environ["CORRECTION_SOURCES_TEST_UPSTREAM"])

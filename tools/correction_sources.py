@@ -556,13 +556,22 @@ class LiveSourceSession:
         # Inspected yfinance 1.7.0 cache controls. Never open a preexisting DB.
         import yfinance.cache as cache
         from yfinance.data import YfData
+        bindings = (("_TzDBManager", "_TzCacheManager", "_tz_cache"),
+                    ("_CookieDBManager", "_CookieCacheManager", "_Cookie_cache"),
+                    ("_ISINDBManager", "_ISINCacheManager", "_isin_cache"))
+        # Validate exact installed-library fields before changing any state.
+        # setattr alone silently created an ineffective lowercase cookie field.
+        for db_name, manager_name, field in bindings:
+            manager = getattr(cache, manager_name, None)
+            db = getattr(cache, db_name, None)
+            if (manager is None or field not in vars(manager) or db is None or
+                    not callable(getattr(db, "set_location", None)) or not callable(getattr(db, "get_location", None))):
+                raise SourceBundleError("Unsupported native cache manager contract")
         YfData.cache_get.cache_clear()
         instance = type(YfData)._instances.pop(YfData, None)
         if instance is not None:
             instance._session.close()
-        for db_name, manager_name, field in (("_TzDBManager", "_TzCacheManager", "_tz_cache"),
-                                              ("_CookieDBManager", "_CookieCacheManager", "_cookie_cache"),
-                                              ("_ISINDBManager", "_ISINCacheManager", "_isin_cache")):
+        for db_name, manager_name, field in bindings:
             db = getattr(cache, db_name)
             if db._db is not None and not Path(db.get_location()).resolve().is_relative_to(cache_path.parent):
                 raise SourceBundleError("Refusing preexisting external native cache state")

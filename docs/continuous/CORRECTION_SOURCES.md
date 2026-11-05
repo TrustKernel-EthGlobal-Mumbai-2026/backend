@@ -67,8 +67,8 @@ claim. Context creation performs no source fetch. It does not run upstream git
 subprocesses after C installs its guards: C supplies its already checked pinned
 checkout, and receipts explicitly label HOST_CHECKED_BEFORE_GUARDS.
 
-Current validation: **21 tests pass** in the cached native environment with no
-skips; base Python has **19 passes and 2 explicit optional skips**. The new native
+Current validation: **23 tests pass** in the cached native environment with no
+skips; base Python has **19 passes and 4 explicit optional skips**. The live native
 test uses authored HTTP only: repeated identical arguments cause two actual
 wrapper/native invocations, two new cache paths, two HTTP receipts and independently
 observed SOURCE_UNAVAILABLE/AVAILABLE results. It checks unchanged schema identity,
@@ -81,6 +81,29 @@ live-capable network guard before source invocations, plus equivalent write/SQLi
 guards and modelApiOnlyTransport. Installing old API-only child_guards first
 cannot be repaired by this context. No new source broker or worker is required
 for the selected live path. C passes session.tools into its existing ToolNode.
+
+### Scoped cache-lifecycle repair after the stopped actual run
+
+Accepted source commit `6a39e85` had a case-sensitive cache reset defect:
+yfinance1.7.0 uses `_CookieCacheManager._Cookie_cache`, but the adapter reset
+`_cookie_cache`. That assignment silently created an unrelated attribute and
+left the initialized real cookie cache object pointing at the first call's
+closed/deleted SQLite directory. The first stock call succeeded; later native
+indicator/snapshot/news calls failed locally with OperationalError before HTTP.
+Those original source returns and the stopped run remain unchanged; they are
+not evidence of a Yahoo provider outage or a corrected report/checkpoint.
+
+The fix resets the exact installed field and validates every expected cache
+manager field before modifying state; missing fields refuse reset explicitly.
+The added regression uses actual yfinance/Peewee timezone, cookie and ISIN
+store/lookup operations in two newly authored temporary call directories,
+closing/deleting the first before opening the second. It reproduced the failure
+on the accepted code, then passes with distinct real cookie objects after the
+fix. A separate missing-field negative control proves no ineffective alias is
+silently created. This regression does not mock a source function or call HTTP.
+The earlier authored native-source function test did not open the real cache
+databases and therefore did not detect this defect. No source/model retry or
+budget/key access is part of this offline repair.
 
 Status: implemented offline source API candidate, 5 November 2026; independent root review
 required before fresh data capture or C binding. No model/source call by lane B.
