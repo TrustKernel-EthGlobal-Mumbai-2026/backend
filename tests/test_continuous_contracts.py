@@ -110,6 +110,40 @@ class ContractTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             validate_checkpoint(p["checkpoint"])
 
+    def test_source_occurrence_versus_version(self):
+        old = example()["events"][0]
+        old.update(event_type="source", payload=dict(source_id="source-1", source_version="v1", valid_at=None, retrieved_at=None, status="OK"))
+        new = copy.deepcopy(old)
+        new.update(event_id="new-occurrence", sequence=2)
+        new["payload"]["retrieved_at"] = "2026-11-05T12:30:00+05:30"
+        validate_event(new, previous=old)
+        new["content"] += "new source bytes"
+        new["content_digest"] = text_digest(new["content"])
+        with self.assertRaises(ContractError):
+            validate_event(new, previous=old)
+        new["payload"]["source_version"] = "v2"
+        validate_event(new, previous=old)
+
+    def test_result_cannot_disguise_unready_as_pass(self):
+        result = verify(**example())
+        result["status"] = "NOT_READY"
+        with self.assertRaises(ContractError):
+            validate_result(result)
+
+    def test_proposal_revision_and_previous_scope(self):
+        old = example()["request"]
+        new = copy.deepcopy(old)
+        new["request_id"] = "new-request"
+        new["proposal"]["content"] += "changed"
+        new["proposal"]["content_digest"] = text_digest(new["proposal"]["content"])
+        with self.assertRaises(ContractError):
+            validate_request(new, previous=old)
+        new["proposal"]["revision"] += 1
+        validate_request(new, previous=old)
+        new["run_id"] = "other-run"
+        with self.assertRaises(ContractError):
+            validate_request(new, previous=old)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:trustkernel:continuous-verification:0.1",
+  "$id": "urn:trustkernel:continuous-verification:0.2",
   "title": "Continuous verification candidate contract",
   "oneOf": [
     {
@@ -24,7 +24,7 @@
       "type": "object",
       "properties": {
         "contract_version": {
-          "const": "continuous-verification-0.1"
+          "const": "continuous-verification-0.2"
         },
         "run_id": {
           "type": "string",
@@ -516,7 +516,7 @@
       "type": "object",
       "properties": {
         "contract_version": {
-          "const": "continuous-verification-0.1"
+          "const": "continuous-verification-0.2"
         },
         "run_id": {
           "type": "string",
@@ -653,7 +653,7 @@
       "type": "object",
       "properties": {
         "contract_version": {
-          "const": "continuous-verification-0.1"
+          "const": "continuous-verification-0.2"
         },
         "policy_id": {
           "type": "string",
@@ -719,7 +719,7 @@
       "type": "object",
       "properties": {
         "contract_version": {
-          "const": "continuous-verification-0.1"
+          "const": "continuous-verification-0.2"
         },
         "run_id": {
           "type": "string",
@@ -769,6 +769,14 @@
                 "PARTIAL",
                 "UNKNOWN"
               ]
+            },
+            "report_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "report_revision": {
+              "type": "integer",
+              "minimum": 0
             }
           },
           "required": [
@@ -778,7 +786,9 @@
             "content_digest",
             "report_event_id",
             "dependencies",
-            "dependency_completeness"
+            "dependency_completeness",
+            "report_id",
+            "report_revision"
           ],
           "additionalProperties": false
         },
@@ -869,7 +879,7 @@
       "type": "object",
       "properties": {
         "contract_version": {
-          "const": "continuous-verification-0.1"
+          "const": "continuous-verification-0.2"
         },
         "run_id": {
           "type": "string",
@@ -916,7 +926,7 @@
       "type": "object",
       "properties": {
         "contract_version": {
-          "const": "continuous-verification-0.1"
+          "const": "continuous-verification-0.2"
         },
         "assessment_id": {
           "type": "string",
@@ -943,7 +953,51 @@
           "type": [
             "object",
             "null"
-          ]
+          ],
+          "properties": {
+            "contract_version": {
+              "const": "continuous-verification-0.2"
+            },
+            "run_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "request_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "request_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "proposal_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "checkpoint_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "policy_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "evidence_digest": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            }
+          },
+          "required": [
+            "contract_version",
+            "run_id",
+            "request_id",
+            "request_digest",
+            "proposal_digest",
+            "checkpoint_digest",
+            "policy_digest",
+            "evidence_digest"
+          ],
+          "additionalProperties": false
         },
         "findings": {
           "type": "array",
@@ -1023,6 +1077,89 @@
         },
         "scope": {
           "const": "declared_checks_at_checkpoint"
+        },
+        "readiness": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "service_established": {
+              "type": "boolean"
+            },
+            "streams": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "stream_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "requested": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "ingested_through": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "projected_through": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "observed_events": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "gaps": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "READY",
+                      "NOT_READY",
+                      "CAPTURE_GAP"
+                    ]
+                  }
+                },
+                "required": [
+                  "stream_id",
+                  "requested",
+                  "ingested_through",
+                  "projected_through",
+                  "observed_events",
+                  "gaps",
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "unresolved_parent_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "service_established",
+            "streams",
+            "unresolved_parent_ids"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -1035,7 +1172,8 @@
         "findings",
         "disposition",
         "issues",
-        "scope"
+        "scope",
+        "readiness"
       ],
       "additionalProperties": false
     }

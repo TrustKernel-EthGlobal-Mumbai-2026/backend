@@ -1,6 +1,6 @@
 {
   "request": {
-    "contract_version": "continuous-verification-0.1",
+    "contract_version": "continuous-verification-0.2",
     "run_id": "authored-run",
     "request_id": "request-1",
     "proposal": {
@@ -10,17 +10,19 @@
       "content_digest": "dc4a8717951f546b37898eed04c73f8a34a383f7db6dd465ebdff526389b34cb",
       "report_event_id": "event-3",
       "dependencies": null,
-      "dependency_completeness": "UNKNOWN"
+      "dependency_completeness": "UNKNOWN",
+      "report_id": "market-1",
+      "report_revision": 0
     },
     "checkpoint": {
       "checkpoint_id": "checkpoint-1",
       "revision": 0,
-      "digest": "7390920514d5335a1a0e914831cc7bb8d36d5225e92b4cfeeea3ff4d96feb44b"
+      "digest": "d27f1dc8af27188c4bc173190b7a14ee0ec96dcbd6b533bfdc3df58a317d707d"
     },
     "policy": {
       "policy_id": "authored-procedure",
       "version": "1",
-      "digest": "da4319f8347c9867f40257212332f3b52576b8b073349aae43eb064bdd803ae2",
+      "digest": "bcb2c1bb9592c3063a2477dd412f391de315e3554feb8af57f88517f68709e6a",
       "checks": [
         "required_snapshot_before_market_report",
         "report_completion"
@@ -32,7 +34,7 @@
     ]
   },
   "checkpoint": {
-    "contract_version": "continuous-verification-0.1",
+    "contract_version": "continuous-verification-0.2",
     "run_id": "authored-run",
     "checkpoint_id": "checkpoint-1",
     "revision": 0,
@@ -83,7 +85,7 @@
   },
   "events": [
     {
-      "contract_version": "continuous-verification-0.1",
+      "contract_version": "continuous-verification-0.2",
       "run_id": "authored-run",
       "stream_id": "host",
       "event_id": "event-1",
@@ -116,7 +118,7 @@
       }
     },
     {
-      "contract_version": "continuous-verification-0.1",
+      "contract_version": "continuous-verification-0.2",
       "run_id": "authored-run",
       "stream_id": "host",
       "event_id": "event-2",
@@ -155,7 +157,7 @@
       }
     },
     {
-      "contract_version": "continuous-verification-0.1",
+      "contract_version": "continuous-verification-0.2",
       "run_id": "authored-run",
       "stream_id": "host",
       "event_id": "event-3",
@@ -194,7 +196,7 @@
     }
   ],
   "policy": {
-    "contract_version": "continuous-verification-0.1",
+    "contract_version": "continuous-verification-0.2",
     "policy_id": "authored-procedure",
     "version": "1",
     "checks": [

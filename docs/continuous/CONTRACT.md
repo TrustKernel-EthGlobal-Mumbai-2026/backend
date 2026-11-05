@@ -1,4 +1,4 @@
-# Continuous verification candidate contract 0.1
+# Continuous verification candidate contract 0.2
 
 Status: executable candidate for orchestrator acceptance, 5 November 2026.
 This successor does not change historical builders or the procedural-loop API.
@@ -10,7 +10,7 @@ standard library only. JSON dictionaries/lists are inputs and outputs. Inputs
 are read-only; no network, clock default, persistence or transport is involved.
 
 ```python
-CONTRACT_VERSION = "continuous-verification-0.1"
+CONTRACT_VERSION = "continuous-verification-0.2"
 canonical_json(value) -> str
 text_digest(text) -> str
 digest(value) -> str
@@ -62,7 +62,8 @@ the complete vector and coverage. Late events require a new view and binding.
 
 C captures exact retained report text, successful/error/unknown tool results,
 and the actual assembled `model_input` event. Input payloads bind report ID and
-revision and the event IDs actually included. The report names that input as a
+revision and the event IDs actually included, also named as input parents.
+The report names that input as a
 parent and through `input_event_id`. Cross-stream causal claims are explicit
 adapter observations; timestamps and ingestion order do not establish them.
 `source` events retain source/version, valid/retrieved time and status separately;
@@ -78,6 +79,24 @@ own policy/coverage by constructing valid JSON. Storage/transport signatures and
 read cursors belong to B/D and are not frozen by this pure API.
 
 ## Outcomes and limits
+
+The request's proposal is a separate downstream paper decision. Its content and
+revision bind that decision, but these two checks assess only the explicitly
+referenced upstream report's procedure. `proposal.report_event_id`, `report_id`
+and `report_revision` must all match the observed report; a different report or
+revision produces ERROR. This does not assess the downstream proposal's content,
+dependency sufficiency or correctness. A new report reference also changes the
+proposal binding and needs a new proposal revision. Missing report evidence stays
+INCONCLUSIVE. Candidate 0.2 adds required report ID/revision fields to 0.1;
+Python function signatures are unchanged. Candidate 0.1 is superseded and was
+not accepted for integration.
+
+Self parents, observed future same-stream parents and all observable causal
+cycles (including across streams) produce ERROR before any positive assessment.
+Missing parents are unknown capture obligations: NOT_READY with explicit
+`readiness.unresolved_parent_ids`. Readiness also returns each stream's requested,
+ingested, projected and observed counts, intersecting gap ranges and status.
+No parent or causal order is invented for a missing event.
 
 `CAPTURE_GAP` means an explicit gap intersects the requested prefix. `NOT_READY`
 means producer-only, lagging or incomplete projected state. Both return only
@@ -113,7 +132,9 @@ or authorization. Canonical JSON sorts keys, preserves array/string spelling,
 rejects nonfinite values/non-JSON keys/unpaired surrogates and makes no RFC8785
 cross-language numeric claim. Assessment IDs are deterministic content IDs.
 
-Optional previous validation detects adjacent identity reuse. Service persistence
+Optional previous validation detects adjacent identity reuse, including changed
+content/status/valid time under the same source ID/version across retrievals.
+Service persistence
 must enforce immutable run-wide history, proposal revision and policy/checkpoint
 identity across all retained versions. Bindings include request/proposal,
 checkpoint (coverage included), policy and entire ordered event view. Any changed
@@ -127,6 +148,19 @@ complete registered stream coverage, host gate semantics and any live policy
 remain separate decisions. This lane chooses no live freshness policy and
 claims no model behavior, persistence, adapter integration or transport readiness.
 
-Run dedicated tests with `py -3.11 -S -B -m unittest discover -s tests -p
-test_continuous_contracts.py -v`. Negative verifier tests follow the candidate
-milestone; the lane status records their actual results.
+Run dedicated tests with:
+
+```text
+py -3.11 -S -B -m unittest discover -s tests -p "test_continuous*.py" -v
+```
+
+| Risk | Offline control |
+| --- | --- |
+| Unknown input treated as invalid/success | Null clocks/dependencies and missing/unknown capture |
+| Prefix overclaimed | Producer observation, worker lag, missing events, per-stream lag, inclusive gaps |
+| Late evidence treated as prior input | Omitted inclusion, same-stream order conflict, explicit cross-stream parents |
+| Output cap treated as completed report | TRUNCATED/ERROR/UNKNOWN and open phase |
+| Old assessment reused | Changed request/proposal/checkpoint/policy/event bindings |
+| Identity overwritten | Event/sequence, source version, proposal, checkpoint and policy controls |
+| Acknowledgement treated as correction | Separate feedback lifecycle events preserve original failure |
+| Parser/verifier crashes or mutates inputs | Malformed types/clocks/spans/hashes, duplicates, scope conflicts and copies |

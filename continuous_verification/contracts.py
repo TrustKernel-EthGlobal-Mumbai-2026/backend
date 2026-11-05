@@ -13,7 +13,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-CONTRACT_VERSION = "continuous-verification-0.1"
+CONTRACT_VERSION = "continuous-verification-0.2"
 _SCHEMA = json.loads((Path(__file__).parent / "schemas/contract.schema.json").read_text("utf-8"))
 _TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})\Z")
 
@@ -136,12 +136,17 @@ def validate_event(event, *, previous=None):
     _validate(event, "event")
     _validate(event["payload"], "payload_" + event["event_type"])
     _require(text_digest(event["content"]) == event["content_digest"], "DIGEST", "Content bytes mismatch")
+    _require(event["event_id"] not in event["parents"], "CAUSALITY", "Event cannot parent itself")
     if event["origin"]["span"] is not None:
         a, b = event["origin"]["span"]
         _require(a <= b <= len(event["content"]), "SPAN", "Span outside retained content")
-    _previous(event, previous, "event", ("stream_id", "event_id"))
+    _previous(event, previous, "event", ("event_id",))
     if previous is not None and event["stream_id"] == previous["stream_id"] and event["sequence"] == previous["sequence"]:
         _require(event == previous, "SEQUENCE_CONFLICT", "One event per stream sequence")
+    if previous is not None and event["event_type"] == previous["event_type"] == "source":
+        current, old = event["payload"], previous["payload"]
+        if (current["source_id"], current["source_version"]) == (old["source_id"], old["source_version"]):
+            _require(all(current[k] == old[k] for k in ("valid_at", "status")) and event["content_digest"] == previous["content_digest"], "IMMUTABLE_SOURCE_VERSION", "Source version bytes/status/valid time changed")
 
 
 def validate_checkpoint(checkpoint, *, previous=None):
@@ -178,6 +183,14 @@ def validate_result(result):
     _validate(result, "result")
     if result["binding"] is not None:
         _validate(result["binding"], "binding")
+        _require(result["binding"]["run_id"] == result["run_id"] and result["binding"]["request_id"] == result["request_id"], "SCOPE", "Result binding scope mismatch")
+    _require(len({f["check_id"] for f in result["findings"]}) == len(result["findings"]), "DUPLICATE", "Duplicate finding")
+    if result["status"] != "ASSESSED":
+        _require(result["disposition"] == "HOLD" and all(f["outcome"] == "INCONCLUSIVE" for f in result["findings"]), "OUTCOME", "Unready/error results cannot pass checks")
+    else:
+        _require(result["binding"] is not None and bool(result["findings"]), "BINDING", "Assessment requires bound findings")
+    _require((result["status"] == "ERROR") == bool(result["issues"]), "ISSUES", "Only errors carry issues")
+    _require(result["assessment_id"] == "assessment-" + digest({k: v for k, v in result.items() if k != "assessment_id"}), "DIGEST", "Assessment identity mismatch")
 
 
 def assessment_binding(request, *, checkpoint, events, policy):
@@ -185,6 +198,7 @@ def assessment_binding(request, *, checkpoint, events, policy):
     validate_request(request)
     validate_checkpoint(checkpoint)
     validate_policy(policy)
+    _require(type(events) is list, "TYPE", "Events must be an ordered list")
     for event in events:
         validate_event(event)
     return {"contract_version": CONTRACT_VERSION, "run_id": request["run_id"],
