@@ -1,6 +1,6 @@
 # Continuous verification: active orchestration
 
-Updated: 5 November 2026. Status: all four implementation chats active.
+Updated: 5 November 2026. Status: A/B review gates accepted; C/D integrating the actual local backend.
 Owner approved parallel work in separate chats, coordinated by the existing
 orchestrator chat. This file is the repository's current coordination record.
 The earlier [architecture proposal](../CONTINUOUS_VERIFICATION_PLAN.md) supplies
@@ -94,8 +94,8 @@ of scope; retain stable graph/event IDs and a cursor-based read contract.
 | Lane | State | Latest verified evidence | Next action |
 |---|---|---|---|
 | A | ACCEPTED FOR SCOPED OFFLINE INTEGRATION | [PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2), corrected `e088970` / contract0.2: orchestrator independently reran all29 tests and original false-PASS control now rejects | B/C/D bind exact accepted API; A stays available for concrete integration defects |
-| B | NATIVE STORAGE VERIFIED / SERVICE IMPLEMENTING | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3), `1f62562`: orchestrator independently reran26 authored storage/replay tests, including abrupt process recovery | Accepted A imported; implement/test real stored-reference service and scoped typed projection; visible-text inventory is not semantic ledger readiness |
-| C | CHANGES REQUESTED / BACKEND DEPENDENT | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), `7961d39`: orchestrator reran9 generic tests but reproduced ambiguous flattened-tool content attributed to two distinct calls | Repair exact call-origin attribution and add negative controls; then bind reviewed B service |
+| B | STORED SERVICE ACCEPTED FOR SCOPED LOCAL INTEGRATION | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3), `251b3b0`: orchestrator independently reran78 tests (A29+B49); reviewed source imported here | C/D bind actual backend; B stays available for concrete integration defects; semantic readiness remains false |
+| C | CAPTURE REPAIR ACCEPTED / SERVICE BINDING REQUESTED | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), corrected `9478a61`: orchestrator reran13 generic tests and original ambiguous-return negative control | Integrate actual B receipts/checkpoints/resolve_view and test bounded feedback/revision/recheck; native/actual-model scope remains explicit |
 | D | TRANSPORT SLICE VERIFIED / BACKEND DEPENDENT | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5), `c7e486f`: orchestrator independently verified16 tests with cached official MCP SDK; base run15 PASS/1 optional SDK SKIP | Accepted A dependency bytes exact; actual persisted B-core SDK/CLI/MCP parity remains untested |
 
 The orchestrator updates states after actual chat snapshots and artifact review.
@@ -156,6 +156,24 @@ a bounded repair request to retain exact input while qualifying ambiguity or
 using explicit host-observed transformation lineage. B was asked to expose the
 exact frozen checkpoint/event/policy view for C's binding validation. No C capture
 or full runtime integration acceptance is claimed yet.
+
+Corrected C review: `9478a61dd8a84009bd53829c19399568c030382c` passes13 generic
+tests and the original duplicate-return control independently. It withholds
+flattened marker-to-call linkage, retains raw input, and marks uncertain input
+boundary UNKNOWN. Ordinary human marker text also cannot establish call origin.
+This bounded repair is accepted; no native framework run was exercised in that
+independent audit. Exact transformed call lineage remains future work.
+
+Callable B review: `251b3b02c63e860020f94ce0b2962472eb0979fe` passes78 tests
+independently from immutable source, including the unchanged A29 suite and49 B
+storage/service controls. Reviewed local backend supports trusted registry and
+collector bindings, durable typed receipts, frozen checkpoints, installed policy
+lookup, retained verification results, exact read-authorized resolve_view and
+run-scoped pinned reads. Exact reviewed owned files are imported here. This
+accepts a single-worker local procedural backend, not a background daemon, native
+trace-to-typed conversion, remote authentication or complete semantic ledger.
+The accepted commit/API was relayed to C/D; their actual-core integration tests
+remain pending. No PR or main merge, model/provider call or budget change.
 
 ## Draft PR descriptions
 

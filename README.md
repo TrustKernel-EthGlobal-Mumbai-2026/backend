@@ -14,6 +14,8 @@ TrustKernel exists to catch agent decisions that depend on stale evidence, fault
 
 **Contract gate accepted for scoped offline integration:** corrected version `continuous-verification-0.2` at source commit `e088970` passes 29 independently rerun tests. The original cyclic/future-parent false-PASS control now returns ERROR without a binding or positive finding; report ID/revision substitution is also rejected. The exact reviewed contract/verifier files are integrated here, with CI registration. This accepts named report-procedure semantics, not complete capture, source truth or decision clearance. Capture/service, framework and transport integration remain in progress; no combined offline runtime milestone is claimed yet.
 
+**Stored-service gate accepted:** source `251b3b0` independently passes78 tests (A29 + B49). Exact reviewed B files are integrated here: durable native receipts, typed procedural records, trusted registered streams, frozen checkpoints, stored-policy verification, exact `resolve_view`, and run-authorized reads. C/D are now binding their adapters to this actual local backend. It is single-worker; native-to-typed conversion, a background service, remote authentication and full semantic-ledger readiness are not implemented. C's ambiguous flattened-call attribution was repaired at `9478a61`;13 generic tests and the original negative control independently pass. Combined framework/transport parity is still pending.
+
 The repository handoff is published. The [initial offline CI run](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/actions/runs/41722496087) passed on a fresh GitHub checkout, including BB8 verification and rebuilding/checking the committed context index. This is repository/mechanism validation, not another agent experiment.
 
 | Workstream | What exists now | Boundary / next action |
@@ -96,6 +98,7 @@ On systems using `python3`, substitute that command. Output paths must be new. T
 
 | Path | Purpose and current scope |
 |---|---|
+| `continuous_verification/` | Accepted successor contract/verifier0.2 and local stored-reference capture/checkpoint service; cross-lane adapter/transport integration in progress |
 | `trustkernel/` | Original instrumented runtime, trace/observer, billing guards, analysis and local viewer; native dependencies required |
 | `verification/` | Historical v1–v3 ledger/refinement source, tests, schemas and declared rules; private corpus needed for data-backed builds |
 | `procedural_loop/` | Standard-library synthetic dynamic loop, frozen contract, adapters, verifier, recorder and tests |
