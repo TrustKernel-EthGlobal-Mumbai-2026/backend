@@ -1,9 +1,14 @@
 # Workstream accounting
 
-Prepared4November2026. Every lane is accounted for; inclusion is distinct from publication approval.
+Updated5November2026. Every lane is accounted for; inclusion is distinct from publication approval.
+
+Active next-phase design: [continuous capture and feedback](CONTINUOUS_VERIFICATION_PLAN.md). The owner prioritized incremental ledger/checkpoint contracts, actual TradingAgents feedback and cross-harness tool access. Existing implementations below remain at their recorded scope; frontend implementation stays deferred. No runtime or paid experiment launched as part of the design update.
+
+Current continuation: the scoped offline foundation is implemented/reviewed and delivered by PRs2/3/5/4 and integration PR1. Actual-model TradingAgents test readiness is the primary next gate; SDK/MCP host access is secondary. The initial design paragraph above describes the earlier proposal, not the present implementation status. See the root README and [active board](continuous/ORCHESTRATION.md).
 
 | Workstream | Stage representation | Excluded or pending originals |
 |---|---|---|
+| Continuous-verification foundation | continuous_verification/, retained authored demo, scoped tests and optional MCP CI | Actual-model response, full GraphSetup, background collector/service and arbitrary-harness installation remain unproven |
 | Baseline adapter/runtime | trustkernel source, tests, lock, upstream pin | Runtime logs, model prompts, budget/account state, installed environment |
 | Atomic ledger v1–v3 | verification source/schemas/declared rules/API docs | Full canonical JSONL/SQLite, release ZIPs and machine-specific export script |
 | Verification semantics/v0.2 | historical rules/contracts/mappings/test vectors and source | Full assessment bundles and raw anchors requiring private corpus |

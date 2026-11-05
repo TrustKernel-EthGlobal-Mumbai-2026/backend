@@ -59,3 +59,13 @@ The canonical ledger and findings rebuild byte-for-byte;35 dedicated tests and t
 Code: live_verification/; rules policy; tools/inspect_live_ledger.py. Run identity: `live-verification-20261103T190006Z-85ac8aae`. [Latest findings and limits](LATEST_RUN.md).
 
 The owner then requested one GitHub repository carrying the condensed active state, a reusable BB8 snapshot and indexed context for everyone. The public package includes implementation, tests, schemas and curated context; private runtime evidence, credentials, budgets and personal knowledge remain outside it. This README/context/BB8 layer is the continuation entry point, rather than access to the owner's local chats.
+
+## 5 November: continuous capture and actual-agent feedback focus
+
+The owner prioritized asynchronous log capture into the atomic ledger, verification on explicit agent calls, a TradingAgents experiment with trusted verification instructions and feedback, and CLI/SDK/MCP access across harnesses. The eventual frontend should expose that same event/graph/intervention history; implementing it now is out of scope.
+
+The [continuous verification plan](../CONTINUOUS_VERIFICATION_PLAN.md) grounds this in the early private design documents and current code. It distinguishes asynchronous capture from checkpoint-consistent verification, common contracts from per-harness capture/enforcement, and voluntary tool use from a host-enforced gate. It proposes offline incremental replay first, a bounded separately approved actual-agent smoke loop next, and thin MCP plus a second harness afterward. This is proposed architecture and a continuation plan, not completed integration or approval for research spend. Prior findings remain historical.
+
+Later on5November, four separate chats implemented and published the scoped offline foundation. Independent review rejected then repaired a causal-cycle false PASS and ambiguous flattened-tool origin attribution. The accepted contract, stored checkpoint service, SDK/injected-CLI/genuine MCP access and TradingAgents scripted/native-subset feedback loop were integrated. A durable authored25-event demo preserves original FAIL, delivery/input, revision and scoped recheck while leaving source defects unresolved. Actual-model behavior was not demonstrated.
+
+The owner then made real-model TradingAgents tool-call/feedback/runtime progression the immediate milestone, with SDK/MCP host access secondary, and explicitly authorized merging the reviewed foundation PRs. Sequence: #2 -> #3 -> #5 -> #4 -> #1 to main. New readiness work is isolated on codex/tradingagents-integration-smoke; no paid launch or budget mutation is authorized. Read the root README and [active board](../continuous/ORCHESTRATION.md) for present scope.

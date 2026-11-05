@@ -11,11 +11,11 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ROOT_FILES = {'README.md', 'AGENTS.md', '.gitignore', '.gitattributes', 'requirements.lock.txt',
+ROOT_FILES = {'README.md', 'AGENTS.md', '.gitignore', '.gitattributes', 'requirements.lock.txt', 'requirements-mcp.txt',
               'UPSTREAM.json', 'Launch-Research.ps1', 'Monitor.ps1', 'Run-30Minutes.ps1',
               'Run-Live-30Minutes.ps1', 'Run-Live-Verification.ps1', 'Run-Recorded-Verification.ps1',
               'Run-Verification-Loop.ps1', 'Smoke.ps1', 'View-Traces.ps1', 'Watch-Console.ps1'}
-DIRECTORIES = {'.agents', '.github', 'bb8', 'context-index', 'docs', 'drafts', 'examples', 'explorations',
+DIRECTORIES = {'.agents', '.github', 'bb8', 'context-index', 'continuous_verification', 'docs', 'drafts', 'examples', 'explorations',
                'fixtures', 'live_experiment', 'live_verification', 'procedural_loop', 'recorded_loop',
                'tests', 'third_party', 'tools', 'trustkernel', 'verification'}
 SUFFIXES = {'.py', '.md', '.json', '.yaml', '.yml', '.html', '.cjs', '.ps1', '.txt', '.toml', '.sql'}
