@@ -8,6 +8,18 @@ the rationale; it is not evidence that an implementation already exists.
 
 ## Current readiness handoff
 
+The immediate actual-model tool/feedback milestone is now observed for both
+Terra and Sol. Each generated a verify call, the injected CLI returned a stored
+finding, that exact result appeared in the next request and a provider response
+continued. Both later hit the one-source-round boundary, so neither produced a
+corrected final report or recheck. [Paired outcome](PAIRED_SMOKE_2026-11-05.md)
+records these distinct conclusions. All six new requests settled; no new unknown
+hold was created. No experiment or schedule is running and no further paid run
+is authorized. Implementation `5936caf` passed13 independent native tests and8
+stdlib controls; source/indexed launch head was `fe636a3`.
+
+### Earlier readiness and authentication history
+
 The owner subsequently authorized a cumulative $10 ceiling. The local policy and
 ledger active/hard limits are updated to10; initial history, usage, carry and both
 unknown holds are unchanged. This is a budget-policy update, not another model

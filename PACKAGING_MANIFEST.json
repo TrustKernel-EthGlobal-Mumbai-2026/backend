@@ -77,11 +77,11 @@
     {
       "destination": "README.md",
       "previous_source_ref": "repository-authoring/README.md",
-      "previous_staged_sha256": "b3bef6bc9b4861f930dfbd2f066eb4bf289b63dd50ad4a44459da22bac803d6c",
+      "previous_staged_sha256": "675a8b0e7767cbe4556e5fe3724dc772318b3c7a643a647dfb2727a1bbc0043d",
       "source_ref": "repository-authoring/README.md",
-      "source_sha256": "675a8b0e7767cbe4556e5fe3724dc772318b3c7a643a647dfb2727a1bbc0043d",
-      "staged_bytes": 20888,
-      "staged_sha256": "675a8b0e7767cbe4556e5fe3724dc772318b3c7a643a647dfb2727a1bbc0043d",
+      "source_sha256": "4d0fd05506cd42a6e6201fde56d552a60217c106436c41c59158c886103a80c1",
+      "staged_bytes": 20836,
+      "staged_sha256": "4d0fd05506cd42a6e6201fde56d552a60217c106436c41c59158c886103a80c1",
       "treatment": "repository_handoff_adaptation",
       "workstream": "repository-entrypoint"
     },
@@ -808,22 +808,22 @@
     {
       "destination": "context-index/catalog.json",
       "previous_source_ref": "repository-authoring/context-index/catalog.json",
-      "previous_staged_sha256": "5fffdf1b87bbb7ec64b1c5feb229ab16fd2f26fc657c2cb98c68a58ade630e8d",
+      "previous_staged_sha256": "dcddc2a8acb9070d192f669bdd32999ddc3bec6d324d60391874cd3bac0a7fec",
       "source_ref": "repository-authoring/context-index/catalog.json",
-      "source_sha256": "dcddc2a8acb9070d192f669bdd32999ddc3bec6d324d60391874cd3bac0a7fec",
-      "staged_bytes": 77468,
-      "staged_sha256": "dcddc2a8acb9070d192f669bdd32999ddc3bec6d324d60391874cd3bac0a7fec",
+      "source_sha256": "eba05af3047623eb00cacf7efe6246a11dd8dd9826041af0cfba13c933e71336",
+      "staged_bytes": 77828,
+      "staged_sha256": "eba05af3047623eb00cacf7efe6246a11dd8dd9826041af0cfba13c933e71336",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
     {
       "destination": "context-index/chunks.jsonl",
       "previous_source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "previous_staged_sha256": "354fee269f8712c29fad5e892402895d2148e136759cb83bd4ce12bde9978e82",
+      "previous_staged_sha256": "a5e8ff4ca1ef83adbbd0bf6d3cb1419fb0d9512af56d0018faad30cdc6dc93dd",
       "source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "source_sha256": "a5e8ff4ca1ef83adbbd0bf6d3cb1419fb0d9512af56d0018faad30cdc6dc93dd",
-      "staged_bytes": 367779,
-      "staged_sha256": "a5e8ff4ca1ef83adbbd0bf6d3cb1419fb0d9512af56d0018faad30cdc6dc93dd",
+      "source_sha256": "480c5b3c56015304023cbd1e9792bad7047280f62e9a4ff02893df1bdf98b9ee",
+      "staged_bytes": 368754,
+      "staged_sha256": "480c5b3c56015304023cbd1e9792bad7047280f62e9a4ff02893df1bdf98b9ee",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
@@ -1124,12 +1124,21 @@
     {
       "destination": "docs/continuous/ORCHESTRATION.md",
       "previous_source_ref": "repository-authoring/docs/continuous/ORCHESTRATION.md",
-      "previous_staged_sha256": "456895e7aa7f155c8b7df774491e15e1dfc1d031e2568dc7fbfd855a51f85cba",
+      "previous_staged_sha256": "12ed72778d826de75503ee69794739f2a7a0ba0522da39a739888499a40cf0dd",
       "source_ref": "repository-authoring/docs/continuous/ORCHESTRATION.md",
-      "source_sha256": "12ed72778d826de75503ee69794739f2a7a0ba0522da39a739888499a40cf0dd",
-      "staged_bytes": 22354,
-      "staged_sha256": "12ed72778d826de75503ee69794739f2a7a0ba0522da39a739888499a40cf0dd",
+      "source_sha256": "c27083250b517125eca120a2aa7029ec3ab8c34f473424b44cc9d1ac9fa5480d",
+      "staged_bytes": 23098,
+      "staged_sha256": "c27083250b517125eca120a2aa7029ec3ab8c34f473424b44cc9d1ac9fa5480d",
       "treatment": "repository_handoff_adaptation",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/continuous/PAIRED_SMOKE_2026-11-05.md",
+      "source_ref": "repository-authoring/docs/continuous/PAIRED_SMOKE_2026-11-05.md",
+      "source_sha256": "48d1684e55d2540907dc8f1b73a00002653091e05f9c1816c17a7c1712c2c07e",
+      "staged_bytes": 3406,
+      "staged_sha256": "48d1684e55d2540907dc8f1b73a00002653091e05f9c1816c17a7c1712c2c07e",
+      "treatment": "repository_handoff_addition",
       "workstream": "docs"
     },
     {
