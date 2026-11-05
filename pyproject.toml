@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel>=0.45"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trustkernel-continuous"
+version = "0.1.0"
+description = "Local checkpoint-bound procedural verification SDK and configured CLI/MCP host"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.28,<2"]
+
+[project.scripts]
+trustkernel = "continuous_verification.host:main"
+trustkernel-mcp = "continuous_verification.host:mcp_main"
+
+[tool.setuptools.packages.find]
+include = ["continuous_verification"]
+
+[tool.setuptools.package-data]
+continuous_verification = ["schemas/*.json", "prompts/*.md"]
