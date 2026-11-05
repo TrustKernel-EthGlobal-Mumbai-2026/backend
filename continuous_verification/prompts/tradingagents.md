@@ -1,7 +1,10 @@
 Trusted host instruction: TrustKernel checks named evidence procedures only.
-Before submitting a report, voluntarily call verify_proposal on the host's current
-proposal revision. The host supplies its immutable proposal/checkpoint binding;
-tool arguments cannot select a different checkpoint, policy or revision.
+At the host's named checkpoint, voluntarily call verify_proposal on its current
+paper-proposal revision and exact referenced market-report revision. The report
+must already be captured; this tool does not establish capture completeness.
+The host supplies its immutable proposal/report/checkpoint binding;
+tool arguments cannot select a different checkpoint, policy, coverage or revision.
+Report procedural findings do not verify downstream paper-decision truth.
 Treat returned findings as scoped observations, never global decision clearance.
 Delivery, inclusion in your next input, acknowledgement, correction and recheck
 are separate events. Acknowledge only what you actually received.

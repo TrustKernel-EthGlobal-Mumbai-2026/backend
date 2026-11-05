@@ -1,7 +1,13 @@
 # TradingAgents feedback adapter
 
-Lane C, 5 November 2026. Offline milestone tested; waiting for accepted A/B APIs.
-No model/provider execution or historical recording changes.
+Lane C, 5 November 2026. **A0.2 integrated offline; awaiting reviewed B service.**
+No model/provider execution, live policy approval or historical recording change.
+
+Accepted dependency: source `e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2`, imported
+from integration `29f038f`. A's `__init__`, contracts, verifier, schemas/example,
+29 tests and contract doc are copied exactly without edits. Their source doc's
+candidate wording is frozen; orchestrator acceptance governs this scoped offline
+integration. No merge, central README, orchestration or CI edit occurred.
 
 ## Pinned seams
 
@@ -28,119 +34,139 @@ Inspected the clean upstream v0.7.1 checkout at commit
   return is ordinary graph execution, not process-restart resume. Persistent
   resume needs an explicit checkpointer and is not claimed here.
 
-## Plan and dependency gate
+## Accepted-contract host behavior
 
-Now: trusted instruction and native tool definition; local host state preserving
-proposal revisions, opaque service checkpoints and separately counted allowances.
-Authored tests cover exact pinned dispatch/next-input return and stale bindings.
-Next: bind lane A's accepted request/result contract and lane B's immutable
-checkpoint/verify service, then splice a named report boundary into the graph.
-Later: separately approved actual-model smoke. No behavioral claim follows from
-scripted responses, including a scripted correction.
+`FeedbackBoundary.submit(request, *, checkpoint, events, policy)` now accepts A0.2
+objects. `LocalBinding` and `LocalFeedback` are removed. The host validates A's
+request/result and computes `assessment_binding` over the exact request, proposal,
+checkpoint, policy and ordered event view. It validates result identity and full
+binding, and checks it again at report-boundary use. No duplicate verifier exists:
+offline tests call A's accepted `verify` core; service operation is still pending.
 
-## Implemented local slice
+A's **paper proposal** and **market report** are separate artifacts. The request's
+proposal content/revision names a downstream paper decision and independently
+references `report_event_id`, `report_id`, `report_revision`. C binds all of them;
+changing the report reference requires a new proposal revision. The optional
+`report_boundary_allowed(actual_report_event)` predicate applies only to that
+referenced event identity/revision and exact retained report bytes. It cannot authorize the proposal text or establish downstream
+decision truth, price validity, source authority or dependency completeness.
+Default authorization remains disabled. At-use issuer/invalidation policy is a
+trusted host obligation, not something a digest authenticates.
 
-`continuous_verification/tradingagents.py` supplies:
+Separate source-round, verify-call and remediation counters remain. Failure
+spends allowances. A source round invalidates prior advice/view; subsequent
+submission needs a fresh proposal revision and checkpoint. Finding preparation,
+observed return, next-input inclusion, acknowledgement, correction and abstention
+remain distinct observations. Original failed assessments and provider defects
+are retained; a required-tool PASS does not repair invalid OHLC data.
 
-- A trusted system-instruction wrapper and a real LangChain `verify_proposal`
-  tool with no model-controlled checkpoint, policy or proposal arguments.
-- Append-preserving local proposal revisions and SHA256 text bindings, an opaque
-  host checkpoint callback and normalized feedback callback. These callbacks are
-  provisional integration seams, not service contract definitions or a verifier.
-- Separate source-round, verify-call and remediation counters. Failed attempts
-  spend allowances; a refresh invalidates prior advice and its checkpoint.
-- Separate finding preparation, observed ToolMessage delivery, exact next-input
-  inclusion, explicit acknowledgement, revision and terminal abstention events.
-  `make_trusted_model` records attempted invocation, not provider acceptance or
-  attention. `observe_native_returns` must run on analyst reentry before wrap-up
-  flattens its ToolMessages. No acknowledgement is inferred from inclusion.
-- An optional host report-boundary predicate requiring current text, revision,
-  checkpoint, policy, readiness, advice, observed input inclusion and an explicit
-  at-use host authorizer. Default behavior cannot authorize release. The final
-  graph report must be checked using its actual text; arbitrary model output is
-  never covered by an earlier submitted proposal. This predicate has not yet
-  been installed in a complete TradingAgents graph.
+The native `verify_proposal` tool has no arguments. It cannot select a policy,
+coverage, checkpoint or proposal revision. `make_trusted_model` adds the trusted
+instruction and observes actual assembled requests, including pinned wrap-up
+text. Provider acceptance, attention and hidden reasoning remain unobserved.
 
-The native tests execute **exact AST-extracted pinned functions**, verified
-against their git blobs, using real installed LangGraph `StateGraph`/`ToolNode`,
-the market analyst factory, `take_turn`, `_as_text` and `AgentState`. They inject
-authored tools, static context and a deterministic Runnable response double into
-an isolated namespace. They neither import the full upstream package (which
-loads provider/configuration modules) nor mutate it. Both ordinary ToolMessage
-return and capped wrap-up text deliver the findings into the next assembled
-request, with trusted instructions present. Socket connection paths are blocked
-during execution. The report output remains an authored abstention.
+## Explicit capture, not reconstructed completeness
 
-This is subgraph plumbing evidence, not a full GraphSetup run, actual-model
-correction, persistent restart/resume or source-budget enforcement in the original
-subgraph. That subgraph still counts every tool-bearing turn together. Its native
-fixture's source callback returns authored text directly; it does not exercise
-the local host's source-round counter. Separate host accounting is tested in the
-generic suite; graph splicing awaits the accepted contracts/backend.
+`HostEventCapture` constructs validated A events only. It accepts trusted host
+IDs/redaction/ingest callbacks, filters retained content before hashing, and emits:
 
-## Verification and risk coverage
+- `tool_result`: actual call ID/name, retained body and explicit status. Native
+  ToolNode success does not imply provider availability; absent a trusted
+  source-specific classifier, native successful returns stay **UNKNOWN**, and
+  native execution errors are ERROR.
+- `model_input`: full retained canonical visible-message envelope at the actual
+  input-assembly seam, report ID/revision and exact observed tool event references
+  as both `included_event_ids` and parents. `assembled_native_input` is called
+  only at this seam and matches observed returns in ordinary ToolMessages or
+  the exact pinned wrap-up text. A historical log missing this observation must
+  use UNKNOWN; the generic builder requires an explicit boundary argument.
+- `report`: exact retained report text, independent report revision, actual input
+  event ID/parent and explicit completion/phase. Nonempty output or graph exit
+  cannot imply COMPLETE. Native tests capture CLOSED with completion UNKNOWN.
+- Separate A `feedback_delivery`, `feedback_inclusion`,
+  `feedback_acknowledgement` and `correction` events via an explicit host helper.
+  Related event IDs and content carry observable links; no correction is inferred.
 
-| Risk | Offline evidence |
+No helper asserts CAPTURED coverage, SERVICE_ESTABLISHED, registered-stream
+completeness, authentication or durability. Null clocks remain unknown. B must
+persist identities, assigned-collector metadata and retry/restart state. A failed
+emit requires stopping/retrying the identical event; local memory is not a spool.
+
+The native fixtures verify an already authored/captured report revision 0, then
+observe the scripted analyst's new abstaining report revision 1. That new report
+has its own actual assembled input and is **not** covered by the old assessment.
+Tests retain actual A tool_result/model_input/report events for both normal and
+capped paths. Exact AST subsets are checked against the pin's git blobs and use
+real LangGraph StateGraph/ToolNode. They do not import the full upstream package,
+run GraphSetup, call a provider or demonstrate actual-model behavior.
+
+## Prepared B seam and remaining concrete needs
+
+Orchestrator relayed B's early API, not yet reviewed service parity:
+`ServiceBackend(..., principal=Principal(...))`, trusted `configure_run`,
+`install_policy`, assigned-collector `record_coverage`/`project`, and
+`execute(operation, request) -> dict` with `ServiceError`.
+
+C prepares two callbacks without importing or inventing B's implementation:
+
+- `make_stored_assessor(backend)` forwards **only** `execute("verify", A_request)`.
+  The request is unchanged and the backend resolves stored references. Local
+  events, policies, principals and coverage are not sent as agent authority.
+  Errors propagate; there is no local-success fallback.
+- `make_host_ingest(backend, run_id=..., accept_receipt=...)` sends
+  `execute("ingest_events", {run_id,batch_id,events:[A_event]})`. Content-bound
+  batch IDs are stable for exact retry; cross-run events fail. An explicit receipt
+  validator must accept the actual B durable receipt before capture advances.
+  The authored test service double validates this forwarding shape only.
+
+Required from B's reviewed commit/API before real service integration:
+
+1. Exact ingest success/duplicate receipt DTO and error semantics for the receipt
+   validator, including ambiguous commit-before-ack failures and restart IDs.
+2. Exact checkpoint return DTO and the pinned **ordered event view/policy** used
+   by `verify`. C's A `binding_matches` needs the same checkpoint/events/policy,
+   not a reconstructed latest list. Early `get_evidence` returns one event and
+   `list_events` pins a journal snapshot; neither yet specifies an assessment-
+   checkpoint view accessor or the verifier's deterministic ordering. Provide
+   that accessor/order or a reviewed equivalent authenticated at-use binding API.
+3. Host principal grants and registry configuration matching producer ID,
+   stream ID, `adapter_version="tradingagents-feedback-0.2"`, redaction profile,
+   plus collector-only coverage observations with real basis IDs.
+4. Actual model-input capture basis, report phase/completion signals and flush/
+   barrier sequence. The native trace without assembly cannot be upgraded.
+5. `acknowledge_feedback` is initially UNSUPPORTED. Use assigned-collector A
+   observation events only after B confirms that path; no transport fallback
+   may claim successful acknowledgement or correction.
+
+A is no longer a blocker. Next: consume B's reviewed service, bind receipt/view
+callbacks, then splice the named report boundary and test an isolated real-service
+checkpoint/feedback/recheck path. No experiment launches while waiting.
+
+## Verification
+
+All tests use temporary authored in-memory packets and explicit test-service
+coverage/principal doubles; no private recordings or original profiles are read.
+
+| Check | Latest evidence |
 |---|---|
-| Omitted voluntary verify; ignored/unincluded feedback | No report authorization; no fabricated call |
-| Stale revision, run, policy, prefix, digest, final report text | Binding controls reject use |
-| Projection unready, gap, error, HOLD or RECHECK | Report predicate remains false |
-| Timeout, failed refresh, exhausted allowances | Spent attempts retained; stale advice invalidated |
-| Invented correction of provider defect | Authored failure retained; abstention/recheck stays separate |
-| Tool tuple mismatch or capped return lost | Exact native dispatch tests with matching offered/dispatched tuples |
-| Missing optional framework/source | Explicit native SKIP, never native PASS |
+| Lane C generic offline controls | 9 PASS with real accepted A core |
+| Native exact pinned dispatch, normal and wrap-up | 2 PASS with authored responses |
+| Combined accepted A + C, cached native environment | 40 PASS = A29 + C11 |
+| Combined stdlib-only without native pin/deps | 38 PASS; native class explicit SKIP |
+| Old revision/view/policy/report substitution | Rejected; report/proposal separation tested |
+| Missing assembly, unknown completion/source status | Remain UNKNOWN/INCONCLUSIVE, never promoted |
+| Gap, lag, cycle, timeout, failed refresh, exhaustion | No named report release |
+| B operation forwarding/receipt control | Authored service double only; real B NOT RUN |
 
-Portable command: `python -S -B -m unittest discover -s tests -p test_continuous_tradingagents.py -v`.
-Result: **8 generic tests PASS; native class SKIP** without the optional pin/deps.
+Commands: `python -S -B -m unittest discover -s tests -p "test_continuous*.py" -v`.
+Native: set `TRUSTKERNEL_TRADINGAGENTS_UPSTREAM` to the reviewed exact pin, use the
+cached Python3.11 environment and omit `-S`. Cached versions: LangChain Core
+1.7.1, LangGraph 1.2.18, Prebuilt 1.1.1. No dependency installation.
 
-Native command: set `TRUSTKERNEL_TRADINGAGENTS_UPSTREAM` to a reviewed read-only
-checkout of the exact pin, then run the same command **without `-S`** using an
-environment with the cached framework dependencies. Result on the inspected
-environment: **10 tests PASS (8 generic + 2 native)**, with LangChain Core 1.7.1,
-LangGraph 1.2.18, LangGraph Prebuilt 1.1.1 and Python 3.11. No installation needed.
-Backend results, policies and authorizers in these tests are explicit doubles;
-the authored ADVISE result in a recheck is not actual backend verification.
-
-The adapter must not create a duplicate verifier or finalize a competing wire
-schema. Until accepted contracts arrive, all backend responses are explicitly
-labeled provisional test doubles. Required API details: proposal registration
-and digest identity; host flush/barrier and checkpoint ID/vector; verify request
-constructor and response binding/readiness/disposition; policy/issuer validation;
-capture of proposal, feedback delivery and actual next-input inclusion.
-
-Orchestrator clarification: A's reviewed candidate has the shape
-`verify(request, *, checkpoint, events, policy) -> dict`, but is **not accepted**
-and is not called by this lane. B's stored-reference facade is also pending.
-The current local `proposal_id` names a **market-report artifact/revision**.
-It must map to A's `report_event_id`, its exact report text/digest, the completed
-report boundary, and the actual report-input event IDs/prefix. A later Trader or
-Portfolio Manager paper decision needs its own artifact/binding and scope; report
-advice cannot clear that decision. No agent argument declares policy or coverage.
-
-Local observations needing translation into accepted stored events:
-
-- `proposal.submitted`: report ID, immutable revision, exact text and digest;
-  `proposal.bound`: corresponding registered checkpoint and policy binding.
-- `verification.requested`: host/voluntary origin and complete local binding;
-  translate to A's report reference, never a guessed latest report.
-- `feedback.prepared`, `feedback.delivered`, `feedback.input_included`: assessment,
-  actual call ID, returned payload and next-input ID remain distinct observations.
-- `model.input_attempted`: local input ID and ordered SHA256 fingerprints of each
-  actual visible message's canonical JSON envelope, plus trusted-instruction flag.
-  B's privacy-filtered capture must retain exact input events/spans and map these
-  IDs to service references; a local digest is not capture completeness or proof
-  of provider acceptance. No hidden reasoning is accessed.
-- `feedback.acknowledged`, later report revisions and `proposal.abstained` retain
-  separate actor observations. No success follows from an acknowledgement.
-
-Next action is **stopped at this dependency gate**. The orchestrator must relay
-accepted A commit/API references and B service/checkpoint references before C
-implements the translation bridge and report-boundary splice. Central README,
-orchestration status and CI registration need orchestrator updates; C has not
-modified them. Lane-generated context/packaging metadata is regenerated for
-publication; the orchestrator resolves generated conflicts during integration.
-
-Tests use newly authored inputs, never private recordings. Native tests must
-report SKIP when optional dependencies or the pinned source are absent; generic
-tests cannot stand in for native integration. Frontend, CLI/MCP, policy evaluation,
-live TTLs and source authority remain outside this lane.
+Historical lane milestones `b079882` and `3b7916a` used explicitly provisional
+local bindings/doubles. This slice replaces those bindings; their earlier native
+plumbing evidence remains historical. Separate host counters do not yet replace
+the original subgraph's shared round cap. Durable restart/resume, full graph
+splicing, actual B parity and actual-model corrective behavior remain unproven.
+Frontend and independent quality evaluation remain deferred. Orchestrator owns
+central README/orchestration/CI and generated integration-conflict resolution.

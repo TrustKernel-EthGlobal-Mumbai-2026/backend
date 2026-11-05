@@ -808,43 +808,90 @@
     {
       "destination": "context-index/catalog.json",
       "previous_source_ref": "repository-authoring/context-index/catalog.json",
-      "previous_staged_sha256": "2caaa89913781ec8929b36ddfc656f61c396e53a1ba5285e55b1843da9e688cf",
+      "previous_staged_sha256": "240199d796a04821aa7616757733a781773dd8fac0543e8935c988ca4b2e8abe",
       "source_ref": "repository-authoring/context-index/catalog.json",
-      "source_sha256": "240199d796a04821aa7616757733a781773dd8fac0543e8935c988ca4b2e8abe",
-      "staged_bytes": 68679,
-      "staged_sha256": "240199d796a04821aa7616757733a781773dd8fac0543e8935c988ca4b2e8abe",
+      "source_sha256": "4a9e7266a8481e3bf87574365da14229594d77af7e2b657e41f30bf5e215a245",
+      "staged_bytes": 70998,
+      "staged_sha256": "4a9e7266a8481e3bf87574365da14229594d77af7e2b657e41f30bf5e215a245",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
     {
       "destination": "context-index/chunks.jsonl",
       "previous_source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "previous_staged_sha256": "0cdc463b40d38d22d2affa8a866d767860ce29e9bd92ff91d3f360e4e38e14b8",
+      "previous_staged_sha256": "0dd7dd3f19cc2d4a0edaa614b764295023dad424ea27cfd2d4e9a216b6d61e35",
       "source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "source_sha256": "0dd7dd3f19cc2d4a0edaa614b764295023dad424ea27cfd2d4e9a216b6d61e35",
-      "staged_bytes": 288677,
-      "staged_sha256": "0dd7dd3f19cc2d4a0edaa614b764295023dad424ea27cfd2d4e9a216b6d61e35",
+      "source_sha256": "6db58076fab11a7622b5cb2d56a20221121d0c3b87c073b622cb6ee9dd3c0810",
+      "staged_bytes": 312149,
+      "staged_sha256": "6db58076fab11a7622b5cb2d56a20221121d0c3b87c073b622cb6ee9dd3c0810",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
     {
+      "destination": "continuous_verification/__init__.py",
+      "source_ref": "repository-authoring/continuous_verification/__init__.py",
+      "source_sha256": "e48e93a7ae8f11e9029cff2f81b5996792d68222c8bf7c460ac46ac438f8070d",
+      "staged_bytes": 604,
+      "staged_sha256": "e48e93a7ae8f11e9029cff2f81b5996792d68222c8bf7c460ac46ac438f8070d",
+      "treatment": "repository_handoff_addition",
+      "workstream": "continuous_verification"
+    },
+    {
+      "destination": "continuous_verification/contracts.py",
+      "source_ref": "repository-authoring/continuous_verification/contracts.py",
+      "source_sha256": "c24acf894af822a43d70e5d5f448356412745603fdca51541fcb5fbfe9f3eed1",
+      "staged_bytes": 10433,
+      "staged_sha256": "c24acf894af822a43d70e5d5f448356412745603fdca51541fcb5fbfe9f3eed1",
+      "treatment": "repository_handoff_addition",
+      "workstream": "continuous_verification"
+    },
+    {
       "destination": "continuous_verification/prompts/tradingagents.md",
+      "previous_source_ref": "repository-authoring/continuous_verification/prompts/tradingagents.md",
+      "previous_staged_sha256": "da312133f0b1fdb1d4c5ed6e45923c37e7ca5338f460d10e8c3bd968f00ac4fd",
       "source_ref": "repository-authoring/continuous_verification/prompts/tradingagents.md",
-      "source_sha256": "da312133f0b1fdb1d4c5ed6e45923c37e7ca5338f460d10e8c3bd968f00ac4fd",
-      "staged_bytes": 1173,
-      "staged_sha256": "da312133f0b1fdb1d4c5ed6e45923c37e7ca5338f460d10e8c3bd968f00ac4fd",
+      "source_sha256": "99412d47301f252ea1dd4e816e5354d1ea2d3d1643e6a608989b6b7ab7845996",
+      "staged_bytes": 1399,
+      "staged_sha256": "99412d47301f252ea1dd4e816e5354d1ea2d3d1643e6a608989b6b7ab7845996",
+      "treatment": "repository_handoff_adaptation",
+      "workstream": "continuous_verification"
+    },
+    {
+      "destination": "continuous_verification/schemas/contract.schema.json",
+      "source_ref": "repository-authoring/continuous_verification/schemas/contract.schema.json",
+      "source_sha256": "323086aca02a53f701ec936c176ba2738efd9e617fa2be7bb87e0358e0c88660",
+      "staged_bytes": 28286,
+      "staged_sha256": "323086aca02a53f701ec936c176ba2738efd9e617fa2be7bb87e0358e0c88660",
+      "treatment": "repository_handoff_addition",
+      "workstream": "continuous_verification"
+    },
+    {
+      "destination": "continuous_verification/schemas/example.json",
+      "source_ref": "repository-authoring/continuous_verification/schemas/example.json",
+      "source_sha256": "db52d1fd873d530b3dba775c79efae100de813f702d4d93978f14a0b73995fa6",
+      "staged_bytes": 5599,
+      "staged_sha256": "db52d1fd873d530b3dba775c79efae100de813f702d4d93978f14a0b73995fa6",
       "treatment": "repository_handoff_addition",
       "workstream": "continuous_verification"
     },
     {
       "destination": "continuous_verification/tradingagents.py",
       "previous_source_ref": "repository-authoring/continuous_verification/tradingagents.py",
-      "previous_staged_sha256": "bcca2b4e2cba5dd689c21866ff5b8732454f6cbc1df613d2c68e70d12d220557",
+      "previous_staged_sha256": "e6519d38a192739d80355276d66ffebf32b4ada42330e6ac31ddd1f38db724f4",
       "source_ref": "repository-authoring/continuous_verification/tradingagents.py",
-      "source_sha256": "e6519d38a192739d80355276d66ffebf32b4ada42330e6ac31ddd1f38db724f4",
-      "staged_bytes": 11763,
-      "staged_sha256": "e6519d38a192739d80355276d66ffebf32b4ada42330e6ac31ddd1f38db724f4",
+      "source_sha256": "a5693eb5aae0f8eadc2b47a7cc9bfdab951e10c3a994648053671f7919559d22",
+      "staged_bytes": 19644,
+      "staged_sha256": "a5693eb5aae0f8eadc2b47a7cc9bfdab951e10c3a994648053671f7919559d22",
       "treatment": "repository_handoff_adaptation",
+      "workstream": "continuous_verification"
+    },
+    {
+      "destination": "continuous_verification/verifier.py",
+      "source_ref": "repository-authoring/continuous_verification/verifier.py",
+      "source_sha256": "5fe4a9c1b439a5a8c39f5c7cc272a007209a79b9648fdf6963df8b26f0fa45a2",
+      "staged_bytes": 10233,
+      "staged_sha256": "5fe4a9c1b439a5a8c39f5c7cc272a007209a79b9648fdf6963df8b26f0fa45a2",
+      "treatment": "repository_handoff_addition",
       "workstream": "continuous_verification"
     },
     {
@@ -972,6 +1019,15 @@
       "workstream": "docs"
     },
     {
+      "destination": "docs/continuous/CONTRACT.md",
+      "source_ref": "repository-authoring/docs/continuous/CONTRACT.md",
+      "source_sha256": "2caf07f3d693d7e871c34494f6d9e71944ab248359c722da5c5098ad703ae5d2",
+      "staged_bytes": 9831,
+      "staged_sha256": "2caf07f3d693d7e871c34494f6d9e71944ab248359c722da5c5098ad703ae5d2",
+      "treatment": "repository_handoff_addition",
+      "workstream": "docs"
+    },
+    {
       "destination": "docs/continuous/ORCHESTRATION.md",
       "source_ref": "repository-authoring/docs/continuous/ORCHESTRATION.md",
       "source_sha256": "9c384fff9c8aef5d39f179ea5569040062ac511346b3385e885e1a3bc1d851e2",
@@ -983,22 +1039,22 @@
     {
       "destination": "docs/continuous/TRADINGAGENTS.md",
       "previous_source_ref": "repository-authoring/docs/continuous/TRADINGAGENTS.md",
-      "previous_staged_sha256": "6a3b75164defcf3006cf6709b29ebaf742d5694e98e6e51a0ed1ae17d417fb86",
+      "previous_staged_sha256": "a1368e056c4434cffac34ab206d1a9f7d463890ac0edf84f2bfbb2a5e6bfa430",
       "source_ref": "repository-authoring/docs/continuous/TRADINGAGENTS.md",
-      "source_sha256": "a1368e056c4434cffac34ab206d1a9f7d463890ac0edf84f2bfbb2a5e6bfa430",
-      "staged_bytes": 9414,
-      "staged_sha256": "a1368e056c4434cffac34ab206d1a9f7d463890ac0edf84f2bfbb2a5e6bfa430",
+      "source_sha256": "840950b73f53c2e91679fdff7a4bf7e95f51642e96bd5fd1f408cabae37f1816",
+      "staged_bytes": 10905,
+      "staged_sha256": "840950b73f53c2e91679fdff7a4bf7e95f51642e96bd5fd1f408cabae37f1816",
       "treatment": "repository_handoff_adaptation",
       "workstream": "docs"
     },
     {
       "destination": "docs/continuous/lanes/tradingagents.md",
       "previous_source_ref": "repository-authoring/docs/continuous/lanes/tradingagents.md",
-      "previous_staged_sha256": "965cf953f9179e88b80a64954e4e148eb41a66abe5764c57c95e6f23f68b0b4a",
+      "previous_staged_sha256": "5730b2bd6bbd50c1ce49ca421c883355e455115d6eaea2beee0516625dbbefb4",
       "source_ref": "repository-authoring/docs/continuous/lanes/tradingagents.md",
-      "source_sha256": "5730b2bd6bbd50c1ce49ca421c883355e455115d6eaea2beee0516625dbbefb4",
-      "staged_bytes": 3264,
-      "staged_sha256": "5730b2bd6bbd50c1ce49ca421c883355e455115d6eaea2beee0516625dbbefb4",
+      "source_sha256": "278fa3ce9e9fb9907fd347ef324a2e0b0c24dddfef6d22b3e4e2330c5a38a55d",
+      "staged_bytes": 2785,
+      "staged_sha256": "278fa3ce9e9fb9907fd347ef324a2e0b0c24dddfef6d22b3e4e2330c5a38a55d",
       "treatment": "repository_handoff_adaptation",
       "workstream": "docs"
     },
@@ -1790,14 +1846,32 @@
       "workstream": "tests"
     },
     {
+      "destination": "tests/test_continuous_contracts.py",
+      "source_ref": "repository-authoring/tests/test_continuous_contracts.py",
+      "source_sha256": "b0c1829a0fe2f69b637575c4dd54036b3da3912a0ddb3dcfec8de686c1c2aec5",
+      "staged_bytes": 5943,
+      "staged_sha256": "b0c1829a0fe2f69b637575c4dd54036b3da3912a0ddb3dcfec8de686c1c2aec5",
+      "treatment": "repository_handoff_addition",
+      "workstream": "tests"
+    },
+    {
       "destination": "tests/test_continuous_tradingagents.py",
       "previous_source_ref": "repository-authoring/tests/test_continuous_tradingagents.py",
-      "previous_staged_sha256": "5e47d4086edd5a0ad29b550503708f820ea0854ffb77fd1561a496db5d5fb38d",
+      "previous_staged_sha256": "e1b3bb1f45d9260f7d9d7daa3eedc9a89f76dbfc019b2aff6d0d1105bf7aec41",
       "source_ref": "repository-authoring/tests/test_continuous_tradingagents.py",
-      "source_sha256": "e1b3bb1f45d9260f7d9d7daa3eedc9a89f76dbfc019b2aff6d0d1105bf7aec41",
-      "staged_bytes": 15445,
-      "staged_sha256": "e1b3bb1f45d9260f7d9d7daa3eedc9a89f76dbfc019b2aff6d0d1105bf7aec41",
+      "source_sha256": "3f5cdc101b2652ebcfa16ecc0947c69f9f8426d2b6da37471d72228f5be8cac6",
+      "staged_bytes": 24415,
+      "staged_sha256": "3f5cdc101b2652ebcfa16ecc0947c69f9f8426d2b6da37471d72228f5be8cac6",
       "treatment": "repository_handoff_adaptation",
+      "workstream": "tests"
+    },
+    {
+      "destination": "tests/test_continuous_verifier.py",
+      "source_ref": "repository-authoring/tests/test_continuous_verifier.py",
+      "source_sha256": "685678b26b0aa362f266bbfe3137bfdacac9582a92a98cd4a315c38dc8217b62",
+      "staged_bytes": 12211,
+      "staged_sha256": "685678b26b0aa362f266bbfe3137bfdacac9582a92a98cd4a315c38dc8217b62",
+      "treatment": "repository_handoff_addition",
       "workstream": "tests"
     },
     {
