@@ -64,6 +64,7 @@ class FeedbackBoundary:
     emit must durably record observations in an integrated host; this class makes
     no persistence claim. An exception propagates and leaves release unavailable.
     authorize is optional, separate host enforcement, evaluated again at use time.
+    proposal_id names this report artifact only, not a later paper decision.
     """
 
     def __init__(self, *, run_id, proposal_id, policy_binding, checkpoint, assess,
@@ -80,6 +81,11 @@ class FeedbackBoundary:
         self.delivered = {}
         self.included = set()
         self.stopped = False
+        self._input_sequence = 0
+
+    def next_input_sequence(self):
+        self._input_sequence += 1
+        return self._input_sequence
 
     def _spend(self, name):
         if self.stopped or self.counts[name] >= getattr(self.limits, name):
@@ -89,9 +95,9 @@ class FeedbackBoundary:
     def submit(self, text):
         if self.stopped or not isinstance(text, str) or not text.strip():
             raise BoundaryError("Stopped or empty proposal")
+        self.current = self.feedback = None  # Even a denied revision cannot reuse advice.
         if self.proposals:
             self._spend("remediations")
-        self.current = self.feedback = None  # Invalidate before any callback can fail.
         revision = len(self.proposals) + 1
         record = dict(run_id=self.run_id, proposal_id=self.proposal_id,
                       revision=revision, text=text, text_digest=sha256(text.encode()).hexdigest())
@@ -102,14 +108,18 @@ class FeedbackBoundary:
             raise BoundaryError("No registered checkpoint")
         self.current = LocalBinding(self.run_id, self.proposal_id, revision,
                                     record["text_digest"], checkpoint_id, self.policy_binding)
-        self.emit("proposal.bound", asdict(self.current))
+        try:
+            self.emit("proposal.bound", asdict(self.current))
+        except Exception:
+            self.current = None
+            raise
         return self.current
 
     def verify(self, *, origin="voluntary"):
         if origin not in {"voluntary", "host"} or self.current is None:
             raise BoundaryError("No proposal or unknown caller")
-        self._spend("verify_calls")
         self.feedback = None
+        self._spend("verify_calls")
         binding = self.current
         self.emit("verification.requested", dict(binding=asdict(binding), origin=origin))
         result = self.assess(binding)
@@ -148,18 +158,20 @@ class FeedbackBoundary:
 
     def source_round(self, operations):
         """One dispatched batch of trusted host source callbacks, counted separately."""
-        self._spend("source_rounds")
         self.feedback = None  # New evidence cannot reuse old advice.
         self.current = None  # Host must register a new revision/checkpoint.
+        self._spend("source_rounds")
         self.emit("source.round_started", dict(round=self.counts["source_rounds"]))
         return [operation() for operation in operations]
 
-    def report_boundary_allowed(self):
+    def report_boundary_allowed(self, text):
         """Only an explicit trusted host authorizer can enforce the named boundary."""
         result = self.feedback
         if (self.stopped or self.authorize is None or self.current is None or result is None
                 or result.binding != self.current or result.readiness != "READY"
                 or result.disposition != "ADVISE"):
+            return False
+        if not isinstance(text, str) or sha256(text.encode()).hexdigest() != self.current.text_digest:
             return False
         payload = json.dumps(asdict(result), sort_keys=True, separators=(",", ":"))
         if payload not in self.included:
@@ -181,3 +193,55 @@ def make_verify_tool(boundary):
         return boundary.verify(origin="voluntary")
 
     return StructuredTool.from_function(verify_proposal)
+
+
+def observe_native_returns(boundary, messages):
+    """Observe actual ToolMessages before pinned take_turn flattens wrap-up history."""
+    for message in messages:
+        if getattr(message, "type", None) == "tool" and message.name == "verify_proposal":
+            boundary.observe_tool_return(message.tool_call_id, message.content)
+
+
+def make_trusted_model(llm, boundary):
+    """Wrap model input assembly; no invocation occurs while constructing this.
+
+    Caller must offer identical tool tuples to the analyst and its ToolNode, and
+    call observe_native_returns at agent reentry. This wrapper does not modify an
+    upstream module, build a graph, or provide restart recovery. Its input event
+    records attempted invocation; provider acceptance/attention is not inferred.
+    """
+    from langchain_core.messages import SystemMessage
+    from langchain_core.runnables import Runnable
+
+    class TrustedModel(Runnable):
+        def __init__(self, delegate):
+            self.delegate = delegate
+
+        def bind_tools(self, tools, **kwargs):
+            return TrustedModel(self.delegate.bind_tools(tools, **kwargs))
+
+        def invoke(self, prompt, config=None, **kwargs):
+            messages = prompt.to_messages() if hasattr(prompt, "to_messages") else list(prompt)
+            messages = [SystemMessage(content=TRUSTED_INSTRUCTION), *messages]
+            pairs = []
+            for message in messages:
+                if getattr(message, "type", None) == "tool":
+                    pairs.append((message.tool_call_id, message.content))
+                elif getattr(message, "type", None) == "human":
+                    # Exact pinned _as_text representation; call IDs are recovered
+                    # only from separately observed returns, not guessed from text.
+                    for call_id, payload in boundary.delivered.items():
+                        if message.content == "[verify_proposal returned]\n" + payload:
+                            pairs.append((call_id, payload))
+            # IDs must remain unique across bound wrappers and unbound wrap-up.
+            input_id = f"{boundary.run_id}:input:{boundary.next_input_sequence()}"
+            boundary.observe_next_input(input_id, pairs)
+            # Fingerprints bind the actual visible envelope at this seam without
+            # copying potentially private prompts into a second capture store.
+            message_digests = [sha256(json.dumps(m.model_dump(mode="json"), sort_keys=True,
+                               separators=(",", ":")).encode()).hexdigest() for m in messages]
+            boundary.emit("model.input_attempted", dict(input_id=input_id, trusted_instruction=True,
+                                                       message_digests=message_digests))
+            return self.delegate.invoke(messages, config=config, **kwargs)
+
+    return TrustedModel(llm)
