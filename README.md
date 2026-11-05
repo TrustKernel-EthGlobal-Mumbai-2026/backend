@@ -4,9 +4,13 @@ TrustKernel exists to catch agent decisions that depend on stale evidence, fault
 
 **Start here for the active project state.** This README condenses the work across the implementation, ledger, verification, workflow, frontend and sponsor chats. The [context map](docs/context/README.md) provides deeper routes, the [session map](docs/context/SESSION_MAP.md) preserves how the work developed, and the [BB8 snapshot](bb8/README.md) lets another contributor or coding agent continue from the repository itself.
 
-## Active state — 4 November 2026
+## Active state — 5 November 2026
 
 **Current phase: completed live-source recording, completed offline ledger/verification, and repository handoff. No research experiment is running.** The next product milestone is an actual agent receiving a finding, holding a proposal, refreshing/correcting its evidence and passing a scoped recheck. That live corrective loop has not yet been demonstrated.
+
+**New owner focus:** asynchronous capture into an incremental atomic ledger; verification at an explicit agent checkpoint; an actual TradingAgents feedback/revision experiment; and portable CLI/SDK/MCP access with declared per-harness coverage. The [continuous verification plan](docs/CONTINUOUS_VERIFICATION_PLAN.md) records the proposed boundaries, replay-first milestones and frontend data contract. Architecture is proposed; no new runtime, experiment or cross-harness integration is claimed. Frontend implementation and independent model evaluation remain deferred.
+
+**Parallel implementation authorized:** four separate chats own contracts/verifier, capture/ledger, TradingAgents feedback, and SDK/CLI/MCP. This chat remains the orchestrator. The [active orchestration board](docs/continuous/ORCHESTRATION.md) records branch ownership, dependency gates, status and draft PR scope. Integration targets `codex/continuous-verification`; the actual-model smoke test remains separately approval-gated.
 
 The repository handoff is published. The [initial offline CI run](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/actions/runs/41722496087) passed on a fresh GitHub checkout, including BB8 verification and rebuilding/checking the committed context index. This is repository/mechanism validation, not another agent experiment.
 

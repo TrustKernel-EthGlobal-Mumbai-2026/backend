@@ -1,6 +1,8 @@
 # Workstream accounting
 
-Prepared4November2026. Every lane is accounted for; inclusion is distinct from publication approval.
+Updated5November2026. Every lane is accounted for; inclusion is distinct from publication approval.
+
+Active next-phase design: [continuous capture and feedback](CONTINUOUS_VERIFICATION_PLAN.md). The owner prioritized incremental ledger/checkpoint contracts, actual TradingAgents feedback and cross-harness tool access. Existing implementations below remain at their recorded scope; frontend implementation stays deferred. No runtime or paid experiment launched as part of the design update.
 
 | Workstream | Stage representation | Excluded or pending originals |
 |---|---|---|

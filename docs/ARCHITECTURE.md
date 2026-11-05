@@ -1,5 +1,7 @@
 # Architecture and evidence boundaries
 
+For the proposed successor runtime, read [continuous capture and agent feedback](CONTINUOUS_VERIFICATION_PLAN.md), dated5November2026. The architecture below describes the existing recorded-workflow implementation; incremental streaming projection and real-agent feedback remain unimplemented.
+
 TrustKernel is a sidecar over recorded agent workflows. The pinned upstream runs analyst/research/trader/risk stages; an observer captures observable inputs, outputs, calls, usage and errors without private reasoning. Raw immutable recordings and rebuildable indexes remain separate from extracted candidates and assessments.
 
 ```mermaid

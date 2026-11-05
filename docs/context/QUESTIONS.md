@@ -2,6 +2,8 @@
 
 Read the active README before interpreting this list. These are unresolved policies or integration tasks, not instructions to launch new experiments.
 
+On 5 November the owner prioritized asynchronous capture/incremental ledger checkpoints, a real TradingAgents verification-feedback experiment, and CLI/SDK/MCP access across harnesses. See the [proposed next-phase plan](../CONTINUOUS_VERIFICATION_PLAN.md), including capability limits, blocking-readiness semantics and the later frontend contract. These priorities do not settle the policy questions below or authorize paid execution.
+
 | Question | Established evidence | Still needed |
 |---|---|---|
 | Which finding blocks a decision? | Omitted obligations, source-row math, version disagreements and truncation can be observed separately | A declared hold/refresh/annotation policy and bounded proposal scope |

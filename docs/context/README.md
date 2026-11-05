@@ -1,9 +1,11 @@
 # Context map
 
-Current state lives in [the root README](../../README.md#active-state--4-november-2026). Read that before historical results. This map is for another person or agent picking up work without access to the original chats.
+Current state lives in [the root README](../../README.md#active-state--5-november-2026). Read that before historical results. This map is for another person or agent picking up work without access to the original chats.
 
 | Question | Read first | Implementation / evidence contract |
 |---|---|---|
+| Which parallel chat owns implementation and what is blocked? | [Active orchestration board](../continuous/ORCHESTRATION.md) | Four isolated branches, contract-first dependency gates and explicit acceptance evidence |
+| What are we working on next: async capture, agent feedback and CLI/SDK/MCP? | [Continuous verification plan](../CONTINUOUS_VERIFICATION_PLAN.md) | Proposed successor contracts and replay-first milestones; not implemented |
 | Why does this product exist? | README purpose and preserved decisions; [decision record](../DECISIONS.md) | [Architecture](../ARCHITECTURE.md) |
 | What happened across the chats? | [Session/workstream map](SESSION_MAP.md) | [Dated history](../research/HISTORY.md), [source fingerprints](../research/SOURCE_INDEX.json) |
 | What did the latest verification establish? | [Latest run](LATEST_RUN.md) | live_verification/LEDGER.md and RULES_POLICY.md |
