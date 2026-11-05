@@ -808,22 +808,22 @@
     {
       "destination": "context-index/catalog.json",
       "previous_source_ref": "repository-authoring/context-index/catalog.json",
-      "previous_staged_sha256": "fe5a0304b69b1b4341937241348573dde4f3d71cf4f3a38acd4688176631f0be",
+      "previous_staged_sha256": "67d59bfd8ba72d4524b56f0b2011d28dd011ba66fd54612f20caeb9e1c43417b",
       "source_ref": "repository-authoring/context-index/catalog.json",
-      "source_sha256": "67d59bfd8ba72d4524b56f0b2011d28dd011ba66fd54612f20caeb9e1c43417b",
-      "staged_bytes": 67072,
-      "staged_sha256": "67d59bfd8ba72d4524b56f0b2011d28dd011ba66fd54612f20caeb9e1c43417b",
+      "source_sha256": "69564ac9bf8611bf7440b4eb5dbfa4041f06cdf20c6325a4e5dde9918f2b7e86",
+      "staged_bytes": 67431,
+      "staged_sha256": "69564ac9bf8611bf7440b4eb5dbfa4041f06cdf20c6325a4e5dde9918f2b7e86",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
     {
       "destination": "context-index/chunks.jsonl",
       "previous_source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "previous_staged_sha256": "1b07698afa471a4cdd0704c88e85942aa62cc44382ea0b0ea2e66007c3443b8a",
+      "previous_staged_sha256": "a6bf9ebc1e5aecdf9940931d811b22e252b9b8d6f2ed7acc1e5703fcdc17ee30",
       "source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "source_sha256": "a6bf9ebc1e5aecdf9940931d811b22e252b9b8d6f2ed7acc1e5703fcdc17ee30",
-      "staged_bytes": 281456,
-      "staged_sha256": "a6bf9ebc1e5aecdf9940931d811b22e252b9b8d6f2ed7acc1e5703fcdc17ee30",
+      "source_sha256": "1131f20ebab1e73aa06fc6cc6f80ca8500a249f8a343056794462553a1ecb9ef",
+      "staged_bytes": 281958,
+      "staged_sha256": "1131f20ebab1e73aa06fc6cc6f80ca8500a249f8a343056794462553a1ecb9ef",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
@@ -957,6 +957,15 @@
       "source_sha256": "9c384fff9c8aef5d39f179ea5569040062ac511346b3385e885e1a3bc1d851e2",
       "staged_bytes": 8936,
       "staged_sha256": "9c384fff9c8aef5d39f179ea5569040062ac511346b3385e885e1a3bc1d851e2",
+      "treatment": "repository_handoff_addition",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/continuous/lanes/contracts.md",
+      "source_ref": "repository-authoring/docs/continuous/lanes/contracts.md",
+      "source_sha256": "7873f50f24c83155a853d5e880a0f1e8be94154337f0d8bdbf215ab95ffa6b13",
+      "staged_bytes": 1356,
+      "staged_sha256": "7873f50f24c83155a853d5e880a0f1e8be94154337f0d8bdbf215ab95ffa6b13",
       "treatment": "repository_handoff_addition",
       "workstream": "docs"
     },
