@@ -1,7 +1,7 @@
 """Transport boundary bound to accepted verification contract 0.2.
 
-Backend.execute is a provisional seam, not an accepted service interface. It
-must validate domain schemas and enforce object ownership before accessing data.
+Backend.execute is the reviewed local B service operation seam. B validates its
+DTOs and referenced-object ownership; verify additionally binds A at this boundary.
 """
 from dataclasses import dataclass
 import json
@@ -49,11 +49,11 @@ _SAFE_SERVICE_ERRORS = {
 
 
 class ServiceErrorAdapter:
-    """Prepare B's proposed typed-error seam without importing unreviewed B.
+    """Map B's typed service errors using a trusted host-supplied exception class.
 
     A trusted host supplies the exact service exception class, never model JSON.
     Public messages are fixed here; raw messages/issues are not serialized. This
-    adapter does not create a service, configure coverage or validate B's DTOs.
+    adapter does not create a service, configure coverage or replace B validation.
     """
 
     def __init__(self, backend: Backend, error_type: type[Exception]):
@@ -145,6 +145,20 @@ class Client:
     def __init__(self, backend: Backend | None = None, access: Access | None = None):
         self.backend = backend
         self.access = access or Access()
+
+    @classmethod
+    def from_service(cls, backend, *, access: Access | None = None):
+        """Wrap an already configured reviewed B instance; never open a model path.
+
+        The trusted host retains backend ownership/close responsibility. Default
+        preliminary grants mirror its principal; B always authorizes independently.
+        """
+        from .service import ServiceBackend, ServiceError
+        if not isinstance(backend, ServiceBackend):
+            raise TypeError("Expected a configured ServiceBackend instance.")
+        grants = access if access is not None else Access(
+            backend.principal.permissions, backend.principal.run_ids)
+        return cls(ServiceErrorAdapter(backend, ServiceError), grants)
 
     def call(self, operation: str, request: dict[str, Any]) -> dict[str, Any]:
         try:
