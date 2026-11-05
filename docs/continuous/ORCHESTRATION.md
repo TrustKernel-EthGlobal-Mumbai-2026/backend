@@ -95,7 +95,7 @@ of scope; retain stable graph/event IDs and a cursor-based read contract.
 |---|---|---|---|
 | A | ACCEPTED FOR SCOPED OFFLINE INTEGRATION | [PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2), corrected `e088970` / contract0.2: orchestrator independently reran all29 tests and original false-PASS control now rejects | B/C/D bind exact accepted API; A stays available for concrete integration defects |
 | B | NATIVE STORAGE VERIFIED / SERVICE IMPLEMENTING | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3), `1f62562`: orchestrator independently reran26 authored storage/replay tests, including abrupt process recovery | Accepted A imported; implement/test real stored-reference service and scoped typed projection; visible-text inventory is not semantic ledger readiness |
-| C | ACTIVE / BACKEND DEPENDENT | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), `3b7916a`: owner reports8 generic plus2 cached native offline plumbing tests; not independently reviewed yet | Bind accepted A events/results; integrate actual B checkpoint service when reviewed; no actual-model behavior claim |
+| C | CHANGES REQUESTED / BACKEND DEPENDENT | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), `7961d39`: orchestrator reran9 generic tests but reproduced ambiguous flattened-tool content attributed to two distinct calls | Repair exact call-origin attribution and add negative controls; then bind reviewed B service |
 | D | TRANSPORT SLICE VERIFIED / BACKEND DEPENDENT | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5), `c7e486f`: orchestrator independently verified16 tests with cached official MCP SDK; base run15 PASS/1 optional SDK SKIP | Accepted A dependency bytes exact; actual persisted B-core SDK/CLI/MCP parity remains untested |
 
 The orchestrator updates states after actual chat snapshots and artifact review.
@@ -145,6 +145,17 @@ Tests cover real stdio tool discovery/invocation over an authored backend, absen
 backend behavior, request/result validation, stale/foreign bindings, permissions,
 JSON limits and safe errors. This accepts transport mechanics and validation,
 not persisted B service parity or compatibility with every host installation.
+
+Adapter review: immutable C milestone `7961d398fef693d33e4682188dcff5099e6922ff`
+passes9 independently rerun generic tests; native tests are explicitly unexecuted
+in this audit. A negative control records two successful same-name/same-content
+tool calls, then gives the capture helper one flattened human message without a
+call ID. The helper marks both distinct calls as included. This overstates exact
+origin linkage; text equality cannot identify both call occurrences. C received
+a bounded repair request to retain exact input while qualifying ambiguity or
+using explicit host-observed transformation lineage. B was asked to expose the
+exact frozen checkpoint/event/policy view for C's binding validation. No C capture
+or full runtime integration acceptance is claimed yet.
 
 ## Draft PR descriptions
 
