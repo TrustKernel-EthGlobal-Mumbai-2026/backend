@@ -1,49 +1,49 @@
-# Capture traces durably and project checkpointed atomic records incrementally
+# Capture traces durably and project checkpointed procedural records
 
-Lane B. Updated 5 November 2026. Status: STORAGE MILESTONE; public integration
-blocked on orchestrator acceptance of lane A's candidate contract.
+Lane B. Updated 5 November 2026. Status: CALLABLE SERVICE MILESTONE; orchestrator
+service review and C/D integration are next. Branch codex/capture-ledger, draft PR
+#3 targeting codex/continuous-verification. No merge or paid run.
 
-Branch: `codex/capture-ledger`, draft PR base: `codex/continuous-verification`.
+Accepted A dependency: e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2, integrated 29f038f,
+continuous-verification-0.2. A's eight source/schema/example/test/doc dependency
+files are imported byte-for-byte unchanged. Earlier 8eadcb1 was rejected and is
+not the active contract. Central README/orchestration/CI are untouched.
 
-Tail redacted captured JSONL into a new isolated journal and incremental projection. Preserve exact origin references and checkpoint watermarks; handle duplicates, gaps, partial lines and restarts. Demonstrate incremental/full replay parity at identical prefixes. Do not rebuild historical profiles or fetch sources.
+Implemented owned files: continuous_verification/capture.py, journal.py,
+projection.py, service.py; tests/test_continuous_capture.py and
+ tests/test_continuous_projection.py; docs/continuous/CAPTURE.md and this lane doc.
+The initial native storage milestone was 4105abd; hardening/facade proposal was
+1f62562. This slice binds the accepted contract to real persisted typed events.
 
-Owned paths (new paths are proposed, not implemented): continuous_verification/capture.py, journal.py, projection.py and service.py; tests/test_continuous_capture.py and test_continuous_projection.py; docs/continuous/CAPTURE.md.
+ServiceBackend provides host-only configure_run/install_policy/record_coverage/
+project, read-authorized resolve_view(A_request)->{checkpoint,events,policy},
+and D-compatible execute(operation,request). Principals/grants and stream
+collector assignments come from trusted host configuration. register_run JSON
+only activates configured streams; clients cannot grant coverage, service authority
+or policy. Implemented operations: register_run, ingest_events, checkpoint, verify,
+get_assessment, get_evidence, get_run_state, list_events. acknowledge_feedback
+returns explicit UNSUPPORTED_OPERATION; captured lifecycle events remain separate.
+Exact fields, signatures, safe error codes and limits are in [CAPTURE.md](../CAPTURE.md).
 
-Dependency gate: Prepare replay/storage work now, then bind to lane A accepted event/checkpoint/result contracts. Do not freeze a competing schema.
+Native JSONL remains raw/visible-text inventory with ledger_ready=false. Typed
+host tool-result/model-input/report records support scoped procedural checks;
+atomic_semantic_ready remains false. No automatic native report/input-boundary
+mapping, complete semantic-ledger claim or global decision clearance.
 
-Read ../ORCHESTRATION.md and ../../CONTINUOUS_VERIFICATION_PLAN.md before implementation. Update this file with actual changed files, commands, tests, blockers and next action. Keep machine-specific state and full chat transcripts out of the repository. No paid model/provider calls, original-budget mutation, live run, trading, signing or on-chain operation. Do not merge or modify another lane's files.
+Checkpoints freeze registered stream set, requested vector, actual ingestion
+view, projection state and collector coverage. Missing/lagged prefixes cannot
+PASS; late evidence needs a new checkpoint revision and cannot repair old results.
+Assessments/errors and identity revisions are immutable and persisted. Reads are
+run-authorized, exact-span and pinned-cursor based. Crash recovery and replay use
+only temporary authored inputs copied from A's public example.
 
-Implemented: native redacted JSONL tailing; transactional authoritative SQLite
-receipts/cursors; identity collision rejection, hash-chain audit, partial-line and
-source-change handling; per-native-run contiguous watermarks; visible-text
-projection and fixed-prefix replay. This is raw/visible-text availability, **not**
-a complete atomic ledger or integrated verifier. `ledger_ready` remains false.
+Validation: 26 native storage/projection tests plus 23 typed stored-service tests
+pass; accepted A's 29 tests also pass in this checkout (78 total). Final context
+index/manifest/export/diff checks are run before publication; exact commands and
+head are also retained in private coordination status. No optional native/MCP test
+is counted as PASS and no historical corpus builder or provider was run.
 
-Changed owned paths: the four modules and two tests listed above,
-`docs/continuous/CAPTURE.md`, and this lane doc. Branch-local generated context
-index/packaging metadata are refreshed before publication; orchestrator resolves
-generated conflicts. Central README/orchestration/CI were not changed.
-
-Validation: `py -3.11 -S -B -m unittest tests.test_continuous_capture
-tests.test_continuous_projection -v` — 26 authored temporary-input tests pass,
-including actual subprocess crashes before/after durable commit. Initial storage
-milestone published at `4105abd`; hardening adds suffix reads, detached projection
-rows, journal binding, explicit gap ranges and unrelated-database refusal.
-No original corpus/history build, optional native integration or provider call.
-Detailed boundaries and test risks: [CAPTURE.md](../CAPTURE.md).
-
-Blocker: A's candidate `continuous-verification-0.1` (`8eadcb1`) is NOT ACCEPTED;
-orchestrator requested future-parent/causal-cycle repairs. Need corrected accepted event/checkpoint/verifier schema revision,
-native trace mapping, registered-stream/coverage ownership and extraction versus
-procedural readiness agreement. These are recorded in CAPTURE.md; no competing
-public event contract or fake successful verifier was created.
-
-Read-only inspected D's INTERFACES.md and sdk.py. CAPTURE.md now proposes exact
-nine-operation stored-reference DTOs, host-bound principal construction, registered
-streams, collector-only coverage, immutable checkpoint/policy resolution, stable
-paginated read semantics and B-owned typed errors. Proposal only: current service
-does not implement these operations or claim atomic ledger readiness.
-
-Next: await corrected accepted A commit and orchestrator/C/D agreement on the
-facade before public service binding. Orchestrator needs to register the new suites in shared
-CI and update central active-state documentation when the integration is ready.
+Next: publish callable API commit, await orchestrator code/test review and C/D
+integration. Orchestrator owns shared CI, README/current-state updates and generated
+metadata conflict resolution. Frontend, independent evaluation and live execution
+remain deferred. No sibling clone writes or cross-chat messages were performed.

@@ -1,261 +1,221 @@
-# Offline capture storage milestone
+# Durable capture and stored-reference verification
 
-Status: independent storage/replay milestone, 5 November 2026. Public contract
-and verifier integration are blocked on orchestrator acceptance of lane A.
-Historical trace writers, closed-corpus builders and accepted outputs are unchanged.
+Updated 5 November 2026. Lane B now implements an offline native storage slice
+and a callable typed-host-event backend bound to accepted
+`continuous-verification-0.2`. Historical writers/builders and private recordings
+are unchanged. No provider/model execution or full semantic-ledger claim.
 
-## Persistence and recovery
+Accepted dependency provenance: A source commit
+`e088970b0a2d4483b1a8d33309b8ef5c38fdd8d2`, integrated as `29f038f`.
+The accepted __init__, contracts, verifier, schema, example, two tests and
+CONTRACT.md were imported byte-for-byte, with no edits. The earlier 0.1 candidate
+`8eadcb1` was rejected for a causal-cycle/future-parent defect; it is historical,
+not the current dependency. No PR or integration branch was merged by this lane.
 
-`continuous_verification.journal.Journal` owns a new, separate SQLite database.
-It is the sole authority for new ingestion receipts and tail cursors: each
-accepted line commits its event, exact raw receipt and source cursor in one
-`BEGIN IMMEDIATE` transaction with WAL and `synchronous=FULL`. An acknowledgement
-is returned after commit. A crash before commit rolls back all three; a crash
-after commit before acknowledgement resumes at the committed cursor. Original
-redacted JSONL remains the read-only source recording, not a second new write
-authority. No independent JSONL/SQLite dual-write success is claimed.
-The internal storage format is `native-receipt-journal-1`; an existing unrelated
-SQLite file or unknown storage version is refused before changing its mode or
-schema. This is a new storage format, not a migration of historical trace indexes.
+## Concrete service API for C/D
 
-Only explicitly supplied native Trace v1 JSONL is supported. Callers must supply
-already reviewed/redacted files; this reader is not a redaction gateway. It does
-not import the native LangChain callbacks, traverse corpora, read caches or make
-provider/model calls. One local worker owns a tailer/projection instance. SQLite
-serializes transactions across connections, but a multi-worker service lifecycle,
-authentication, storage quotas and a background scheduler are not implemented.
-
-Each source ID binds an absolute path, filesystem device/inode, committed byte
-offset, line number and SHA256 of the consumed byte prefix. Every poll rehashes
-that prefix in bounded chunks before reading more. Incomplete final lines remain
-unacknowledged. Malformed complete lines, overlong lines (default 8 MiB), changed
-prefixes, truncation, rotation and missing files halt capture and record an issue.
-Rotation requires an explicit new source ID; this reader never guesses a skipped
-generation or silently clears an old gap. These issues are conservatively sticky
-and block all storage snapshots; recovery/clearance policy is not yet implemented.
-An ordinary partial line is visible in the poll result, not a permanent fault.
-Source mutations between polls are detected on the next poll; the reader cannot
-prove that an upstream producer captured all activity. Filesystem durability
-ultimately depends on the host honoring SQLite's flush requests.
-
-Event IDs and `(run_id, seq)` each bind immutable normalized event content.
-Identical transport retries create exact origin receipts without duplicate
-projection effects. Changed content under either identity is rejected before
-cursor advancement. Source line bytes, byte ranges, line numbers and raw hashes
-remain recoverable from receipts. Native self-hashes use the original producer's
-JSON serialization. Separate event and receipt hash chains protect retained
-ingestion order; `audit()` revalidates chains, receipt/event bindings and cursor
-prefixes. These hashes detect corruption, not publisher identity or authenticity.
-
-Per-run native stream state reports highest observed and contiguous sequence,
-inclusive missing ranges and known chain-mismatch positions.
-Missing positions and native chain mismatches remain visible; out-of-order arrival
-can fill a sequence gap only in a later journal view. A fixed earlier journal
-position never gains that later event. A restarted producer must use a new run
-identity in this native-only slice; A's explicit stream IDs are not yet bound.
-
-## Projection and readiness boundary
-
-`Projection.advance` appends event rows and a narrow visible-text inventory:
-captured model prompts/messages, visible model generation text and string tool
-returns. It preserves event IDs, exact JSON pointers, text hashes and Unicode
-code-point half-open spans. Unknown shapes stay in the raw event, with no guessed
-semantic extraction. Reasoning blocks are not included in the text inventory.
-The raw recording still contains its original privacy-filtered envelope.
-
-This is **not a complete atomic semantic ledger**. There are no accepted claims,
-support edges, report origins, completion inference or material dependencies.
-`storage_snapshot` always returns `atomic_status=UNAVAILABLE` and
-`ledger_ready=False`, even when `capture_state=PREFIX_AVAILABLE`. Lag, prefix
-mismatch, missing streams, gaps and source faults yield `NOT_READY` with no rows.
-No verifier or successful checkpoint response is fabricated by the service.
-
-Snapshots bind a fixed journal position plus optional per-run watermarks. An
-already advanced projection cannot serve an older prefix; use a fresh `replay`
-for that prefix. Projection state is a disposable in-memory cache, rebuilt from
-the durable journal after restart. Advances query only the unprojected suffix;
-each cache binds the journal's persisted identity and returns detached rows so
-clients cannot mutate retained projection state. No late source matching is performed: model
-input text comes only from the captured input envelope, never later evidence.
-Array/list order remains captured order; canonical projection rows sort by table
-and stable ID. Incremental and full replay have byte-identical canonical rows at
-the same journal prefix and projection version. This proves the declared surface
-projection, not semantic completeness or historical ledger parity.
-
-## Independent API and dependency questions
-
-The native storage API is internal to this milestone, not a competing public
-continuous-verification contract:
+All imports below come from `continuous_verification.service`. These signatures
+are implemented; service acceptance/integration still requires orchestrator review.
 
 ```python
-service = CaptureService(new_journal_path)
-service.ingest_trace("explicit-source-generation", reviewed_redacted_jsonl)
-service.project()
-snapshot = service.storage_snapshot(service.journal.watermark(), {"run-id": 3})
-service.close()
+Principal(actor_id: str, permissions: frozenset[str], run_ids: frozenset[str])
+ServiceBackend(journal_path, *, principal, service_id, project_on_ingest=True)
+backend.configure_run(run_id, streams)
+backend.install_policy(run_id, accepted_A_policy)
+backend.record_coverage(run_id, stream_id, observations)
+backend.project(run_id)
+backend.resolve_view(accepted_A_request) -> {checkpoint, events, policy}
+backend.execute(operation, request) -> dict
+backend.audit() -> dict
+backend.close()
+ServiceError.code, ServiceError.public_message, ServiceError.issues
 ```
 
-Lane A candidate `continuous-verification-0.1` at `8eadcb1` was inspected read-only;
-acceptance remains pending. Required next interfaces/decisions:
+Principal construction and the local database path belong to the trusted host,
+never model/tool request JSON. The host must authenticate its callers before
+injecting a principal. This local grant enforcement is not network authentication.
+`permissions` uses configure/collect/verify/read/feedback. Run scope is checked
+for every host method and operation. D's preliminary Access check does not replace
+B's principal and nested-object authorization. B imports no transport module.
 
-1. Accept/pin `validate_event`, `validate_checkpoint`, `verify(request, *,
-   checkpoint, events, policy)` and the exact schema revision. How should native
-   `run_id/seq` map to run/stream/producer positions without asserting missing
-   capabilities? Native envelopes must retain their receipt provenance.
-2. Register service-owned streams and coverage separately from agent assertions.
-   A's candidate requires exact events `1..requested`, gap ranges, ingested and
-   projected watermarks, and `SERVICE_ESTABLISHED` authority. The storage facade
-   does not yet provide these public checkpoints or authentication.
-3. Agree how raw-observation availability differs from atomic extraction and
-   named procedural-check readiness. Native raw ingestion cannot claim all
-   candidate semantic event types; adapters must supply reviewed observations.
-4. Bind exact model-input/report/tool relationships to C's actual captured input
-   observations. Do not synthesize exposure or report completion from timestamps,
-   lexical presence, tool invocation alone or MCP connectivity.
+`configure_run` requires configure permission. Its nonempty `streams` list uses
+exact fields `{stream_id, collector_id, producer_id, adapter_version,
+redaction_profile}`; the stream set and assignments are immutable in this slice.
+Each configured collector ID must equal the trusted principal actor ID when it
+ingests that stream. Checkpoint, registration and explicit projection require the
+host actor assigned to every registered stream; a coordinator should be assigned
+all streams it establishes. Native producer restart handling needs an explicitly
+new run/configuration or preconfigured stream; dynamic registry revision is not
+implemented. Registry revision is always integer 0, never agent-selected authority.
+
+`install_policy` requires configure permission and stores an accepted A policy
+under immutable identity/version. No transport operation installs policies.
+`record_coverage` requires collect permission and the assigned stream collector.
+Its observations are A capability objects `{name,state,basis_event_ids}`; captured
+coverage needs retained same-run basis IDs. Missing capabilities remain UNKNOWN.
+The declaration is a trusted collector assertion, not proof of uninstrumented
+activity. Model request JSON cannot set coverage, collector assignment, service
+identity, projected watermarks or SERVICE_ESTABLISHED state.
+
+| Operation | Exact request fields | Backend result |
+| --- | --- | --- |
+| register_run | run_id, registration_id | Activates host-preconfigured streams; run_id, registry_revision, streams, coverage limit |
+| ingest_events | run_id, batch_id, events (accepted A envelopes) | Durable receipt_id, per-event receipt_position and ACCEPTED/DUPLICATE status, stream ingest/gap state |
+| checkpoint | run_id, checkpoint_id, revision, registry_revision, streams list of {stream_id,requested} | Exact service-established A checkpoint, stored immutably with its frozen event view |
+| verify | Exact accepted A request unchanged | Exact validated, retained A result resolved from stored checkpoint/policy/events |
+| get_assessment | run_id, assessment_id | Exact retained result, including errors and failed/unready findings |
+| get_evidence | run_id, event_id, optional span [start,end] | Retained A event/origin and optional exact Unicode excerpt/span; no filesystem resolution |
+| get_run_state | run_id | Actual raw/typed projection counts, per-stream watermarks/gaps, coverage, native mapping limit, atomic_semantic_ready=false |
+| list_events | run_id, after_cursor (null initially), limit (integer 1..100) | Pinned snapshot_id, events, next_cursor (null at end), has_more |
+| acknowledge_feedback | Not implemented | Explicit UNSUPPORTED_OPERATION; never an empty successful acknowledgement |
+
+Unexpected fields are rejected. register_run does **not** accept streams,
+expected_revision, collector IDs or capabilities from model JSON. This replaces
+the earlier proposed mutable-registry DTO; no conflicting old proposal is active.
+The optional execute hook keyword is trusted crash-test injection, not a tool arg.
+
+ServiceError codes: INVALID_REQUEST, FORBIDDEN, NOT_FOUND, CONFLICT,
+INVALID_CURSOR, UNSUPPORTED_OPERATION, BACKEND_UNAVAILABLE. Its message is bounded
+public text; optional issues contain safe schema paths/codes only. D can translate
+to InterfaceError(code, public_message); its current error envelope does not carry
+structured issues. Unexpected exceptions must become generic BACKEND_ERROR at
+the transport boundary, with no raw paths/tracebacks/request contents. A valid
+NOT_READY/CAPTURE_GAP/ERROR/FAIL/INCONCLUSIVE/HOLD/RECHECK remains an unchanged result,
+not a transport failure or PASS. Invocation success never means decision clearance.
+
+`resolve_view` is a read-authorized host method, not an extra model tool. It
+validates the accepted request and every stored reference, returning detached JSON
+for exactly the immutable checkpoint/event order/installed policy used by verify.
+C can call `assessment_binding(request, **view)` or
+`binding_matches(result['binding'], request, **view)`. It never reconstructs from
+the newest stream state, establishes coverage or changes policy. A retained
+request's unresolved references remain unresolved in that frozen view even if
+similarly named data subsequently arrives in another run.
+
+## Persistence, views and procedural readiness
+
+`Journal` creates a separate SQLite authority (`native-receipt-journal-1`).
+Typed tables are an additive, version-bound `typed-service-0.2-1` namespace in that
+same isolated database. Existing unrelated SQLite files are refused from their
+header before SQLite can create sidecars; unknown storage versions are refused.
+The database is local/single-worker. FULL synchronous WAL transactions commit
+accepted native or typed events and their durable receipts together before return.
+No independent dual-write authority is claimed. Original redacted JSONL stays a
+read-only source; projections and exports are not a second write authority.
+
+Typed event IDs are run-wide unique; `(run,stream,sequence)` also binds immutable
+content. Duplicate event transport receipts have no second logical projection
+row. A batch ID binds its entire request and original receipt; retry returns that
+receipt, but still requires the assigned collector. Changed batch/event identities
+reject the entire transaction. Source identity/version binds content, status and
+valid time; report ID/revision, input ID, proposal ID/revision, request, policy,
+checkpoint and assessment history cannot be overwritten. Separate native and typed
+event/receipt/object hash chains detect corruption, not authenticity. Startup and explicit
+audits replay retained bindings. No signatures or global approval are inferred.
+
+Typed ingestion accepts already structured A observations from the trusted host:
+tool-result, assembled model-input, report and other declared lifecycle records.
+The procedural projection retains their exact content, origin pointers/spans,
+parents and typed fields. Synchronous projection shares the receipt transaction
+by default. `project_on_ingest=False` leaves observable projection lag until the
+trusted host calls project(run_id). This is a narrow procedural record projection,
+not full qualitative decomposition, accepted factual support or a complete atomic
+semantic ledger. The backend always reports atomic_semantic_ready=false.
+
+A checkpoint captures three distinct things: the immutable configured stream
+registry (revision 0), every requested per-stream position, and the ingestion view
+actually retained when it was established. It stores the exact event array and
+its digest, ordered by `(stream_id,sequence,event_id)`, plus the durable ingestion
+high-watermark. Every registered stream must be present, including idle/unknown
+streams. Current highest-observed, contiguous-ingested and actually-projected
+watermarks are different. Interior missing sequences become explicit gap ranges;
+unobserved tails/worker lag remain NOT_READY. A checkpoint also freezes collector
+coverage; later coverage/ingest/projection does not repair that checkpoint. Retry
+returns the exact old checkpoint; a new revision captures a later view.
+
+Verify validates A's request, resolves stored checkpoint identity/revision/digest,
+resolves operator-installed policy identity/version/digest and uses only that
+checkpoint's retained events. Every nested known event/checkpoint/policy/report/
+assessment reference is scoped to the authorized run. Foreign references are
+FORBIDDEN; missing permitted objects are NOT_FOUND; changed/stale identity bindings
+are CONFLICT. Missing evidence in a frozen view stays a declared prerequisite gap.
+Proposal and request revisions are immutable. Exact A results, including ERROR
+with no binding, CAPTURE_GAP, NOT_READY, FAIL and INCONCLUSIVE, are retained; repeat
+requests and get_assessment do not recompute them from later data.
+
+Only the proposal's report_event_id + report_id + report_revision is checked by
+A's scoped rules. A procedural PASS is not downstream decision truth, source
+truth, complete dependencies or a host-enforced trading gate. Feedback lifecycle
+events can be ingested explicitly; their assessment/proposal/revision bindings
+must match retained requests. Acknowledgement, input inclusion and correction
+remain separate observations. The convenience acknowledgement operation is not
+implemented, and observations never rewrite the original assessment.
+
+Reads use retained content and Unicode code-point half-open spans. list_events
+first pins the durable typed-ingestion high-watermark in service-owned cursor
+state. Subsequent pages exclude later appends; persisted opaque cursors survive
+restart. They grant no access. Foreign-run cursor: FORBIDDEN; absent/malformed
+cursor: INVALID_CURSOR. No expiry/compaction is implemented. Start a new null-cursor
+read for a later view. The current run registry cannot silently replace the one
+bound to an old checkpoint.
+
+## Native trace storage remains a separate input stage
+
+TraceTailer polls only an explicit already-reviewed/redacted native Trace v1
+JSONL path. It is not a redaction gateway or background scheduler and makes no
+model/provider call. Each source ID binds path, filesystem identity, line/byte
+cursor and consumed-prefix SHA256. Every poll rehashes the consumed prefix in
+bounded chunks. Incomplete final lines remain unacknowledged. Malformed complete
+lines, overlong lines (8 MiB default), missing/rotated/truncated/rewritten files
+halt capture and retain sticky source issues. Rotation needs a new explicit source
+ID; faults are never silently cleared. Mutation between polls is detected next
+poll; no claim is made about all upstream activity or host flush guarantees.
+
+Native receipt/cursor/event commit is atomic; crash before commit rolls back and
+crash after commit before acknowledgement safely resumes. Raw receipt bytes,
+line numbers and byte spans remain exact. Native producer self-hashes use the
+original serialization. Sequence gaps and native-chain mismatches stay observable.
+Out-of-order arrivals fill only a later ingestion view, never an earlier prefix.
+
+The native Projection is a detached, journal-bound, suffix-incremental visible-text
+inventory of prompts/messages, visible generation text and string tool returns.
+It preserves JSON pointers, hashes and Unicode spans. Unknown shapes remain raw;
+reasoning blocks are not inventoried as accessible text. PREFIX_AVAILABLE means
+captured surface rows only. Native storage_snapshot always returns
+atomic_status=UNAVAILABLE and ledger_ready=false; lag, gaps, prefix mismatch and
+sticky source issues give NOT_READY. A cache advanced past a prefix must use a
+fresh replay for that older prefix. No later source is matched into an earlier input.
+
+There is **no automatic native Trace -> typed assembled-input/report mapping**.
+Native text inventory alone cannot justify A's model-input boundary, closed report,
+completion or coverage. C's reviewed host adapter must provide those observations;
+otherwise they remain UNKNOWN/INCONCLUSIVE. MCP connectivity cannot prove
+whole-session capture, hidden reasoning or next-input inclusion.
 
 ## Verification and continuation
 
-Authored temporary inputs only, Python 3.11 standard library:
-
 ```powershell
 py -3.11 -S -B -m unittest tests.test_continuous_capture tests.test_continuous_projection -v
+py -3.11 -S -B -m unittest discover -s tests -p 'test_continuous*.py' -v
 ```
 
-Current milestone: 26 tests pass (initial publication had 18). Controls cover partial Unicode lines, retries,
-two identity collision forms, rollback/lost acknowledgement/restart, changed
-files, missing/oversized/malformed inputs, sequence gaps/out-of-order arrivals,
-source-chain mismatch, receipt corruption, multiple streams, projection lag,
-fixed-prefix replay parity and no future evidence in earlier inputs.
-Hardening adds actual subprocess exits before/after commit, refusal of unrelated
-SQLite files without mutation, direct retry/cursor immutability, event/cursor
-corruption, detached reads, journal isolation and suffix-only incremental reads.
-Public event/checkpoint/verifier integration is **not run**, pending A acceptance.
-There are no optional native/MCP integration dependencies in these tests and no
-actual framework/model behavior claim.
+Current authored service controls cover real persisted scoped verification,
+unknown coverage, frozen gaps/lag/late arrivals, registered idle streams, atomic
+batch collisions/retries, immutable source/report/proposal identities, denied
+collectors and foreign nested references, stale policy/checkpoint bindings,
+actual subprocess crash before/after commit, restart-stable pinned pagination,
+exact replay parity, retained causality errors and no semantic-ledger readiness.
+Service fixtures copy the public authored A example into temporary inputs; they
+are not historical trace conversion or actual model/framework behavior.
 
-Now: publish independent storage milestone and required interfaces. Next: finish
-storage hardening while awaiting A, then bind public service/checkpoints only to
-the accepted revision. Later: orchestrator integrates lanes and registers CI;
-frontend, paid execution and independent quality evaluation remain deferred.
+Native controls cover partial Unicode lines, file change, malformed inputs,
+crashes/lost acknowledgement, hash/cursor corruption and incremental/full replay.
+The lane doc records final test counts and publication checks. No optional native
+framework or MCP integration is counted as PASS by this lane. No original private
+corpus/history rebuild, budget mutation, paid call, frontend, trade or signature.
 
-## Proposed stored-reference facade for C/D (not implemented or accepted)
-
-Read-only inspection of D's `INTERFACES.md` and `sdk.py` confirms its provisional
-`Backend.execute(operation, request) -> dict` seam and nine operations. B proposes
-the facade below after corrected A acceptance. These operation DTOs reference
-A's types; they do not replace A's event, checkpoint, policy, request or result
-schemas. A `8eadcb1` is **not accepted**: orchestrator reproduced a future-parent /
-causal-cycle packet with two PASS findings and requested repair. A's sibling
-working tree is evolving toward 0.2; that is not a reviewed commit to import.
-
-Trusted host construction, outside any request JSON:
-
-```python
-backend = ServiceBackend(store, principal, collector_bindings, accepted_contract)
-backend.install_policy(run_id, accepted_A_policy)  # operator/policy-owner only
-backend.record_coverage(run_id, stream_id, observations)  # trusted collector only
-result = backend.execute(operation, request)  # D's unchanged dispatch seam
-```
-
-`principal` binds service identity, actor identity, permitted runs, operation
-grants and collector stream/adapter assignments. Construction must fail without
-these grants. D's preliminary `Access` allowlist does not establish B's actor or
-object authority. `install_policy` and `record_coverage` are operator/collector
-methods, **not** extra model tools. No public request accepts a local path,
-arbitrary policy body, service authority, capability assertion or ledger watermark.
-Actual external authentication remains host integration work; a JSON actor name
-is never authentication. C needs separate collector and verification principals.
-
-Proposed exact operation fields (reject unlisted fields; all have `run_id`):
-
-| Operation | Additional request fields | Durable backend result |
-| --- | --- | --- |
-| `register_run` | `registration_id`, `expected_revision` (null for new run), `streams` list of `{stream_id, producer_id, adapter_version, redaction_profile}` | `run_id`, `registry_revision`, registered `streams`, declared coverage limits; no capture-completeness claim |
-| `ingest_events` | `batch_id`, `events` list of accepted A event envelopes | `run_id`, `batch_id`, `receipt_id`, `events` list of `{event_id, receipt_position, status}` with ACCEPTED/DUPLICATE, and per-stream durable ingest/gap state |
-| `checkpoint` | `checkpoint_id`, `revision`, `registry_revision`, `streams` list of `{stream_id, requested}` | Exact stored A checkpoint object; B supplies actual ingest/projection/gap/coverage and establishment fields |
-| `verify` | Exactly A's accepted request fields, unchanged | Exact validated A result, retained immutably with the resolved evidence view |
-| `get_assessment` | `assessment_id` | Exact retained A result; never a fresh assessment |
-| `get_evidence` | `event_id`, optional `span` `[start,end]` | `run_id`, `event_id`, retained A `event`, optional `excerpt` plus validated Unicode `span`; origin preserved, no filesystem resolution |
-| `acknowledge_feedback` | `acknowledgement_id`, `assessment_id`, `proposal_id`, `proposal_revision`, `delivery_event_id`, optional `acknowledgement_event_id` | `run_id`, `acknowledgement_id`, `receipt_id`, exact bound references and `status=RECORDED`; no correction or model-inclusion claim |
-| `get_run_state` | No extra fields initially | `run_id`, `registry_revision`, per-stream observed/contiguous/projected watermarks and gaps, current source/capture issues, raw/procedural/atomic readiness separately |
-| `list_events` | `after_cursor` (null initially), `limit` (integer 1..100) | `run_id`, `snapshot_id`, ordered retained `events`, `next_cursor` (null at pinned end), `has_more` |
-
-These fields are a **proposal for orchestrator/C/D agreement**, not currently
-accepted DTOs or callable success paths. Until implemented, all nine operations
-remain unavailable on the present `CaptureService`; it exposes only native
-ingest/project/storage_snapshot/close. No empty successful substitute is provided.
-
-Registration and references:
-
-- New run registration starts revision 0. Later collector-authorized registry
-  revisions may append stream assignments, never silently remove or change
-  existing streams. A producer restart requires a new stream ID. Checkpoint
-  creation requires the current registry revision and the entire registered
-  stream set, including required idle/unknown streams. Freeze that registry
-  revision with the checkpoint; never infer complete coverage from observed IDs.
-- Coverage comes from trusted configured collector observations with retained
-  basis event IDs, not from `register_run` or an agent's checkpoint JSON. Missing
-  capabilities remain UNKNOWN/NOT_CAPTURED. Submitted producer checkpoint
-  observations do not become SERVICE_ESTABLISHED checkpoints.
-- Every nested event/report/proposal/checkpoint/policy/assessment/delivery/basis
-  reference must resolve to the authorized run before reading or writing. Denied
-  or foreign references return FORBIDDEN without object contents; missing objects
-  in an already permitted run return NOT_FOUND. Source and proposal revisions
-  retain immutable identity bindings across the complete stored history.
-- Policy lookup is by accepted A identity/version/digest against operator-installed
-  policy. Verify resolves stored checkpoint ID/revision/digest and proposal/report
-  references; request JSON cannot replace checkpoint coverage or policy content.
-- Receipt batches commit atomically before acknowledgement. Exact `batch_id` retries
-  return the original receipt; changed payload under that batch ID or changed event
-  identity rejects the whole batch with CONFLICT. A new batch carrying an identical
-  event produces a duplicate receipt without a second logical event. Sequence gaps
-  remain observable, not a successful complete-prefix assertion.
-
-Prefix and cache semantics:
-
-- A service checkpoint freezes both requested per-stream positions and the durable
-  ingestion view/registry revision in one transaction. All events 1..requested
-  must be resolved in that frozen view; record actual missing ranges and worker
-  lag rather than substituting the newest view. A premature checkpoint remains
-  unready; retry it by its immutable ID or create a new revision to include later
-  arrivals. Late evidence never repairs an old checkpoint or assembled input.
-- Use deterministic `(stream_id, sequence, event_id)` view ordering, subject to
-  A acceptance, while treating explicit causal parents as the only causal claims.
-  Pin contract/extractor versions, ordered event digest, exact checkpoint, policy
-  and request/proposal revision in the stored assessment. Changed input requires
-  a new assessment binding; a read never recalculates history.
-- Distinguish durable raw observations, visible-text projection, the minimal
-  procedural records required by the selected A checks, and atomic semantic
-  extraction. A scoped procedural assessment may eventually run with its declared
-  prerequisites; it must not set atomic `ledger_ready` merely because it passed.
-- First `list_events` call pins a server-side ingestion high-watermark and stable
-  ordering; pages exclude subsequent appends. Opaque cursors resolve persisted
-  journal/run/snapshot/position bindings and survive process restart. They grant
-  no access. A foreign-run cursor is FORBIDDEN; a missing, malformed or unsupported
-  cursor is INVALID_CURSOR. Initial implementation retains cursors (no silent
-  expiry). Start a new null-cursor read to observe later appends.
-- Acknowledgement records the authenticated actor's receipt of named feedback,
-  with assessment/proposal/revision/delivery bindings validated. It cannot assert
-  delivery, next-input inclusion or correction without their own retained events.
-  The optional acknowledgement event must be a reviewed A lifecycle event with
-  matching bindings. Capability/acknowledgement claims never rewrite failures.
-
-Typed service failures (proposed): `ServiceError.code`, `.public_message`, and
-optional bounded `.issues` with safe schema paths/codes. Allowlisted codes are
-INVALID_REQUEST, FORBIDDEN, NOT_FOUND, CONFLICT, INVALID_CURSOR,
-UNSUPPORTED_OPERATION and BACKEND_UNAVAILABLE. B must not import D's SDK to raise
-them. D translates these to `InterfaceError`; its current envelope supports only
-code/message, so `.issues` need a separately agreed extension. Unexpected failures
-stay generic BACKEND_ERROR with no private paths, payloads or traceback. Valid A
-NOT_READY/CAPTURE_GAP/ERROR results and per-check FAIL/INCONCLUSIVE/HOLD remain
-unchanged successful invocations; no exception mapping converts them to PASS.
-
-After corrected A acceptance, B can implement in order: service registry and
-typed errors; transactional accepted-event receipts; frozen checkpoints with
-collector-owned coverage; stored policy/request resolution and retained A results;
-authorized reads/cursors; bound feedback acknowledgement. Proposed tables would
-be added to the same isolated authoritative journal, with an explicit storage
-version/migration and authored crash/replay tests. Native receipts remain native
-provenance; no mechanical conversion asserts missing semantic observations.
-The orchestrator must first pin A's corrected commit and agree these B-owned DTOs,
-principal construction, coverage basis and error mapping with C/D.
+Next: orchestrator reviews this callable service and C/D bind their adapters/tests
+against its actual persisted results. Shared CI/current README/orchestration and
+generated integration conflicts remain orchestrator-owned. Dynamic registry,
+network authentication, standalone service lifecycle, quotas, compaction and
+complete semantic extraction are not implemented in this offline milestone.
