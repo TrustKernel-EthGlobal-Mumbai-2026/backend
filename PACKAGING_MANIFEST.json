@@ -808,22 +808,22 @@
     {
       "destination": "context-index/catalog.json",
       "previous_source_ref": "repository-authoring/context-index/catalog.json",
-      "previous_staged_sha256": "ae4ca1c175d715d75f1952ae0e703fea534b4b37461560a32a4afbd02d7c4f4f",
+      "previous_staged_sha256": "cf9345fdc71c3c9b8a21f52bad68518a1ae4076e9ed1c58c96069f3e119b30f6",
       "source_ref": "repository-authoring/context-index/catalog.json",
-      "source_sha256": "cf9345fdc71c3c9b8a21f52bad68518a1ae4076e9ed1c58c96069f3e119b30f6",
-      "staged_bytes": 76154,
-      "staged_sha256": "cf9345fdc71c3c9b8a21f52bad68518a1ae4076e9ed1c58c96069f3e119b30f6",
+      "source_sha256": "6204c46325bfb82aa354285d5e935923ccc337f3c0e8f515c614d39624f39f12",
+      "staged_bytes": 77112,
+      "staged_sha256": "6204c46325bfb82aa354285d5e935923ccc337f3c0e8f515c614d39624f39f12",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
     {
       "destination": "context-index/chunks.jsonl",
       "previous_source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "previous_staged_sha256": "6a5ca7ec4df012e36a740c7d10636147a9f1a7c75387f71a21a5fce7974fb0c2",
+      "previous_staged_sha256": "abe5e9a47103b762a026a8d28ed07e7601097a3659ea3b00228085be2bc746f2",
       "source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "source_sha256": "abe5e9a47103b762a026a8d28ed07e7601097a3659ea3b00228085be2bc746f2",
-      "staged_bytes": 353137,
-      "staged_sha256": "abe5e9a47103b762a026a8d28ed07e7601097a3659ea3b00228085be2bc746f2",
+      "source_sha256": "a8871ddbe912ee0937d79e9c03ed31e1a5dfce157462d1867113208c13e47f98",
+      "staged_bytes": 362716,
+      "staged_sha256": "a8871ddbe912ee0937d79e9c03ed31e1a5dfce157462d1867113208c13e47f98",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
@@ -1099,6 +1099,15 @@
       "staged_bytes": 10036,
       "staged_sha256": "f62ac249713c9411a2deba667be449b8c8e8fc4d6e47df012634aecd6ae82949",
       "treatment": "repository_handoff_adaptation",
+      "workstream": "docs"
+    },
+    {
+      "destination": "docs/continuous/INTEGRATION_READINESS.md",
+      "source_ref": "repository-authoring/docs/continuous/INTEGRATION_READINESS.md",
+      "source_sha256": "a7318e0c888a9575d64cfe33aa0a7c29893afde0358c2c98d18816c40f65eb3d",
+      "staged_bytes": 15000,
+      "staged_sha256": "a7318e0c888a9575d64cfe33aa0a7c29893afde0358c2c98d18816c40f65eb3d",
+      "treatment": "repository_handoff_addition",
       "workstream": "docs"
     },
     {
@@ -2032,6 +2041,15 @@
       "workstream": "historical-runtime-tests"
     },
     {
+      "destination": "tests/test_tradingagents_integration.py",
+      "source_ref": "repository-authoring/tests/test_tradingagents_integration.py",
+      "source_sha256": "30e52351be52ef33d97f300739a76fbb1b1367078a010c5f6ee8ab015c853f59",
+      "staged_bytes": 13580,
+      "staged_sha256": "30e52351be52ef33d97f300739a76fbb1b1367078a010c5f6ee8ab015c853f59",
+      "treatment": "repository_handoff_addition",
+      "workstream": "tests"
+    },
+    {
       "destination": "third_party/NOTICE.md",
       "source_ref": "orchestrator-workspace/work/repository-prep/templates/third_party/NOTICE.md",
       "source_sha256": "622de6bf541fe9e351b0187c831d9bdf709c3afe4a1d366f2a505278c654cb2c",
@@ -2095,6 +2113,15 @@
       "staged_sha256": "30df225766e429b0538e3d465852f4a8a2702c77ff038dd18b541851afe9922e",
       "treatment": "unchanged",
       "workstream": "repository-scaffolding"
+    },
+    {
+      "destination": "tools/tradingagents_integration.py",
+      "source_ref": "repository-authoring/tools/tradingagents_integration.py",
+      "source_sha256": "675a4ac76a4ab1b1c0bb187a2b2489b2a3887f121385e9f3d3af209ddaee4653",
+      "staged_bytes": 41577,
+      "staged_sha256": "675a4ac76a4ab1b1c0bb187a2b2489b2a3887f121385e9f3d3af209ddaee4653",
+      "treatment": "repository_handoff_addition",
+      "workstream": "tools"
     },
     {
       "destination": "tools/update_repository_manifest.py",

@@ -24,12 +24,12 @@ from continuous_verification import digest
 from continuous_verification.tradingagents import UPSTREAM_COMMIT
 from tools.continuous_demo import new_output, write_new
 
-PROFILE = dict(model="gpt-6.1-sol", endpoint="https://api.openai.com/v1", effort="medium",
+PROFILE = dict(model="gpt-6.1-terra", endpoint="https://api.openai.com/v1", effort="medium",
     service_tier="default", max_model_calls=4, max_output_tokens=1024,
     source_rounds=1, verify_calls=2, remediations=1, graph_tool_rounds=3,
     max_concurrency=1, recursion_limit=12, request_timeout_seconds=25,
     wall_seconds=120, max_input_bytes=40000, retries=0,
-    cumulative_hard_limit_usd=5.0, proposed_incremental_limit_usd=1.30,
+    cumulative_hard_limit_usd=5.0, proposed_incremental_limit_usd=0.65,
     tool_choice="auto", live_sources=False)
 
 
@@ -102,27 +102,33 @@ def frozen_fixture(runtime):
         tools={name: dict(origin="AUTHORED", text="AUTHORED provider-row defect: Close=99 Low=100; do not reconcile or replace") for name in sorted(names)})
 
 
-def approval_template(fixture):
-    return dict(approved=False, approval_id=None, expires_at=None, milestone="actual-imported-analyst-smoke-v1",
+def approval_template(fixture, review=None):
+    return dict(approved=False, approval_id=None, expires_at=None, launch_output=None, milestone="actual-imported-analyst-smoke-v1",
         profile_digest=digest(PROFILE), implementation_digest=implementation_digest(),
         fixture_digest=digest(fixture), upstream_commit=UPSTREAM_COMMIT,
         incremental_limit_usd=PROFILE["proposed_incremental_limit_usd"],
-        budget_review="REQUIRED_UNCHANGED_CUMULATIVE_AND_NO_UNKNOWN_HOLDS",
+        budget_review="REQUIRED_UNCHANGED_REVIEWED_LEDGER_AND_PRESERVED_HISTORICAL_HOLD",
+        budget_review_digest=digest(review) if review else None,
         pricing_review="REQUIRED_ORIGINAL_UPPER_RATES_STILL_CONSERVATIVE",
-        model_account_access="NOT_CHECKED")
+        model_account_access="UNPROBED_ACKNOWLEDGEMENT_REQUIRED")
 
 
-def validate_approval(approval, fixture, now=None):
+def validate_approval(approval, fixture, *, output, review=None, now=None):
     """A reviewed operator artifact is required; this does not create approval."""
-    template = approval_template(fixture)
-    for key in ("milestone", "profile_digest", "implementation_digest", "fixture_digest", "upstream_commit", "incremental_limit_usd"):
+    template = approval_template(fixture, review)
+    for key in ("milestone", "profile_digest", "implementation_digest", "fixture_digest", "upstream_commit", "incremental_limit_usd", "budget_review_digest"):
         if approval.get(key) != template[key]:
             raise PermissionError("Approval binding mismatch")
     if (approval.get("approved") is not True or not isinstance(approval.get("approval_id"), str) or not approval["approval_id"]
-            or approval.get("budget_review") != "CONFIRMED_UNCHANGED_CUMULATIVE_NO_UNKNOWNS"
+            or approval.get("budget_review") != "CONFIRMED_PINNED_LEDGER_PRESERVE_KNOWN_HOLD"
             or approval.get("pricing_review") != "CONFIRMED_ORIGINAL_UPPER_RATES_CONSERVATIVE"
-            or approval.get("model_account_access") != "CONFIRMED_BY_OPERATOR"):
+            or approval.get("model_account_access") != "UNPROBED_CALL_MAY_FAIL_AND_RETAIN_HOLD"):
         raise PermissionError("New explicit approval and launch reviews required")
+    reviewed_budget_summary(review)
+    launch = approval.get("launch_output")
+    if (not isinstance(launch, str) or not launch or (ROOT / launch).resolve() != Path(output).resolve()
+            or not Path(output).resolve().is_relative_to(ROOT / ".local-runs")):
+        raise PermissionError("Approval must bind one new supervised output; reuse is not allowed")
     try:
         expiry = datetime.fromisoformat(approval["expires_at"].replace("Z", "+00:00"))
         instant = datetime.fromtimestamp(now if now is not None else time.time(), timezone.utc)
@@ -132,31 +138,91 @@ def validate_approval(approval, fixture, now=None):
         raise PermissionError("Approval needs a future explicit-timezone expiry within one hour") from None
 
 
-def read_existing_budget(operational_root, *, remaining_calls=PROFILE["max_model_calls"]):
-    """Paid-launch-only read check; NEVER called by preflight/scripted modes.
+def reviewed_budget_summary(review):
+    """Validate an operator's closed/read-only review artifact, not the ledger."""
+    from trustkernel.billing import upper_charge
+    try:
+        fingerprint = review["budget_sha256_before"]
+        total = float(review["reserved_including_existing_holds"])
+        initial, active, hard = review["initial_active_hard"]
+        required = upper_charge(PROFILE["model"], dict(input_tokens=60000, output_tokens=2048)) * PROFILE["max_model_calls"]
+        if (review["unchanged"] is not True or fingerprint != review["budget_sha256_after"]
+                or len(fingerprint) != 64 or any(c not in "0123456789abcdef" for c in fingerprint)
+                or review["existing_unsettled_rows"] != 1 or hard != 5 or not 0 < initial <= active <= hard
+                or not 0 <= total <= active or required > PROFILE["proposed_incremental_limit_usd"]
+                or total + required > active):
+            raise ValueError()
+    except (KeyError, TypeError, ValueError):
+        raise PermissionError("Reviewed unchanged budget baseline does not fit this smoke") from None
+    return dict(review_digest=digest(review), ledger_sha256=fingerprint, committed_including_historical_hold=total,
+        initial=initial, active=active, hard=hard, remaining=active-total, proposed_worst_reserve=required,
+        historical_hold_reserved=0.16024, historical_hold_policy="PRESERVE_UNCHANGED; never settle/release/reconcile", fits=True)
 
-    Existing exact operational paths only. No create, reserve, reset, increase or
-    unknown-hold reconciliation here. Original Budget alone owns future writes.
+
+def read_existing_budget(operational_root, *, review, baseline=None, owned_ids=(), allow_pending=(),
+                         remaining_calls=PROFILE["max_model_calls"]):
+    """Future paid launch only: pin historical rows; permit only this run's writes.
+
+    Review SHA binds the closed DB before the first read. The original unknown
+    row remains reserved forever in this runner; its full tuple is pinned along
+    with all settled rows/carry. New unknowns or unrelated changes refuse a call.
+    Never called against real files by preflight/scripted readiness modes.
     """
+    import math
     root = Path(operational_root).resolve()
-    if type(remaining_calls) is not int or not 1 <= remaining_calls <= PROFILE["max_model_calls"]:
+    reviewed = reviewed_budget_summary(review)
+    if type(remaining_calls) is not int or not 0 <= remaining_calls <= PROFILE["max_model_calls"]:
         raise PermissionError("Invalid remaining request allowance")
     policy_path, db_path = root / "budget_policy.json", root / "runs/approved-budget.sqlite"
-    if not policy_path.is_file() or not db_path.is_file():
-        raise PermissionError("Existing cumulative policy/ledger required")
+    if not policy_path.is_file() or not db_path.is_file() or any(Path(str(db_path)+suffix).exists() for suffix in ("-wal", "-journal")):
+        raise PermissionError("Existing closed cumulative ledger without WAL/journal is required")
+    if baseline is None and hashlib.sha256(db_path.read_bytes()).hexdigest() != reviewed["ledger_sha256"]:
+        raise PermissionError("Closed ledger changed since operator review")
     policy = json.loads(policy_path.read_text("utf-8"))
     with closing(sqlite3.connect(db_path.as_uri() + "?mode=ro", uri=True)) as db:
+        db.execute("BEGIN")  # One consistent read-only snapshot for total/policy/rows.
         total = db.execute("SELECT reserved FROM budget WHERE id=1").fetchone()[0]
-        initial, active, hard = db.execute("SELECT initial_limit,active_limit,hard_limit FROM budget_policy WHERE id=1").fetchone()
-        unknowns = db.execute("SELECT COUNT(*) FROM requests WHERE status!='settled' OR charge IS NULL").fetchone()[0]
+        limits = list(db.execute("SELECT initial_limit,active_limit,hard_limit FROM budget_policy WHERE id=1").fetchone())
+        rows = {r[0]: list(r) for r in db.execute("SELECT id,reserved,charge,status,response_id FROM requests ORDER BY id")}
+    if baseline is None and (hashlib.sha256(db_path.read_bytes()).hexdigest() != reviewed["ledger_sha256"]
+            or any(Path(str(db_path)+suffix).exists() for suffix in ("-wal", "-journal"))):
+        raise PermissionError("Closed ledger changed while baseline was read")
+    if policy.get("hard_limit_usd") != 5 or policy.get("initial_limit_usd") != limits[0] or limits != [reviewed["initial"],reviewed["active"],5]:
+        raise PermissionError("Existing cumulative/active policy changed")
+    unknowns = {k: r for k,r in rows.items() if r[3] != "settled" or r[2] is None}
+    if baseline is None:
+        if (not math.isclose(total,reviewed["committed_including_historical_hold"],rel_tol=0,abs_tol=1e-9)
+                or len(unknowns) != 1):
+            raise PermissionError("Reviewed historical state changed")
+        hold = next(iter(unknowns.values()))
+        if hold[1] != reviewed["historical_hold_reserved"] or hold[2] is not None or hold[3] != "in_flight_or_unknown":
+            raise PermissionError("Historical hold identity/value/state is not the reviewed baseline")
+        baseline = dict(rows=deepcopy(rows), policy=deepcopy(policy), total=total, hold_id=hold[0])
+    if any(rows.get(k) != r for k,r in baseline["rows"].items()) or policy != baseline["policy"]:
+        raise PermissionError("Historical row/hold or policy changed; no reconciliation allowed")
+    extra = set(rows)-set(baseline["rows"])
+    if extra != set(owned_ids):
+        raise PermissionError("Unexpected concurrent budget requests")
     from trustkernel.billing import upper_charge
     reserve = upper_charge(PROFILE["model"], dict(input_tokens=60000, output_tokens=2048))
+    expected_total = baseline["total"]
+    for identity in extra:
+        row = rows[identity]
+        if row[1] != reserve:
+            raise PermissionError("This run's conservative reservation changed")
+        if identity in allow_pending and row[2] is None and row[3] == "in_flight_or_unknown" and row[4] is None:
+            expected_total += row[1]
+        elif row[3] == "settled" and type(row[2]) in (int,float) and 0 <= row[2] <= row[1] and isinstance(row[4], str) and row[4]:
+            expected_total += row[2]
+        else:
+            raise PermissionError("New/unexpected unknown hold remains reserved; stop")
+    if not math.isclose(total,expected_total,rel_tol=0,abs_tol=1e-9):
+        raise PermissionError("Concurrent cumulative balance change")
     required = reserve * remaining_calls
-    if (policy.get("hard_limit_usd") != 5 or hard != 5 or policy.get("initial_limit_usd") != initial
-            or not 0 < initial <= active <= hard or not 0 <= total <= active or unknowns
-            or required > PROFILE["proposed_incremental_limit_usd"] or total + required > active):
-        raise PermissionError("Existing cumulative/active headroom or unknown-hold gate refused")
-    return dict(path=db_path, policy=policy, committed_upper=total, active_limit=active, required_reserve=required)
+    if not 0 <= total <= limits[1] or total+required > limits[1] or total-baseline["total"]+required > PROFILE["proposed_incremental_limit_usd"]:
+        raise PermissionError("Existing active/cumulative/incremental headroom refused")
+    return dict(path=db_path,policy=policy,committed_upper=total,active_limit=limits[1],required_reserve=required,
+        baseline=baseline,review=review)
 
 
 def child_guards(output, *, paid=False, budget_path=None):
@@ -166,7 +232,13 @@ def child_guards(output, *, paid=False, budget_path=None):
     output = Path(output).resolve()
     def audit(event, args):
         if event == "sqlite3.connect":
-            path = Path(str(args[0]).split("?", 1)[0]).resolve()
+            raw = str(args[0])
+            if raw.startswith("file:"):
+                from urllib.parse import urlsplit, unquote
+                raw = unquote(urlsplit(raw).path)
+                if os.name == "nt" and raw.startswith("/"):
+                    raw = raw[1:]
+            path = Path(raw).resolve()
             if not path.is_relative_to(output) and not (paid and budget_path and path == budget_path):
                 raise PermissionError("No external SQLite access in smoke child")
         if event == "open" and isinstance(args[0], (str, bytes, os.PathLike)):
@@ -217,7 +289,7 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
     backend = LocalServiceWorker(lambda: ServiceBackend(output / "feedback.sqlite", principal=principal, service_id="smoke-local-service"))
     state = dict(model_calls=0, wire_requests=[], outputs=[], dispatches=[], inputs=[], stop=None)
     start = time.time()
-    deadline = start + PROFILE["wall_seconds"]
+    deadline = min(start + PROFILE["wall_seconds"], budget_info["approval_expires_epoch"]) if budget_info else start + PROFILE["wall_seconds"]
     budget = None
     if mode == "paid":
         from trustkernel.safety import Budget
@@ -228,12 +300,19 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
             super().on_tool_start(serialized, input_str, **kw)
             state["dispatches"].append(serialized.get("name"))
     def before_paid(messages, metadata):
-        current = read_existing_budget(budget_info["path"].parent.parent,
-            remaining_calls=PROFILE["max_model_calls"] - budget.calls)
-        if current["committed_upper"] - budget_info["committed_upper"] + budget.reserve > PROFILE["proposed_incremental_limit_usd"]:
-            raise PermissionError("Approved incremental smoke cap reached")
+        read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], baseline=budget_info["baseline"],
+            owned_ids=set(budget.pending.values()), remaining_calls=PROFILE["max_model_calls"] - budget.calls)
         budget.before(messages, metadata)
-    observer = Observer(trace, before_paid if budget else None, budget.settle if budget else None)
+        # Detect a writer racing the initial check before the HTTP request. If
+        # rejected, our just-created hold stays reserved; never roll it back.
+        read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], baseline=budget_info["baseline"],
+            owned_ids=set(budget.pending.values()), allow_pending=[budget.pending[str(metadata.get("run_id"))]],
+            remaining_calls=PROFILE["max_model_calls"] - budget.calls)
+    def after_paid(response, metadata):
+        budget.settle(response, metadata)
+        read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], baseline=budget_info["baseline"],
+            owned_ids=set(budget.pending.values()), remaining_calls=PROFILE["max_model_calls"] - budget.calls)
+    observer = Observer(trace, before_paid if budget else None, after_paid if budget else None)
     policy = dict(contract_version="continuous-verification-0.2", policy_id="authored-smoke-procedure", version="1",
         required_tool="get_verified_market_snapshot", checks=[dict(check_id=name, on_fail="HOLD", on_inconclusive="RECHECK")
         for name in ("required_snapshot_before_market_report", "report_completion")])
@@ -264,6 +343,10 @@ def run_cycle(runtime, output, fixture, *, mode, scenario="normal", budget_info=
         body = json.loads(request.content)
         if len(request.content) > PROFILE["max_input_bytes"]:
             raise PermissionError("Wire input bound exceeded")
+        if budget:
+            read_existing_budget(budget_info["path"].parent.parent, review=budget_info["review"], baseline=budget_info["baseline"],
+                owned_ids=set(budget.pending.values()), allow_pending=[list(budget.pending.values())[-1]],
+                remaining_calls=PROFILE["max_model_calls"] - budget.calls)
         matched = [item["call_id"] for item in body.get("input", []) if isinstance(item, dict)
             and item.get("type") == "function_call_output" and item.get("call_id") in host.boundary.delivered
             and item.get("output") == host.boundary.delivered[item["call_id"]]]
@@ -406,18 +489,23 @@ def child(args):
     write_new(output / "child-started.json", json.dumps(dict(mode=args.mode, paid_authorized=False)) + "\n")
     args.output_authorized = True
     plan = preflight_plan()
+    review = json.loads(Path(args.budget_review).read_text("utf-8")) if args.budget_review else None
+    if review:
+        plan["budget_review_summary"] = reviewed_budget_summary(review)
     root = checked_upstream(args.upstream)
     budget_info = approved_fixture = None
     if args.mode == "paid":
-        if not args.approval or not args.fixture:
-            raise PermissionError("NEW explicit approval and reviewed fixture artifact required")
+        if not args.approval or not args.fixture or not review:
+            raise PermissionError("NEW approval, reviewed fixture and closed-ledger review artifact required")
         approved_fixture = json.loads(Path(args.fixture).read_text("utf-8"))
-        validate_approval(json.loads(Path(args.approval).read_text("utf-8")), approved_fixture)
+        approval = json.loads(Path(args.approval).read_text("utf-8"))
+        validate_approval(approval, approved_fixture, output=output, review=review)
         if "OPENAI_API_KEY" not in os.environ:
             raise PermissionError("API credential environment name absent; no credentials searched")
-        budget_info = read_existing_budget(root.parent.parent)
+        budget_info = read_existing_budget(root.parent.parent, review=review)
+        budget_info["approval_expires_epoch"] = datetime.fromisoformat(approval["expires_at"].replace("Z", "+00:00")).timestamp()
         plan.update(execution_enabled=True, new_user_approval="VALIDATED_OPERATOR_ARTIFACT",
-            budget_status="UNCHANGED_CUMULATIVE_READ_CHECK_PASSED; future calls use original reservations/settlement",
+            budget_status="PINNED_CUMULATIVE_READ_CHECK_PASSED; historical unknown hold remains reserved",
             paid_launch_status="APPROVED_EXECUTION_WITH_RUNTIME_LIMITS")
     child_guards(output, paid=args.mode == "paid", budget_path=budget_info["path"] if budget_info else None)
     with real_runtime(root) as runtime:
@@ -427,14 +515,14 @@ def child(args):
         plan.update(upstream_commit=UPSTREAM_COMMIT, import_proof=runtime["import_proof"], dotenv_discovery="DISABLED",
             actual_import=True, implementation_digest=implementation_digest(), fixture_digest=digest(fixture))
         write_new(output / "fixture.json", json.dumps(fixture, indent=2) + "\n")
-        write_new(output / "approval-required.json", json.dumps(approval_template(fixture), indent=2) + "\n")
+        write_new(output / "approval-required.json", json.dumps(approval_template(fixture, review), indent=2) + "\n")
         if args.mode == "preflight":
             plan.update(readiness="NEEDS_SCRIPTED_REAL_IMPORT_PROOF", outcome="NO_PAID_PREFLIGHT_COMPLETE")
         else:
             result = run_cycle(runtime, output, fixture, mode=args.mode, scenario=args.scenario, budget_info=budget_info)
             plan.update(result)
-            plan["readiness"] = ("READY_FOR_APPROVAL" if args.mode == "scripted" and args.scenario == "normal"
-                and result["outcome"] == "PROGRESSION_OBSERVED" and result["original_preserved"] else "OUTCOME_RECORDED_NOT_APPROVAL")
+            mechanism_ready = args.mode == "scripted" and args.scenario == "normal" and result["outcome"] == "PROGRESSION_OBSERVED" and result["original_preserved"]
+            plan["readiness"] = "READY_FOR_APPROVAL" if mechanism_ready and review else "MECHANISM_READY_REVIEW_ARTIFACT_REQUIRED" if mechanism_ready else "OUTCOME_RECORDED_NOT_APPROVAL"
     write_new(output / "readiness.json", json.dumps(plan, indent=2, ensure_ascii=False) + "\n")
     write_new(output / "VIEW.md", """# Bounded actual-import smoke artifact
 
@@ -461,13 +549,14 @@ def main():
     parser.add_argument("--scenario", choices=("normal", "omit", "ignore", "truncated"), default="normal")
     parser.add_argument("--approval", help="NEW user-approved operator artifact; never generated approved by this program")
     parser.add_argument("--fixture", help="Exact reviewed fixture.json from preflight/scripted artifact")
+    parser.add_argument("--budget-review", default=os.environ.get("TRUSTKERNEL_BUDGET_REVIEW"), help="Closed read-only operator review JSON; never the ledger itself")
     parser.add_argument("--child", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--nonce", help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.mode == "paid" and args.scenario != "normal":
         parser.error("Authored response scenarios are never available in paid mode")
-    if args.mode == "paid" and not args.child and (not args.approval or not args.fixture):
-        parser.error("Paid execution disabled: NEW explicit approval artifact and reviewed fixture are required")
+    if args.mode == "paid" and not args.child and (not args.approval or not args.fixture or not args.budget_review):
+        parser.error("Paid disabled: NEW approval, reviewed fixture and closed-ledger review artifact required")
     if args.child:
         try:
             return child(args)
@@ -491,13 +580,14 @@ def main():
     write_new(output / "parent.json", json.dumps(dict(nonce=nonce, mode=args.mode, profile_digest=digest(PROFILE))) + "\n")
     command = [sys.executable, "-B", str(Path(__file__).resolve()), "--child", "--nonce", nonce,
         "--mode", args.mode, "--output", str(output), "--upstream", str(Path(args.upstream).resolve()), "--scenario", args.scenario]
-    for name in ("approval", "fixture"):
+    for name in ("approval", "fixture", "budget_review"):
         if getattr(args, name):
-            command.extend(["--" + name, str(Path(getattr(args, name)).resolve())])
+            command.extend(["--" + name.replace("_", "-"), str(Path(getattr(args, name)).resolve())])
     try:
         code = subprocess.run(command, cwd=ROOT, timeout=PROFILE["wall_seconds"], check=False).returncode
-    except subprocess.TimeoutExpired:
-        write_new(output / "supervisor-stop.json", json.dumps(dict(outcome="WALL_TIMEOUT_NOT_PASS",
+    except (subprocess.TimeoutExpired, KeyboardInterrupt) as stopped:
+        write_new(output / "supervisor-stop.json", json.dumps(dict(outcome=
+            "WALL_TIMEOUT_NOT_PASS" if isinstance(stopped, subprocess.TimeoutExpired) else "OPERATOR_STOP_NOT_PASS",
             unknown_paid_reservations="Retained; never reconciled or reset by supervisor")) + "\n")
         code = 1
     print(f"Smoke artifacts: {output}")

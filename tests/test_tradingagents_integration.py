@@ -5,6 +5,7 @@ from copy import deepcopy
 from datetime import datetime, timezone, timedelta
 import importlib.util
 import json
+import hashlib
 import os
 from pathlib import Path
 import sqlite3
@@ -12,7 +13,13 @@ import subprocess
 import sys
 import tempfile
 from tools import tradingagents_integration as integration
-from tools.tradingagents_integration import PROFILE, ROOT, preflight_plan, approval_template, validate_approval, read_existing_budget
+from tools.tradingagents_integration import PROFILE, ROOT, preflight_plan, approval_template, validate_approval, read_existing_budget, reviewed_budget_summary
+
+
+def authored_review(path=None, total=4.128377500000004):
+    fingerprint = hashlib.sha256(path.read_bytes()).hexdigest() if path else "0"*64
+    return dict(budget_sha256_before=fingerprint, budget_sha256_after=fingerprint, unchanged=True,
+        reserved_including_existing_holds=str(total), initial_active_hard=[3,5,5], existing_unsettled_rows=1)
 
 
 class ReadinessPlanTests(unittest.TestCase):
@@ -27,55 +34,80 @@ class ReadinessPlanTests(unittest.TestCase):
         self.assertEqual(PROFILE["cumulative_hard_limit_usd"], 5)
         self.assertEqual(PROFILE["max_model_calls"], 4)
         plan["profile"]["model"] = "changed"
-        self.assertEqual(PROFILE["model"], "gpt-6.1-sol")
+        self.assertEqual(PROFILE["model"], "gpt-6.1-terra")
 
     def test_template_is_not_approval_and_exact_bindings_expiry_are_required(self):
         fixture = dict(origin="AUTHORED_UNIT_ONLY")
-        template = approval_template(fixture)
+        review = authored_review()
+        template = approval_template(fixture, review)
+        output = ROOT / ".local-runs/authored-unit-approval-never-launched"
         with self.assertRaises(PermissionError):
-            validate_approval(template, fixture)
+            validate_approval(template, fixture, output=output, review=review)
         authored_approval_double = dict(template, approved=True, approval_id="authored-unit-double-not-user-approval",
+            launch_output=".local-runs/authored-unit-approval-never-launched",
             expires_at=(datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
-            budget_review="CONFIRMED_UNCHANGED_CUMULATIVE_NO_UNKNOWNS",
-            pricing_review="CONFIRMED_ORIGINAL_UPPER_RATES_CONSERVATIVE", model_account_access="CONFIRMED_BY_OPERATOR")
-        validate_approval(authored_approval_double, fixture)
+            budget_review="CONFIRMED_PINNED_LEDGER_PRESERVE_KNOWN_HOLD",
+            pricing_review="CONFIRMED_ORIGINAL_UPPER_RATES_CONSERVATIVE", model_account_access="UNPROBED_CALL_MAY_FAIL_AND_RETAIN_HOLD")
+        validate_approval(authored_approval_double, fixture, output=output, review=review)
         for key, value in (("profile_digest", "wrong"), ("implementation_digest", "wrong"), ("fixture_digest", "wrong"),
-                           ("incremental_limit_usd", 5), ("approved", False), ("expires_at", "2020-01-01T00:00:00Z")):
+                           ("incremental_limit_usd", 5), ("launch_output", ".local-runs/other"),
+                           ("approved", False), ("expires_at", "2020-01-01T00:00:00Z")):
             with self.subTest(key=key), self.assertRaises(PermissionError):
-                validate_approval(dict(authored_approval_double, **{key: value}), fixture)
+                validate_approval(dict(authored_approval_double, **{key: value}), fixture, output=output, review=review)
 
-    def test_authored_budget_gate_reads_only_and_refuses_unknowns_or_low_active_headroom(self):
-        # Entire store/policy are authored temporary inputs, never the real ledger.
+    def test_authored_budget_gate_pins_historical_hold_and_rejects_new_or_changed_state(self):
+        # Authored temporary DB only; no actual private ledger is opened.
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "runs").mkdir()
-            policy = root / "budget_policy.json"
-            policy.write_text(json.dumps(dict(hard_limit_usd=5, initial_limit_usd=5)), "utf-8")
+            (root / "budget_policy.json").write_text(json.dumps(dict(hard_limit_usd=5, initial_limit_usd=3)), "utf-8")
             path = root / "runs/approved-budget.sqlite"
             db = sqlite3.connect(path)
             try:
-                db.executescript("CREATE TABLE budget(id INTEGER,reserved REAL); INSERT INTO budget VALUES(1,1);"
+                db.executescript("CREATE TABLE budget(id INTEGER,reserved REAL); INSERT INTO budget VALUES(1,4.128377500000004);"
                     "CREATE TABLE budget_policy(id INTEGER,initial_limit REAL,active_limit REAL,hard_limit REAL);"
-                    "INSERT INTO budget_policy VALUES(1,5,5,5);"
-                    "CREATE TABLE requests(id TEXT,charge REAL,status TEXT);")
+                    "INSERT INTO budget_policy VALUES(1,3,5,5);"
+                    "CREATE TABLE requests(id TEXT,reserved REAL,charge REAL,status TEXT,response_id TEXT);"
+                    "INSERT INTO requests VALUES('authored-historical-hold',0.16024,NULL,'in_flight_or_unknown',NULL);"
+                    "INSERT INTO requests VALUES('authored-settled',3.9,3.473855,'settled','authored-response');")
                 db.commit()
+                review = authored_review(path)
                 before = path.read_bytes()
-                result = read_existing_budget(root)
-                self.assertEqual(result["committed_upper"], 1)
+                initial = read_existing_budget(root, review=review)
+                baseline = initial["baseline"]
+                self.assertEqual(baseline["hold_id"], "authored-historical-hold")
+                self.assertAlmostEqual(initial["required_reserve"], .64096)
                 self.assertEqual(before, path.read_bytes())
-                db.execute("INSERT INTO requests VALUES('authored-unknown',NULL,'in_flight_or_unknown')")
-                db.commit()
-                before = path.read_bytes()
+                mutations = [
+                    "UPDATE requests SET id='changed' WHERE id='authored-historical-hold'",
+                    "UPDATE requests SET reserved=.15 WHERE id='authored-historical-hold'",
+                    "UPDATE requests SET status='settled',charge=.01 WHERE id='authored-historical-hold'",
+                    "INSERT INTO requests VALUES('new-unknown',.16024,NULL,'in_flight_or_unknown',NULL)",
+                    "UPDATE budget SET reserved=4.2",
+                ]
+                for mutation in mutations:
+                    db.execute("SAVEPOINT authored_mutation")
+                    db.execute(mutation)
+                    db.execute("RELEASE authored_mutation")
+                    db.commit()
+                    before = path.read_bytes()
+                    with self.subTest(mutation=mutation), self.assertRaises(PermissionError):
+                        read_existing_budget(root, review=review, baseline=baseline)
+                    self.assertEqual(before, path.read_bytes())
+                    # Restore authored fixture rows, never a real budget/hold.
+                    db.execute("DELETE FROM requests")
+                    db.executemany("INSERT INTO requests VALUES(?,?,?,?,?)", list(baseline["rows"].values()))
+                    db.execute("UPDATE budget SET reserved=?", (baseline["total"],))
+                    db.commit()
                 with self.assertRaises(PermissionError):
-                    read_existing_budget(root)
-                self.assertEqual(before, path.read_bytes())
-                db.execute("DELETE FROM requests")
-                db.execute("UPDATE budget SET reserved=4.9")
-                db.commit()
-                before = path.read_bytes()
+                    read_existing_budget(root, review=review)  # Physical identity changed since closed review.
                 with self.assertRaises(PermissionError):
-                    read_existing_budget(root)
-                self.assertEqual(before, path.read_bytes())
+                    reviewed_budget_summary(authored_review(total=4.9))
+                db.execute("INSERT INTO requests VALUES('our-request',.16024,.01,'settled','authored-new-response')")
+                db.execute("UPDATE budget SET reserved=?", (baseline["total"]+.01,))
+                db.commit()
+                allowed = read_existing_budget(root, review=review, baseline=baseline, owned_ids={"our-request"},remaining_calls=3)
+                self.assertEqual(allowed["baseline"]["rows"]["authored-historical-hold"], baseline["rows"]["authored-historical-hold"])
             finally:
                 db.close()
 
@@ -86,18 +118,19 @@ class ReadinessPlanTests(unittest.TestCase):
                 integration.main()
             child.assert_not_called()
 
-    def test_supervisor_timeout_retains_unknowns_without_budget_reconciliation(self):
+    def test_supervisor_timeout_or_operator_stop_retains_unknowns_without_reconciliation(self):
         (ROOT / ".local-runs").mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(dir=ROOT / ".local-runs", prefix="supervisor-unit-") as directory:
             root = Path(directory).resolve()
             self.assertTrue(root.is_relative_to(ROOT / ".local-runs"))
-            target = root / "run"
-            with patch.object(sys, "argv", ["integration", "--mode", "scripted", "--upstream", str(root / "upstream/TradingAgents"), "--output", str(target)]), \
-                 patch.object(integration.subprocess, "run", side_effect=subprocess.TimeoutExpired("authored-child", 120)):
-                self.assertEqual(integration.main(), 1)
-            stop = json.loads((target / "supervisor-stop.json").read_text("utf-8"))
-            self.assertEqual(stop["outcome"], "WALL_TIMEOUT_NOT_PASS")
-            self.assertIn("never reconciled", stop["unknown_paid_reservations"])
+            for name, exception in (("timeout", subprocess.TimeoutExpired("authored-child", 120)), ("operator", KeyboardInterrupt())):
+                target = root / name
+                with patch.object(sys, "argv", ["integration", "--mode", "scripted", "--upstream", str(root / "upstream/TradingAgents"), "--output", str(target)]), \
+                     patch.object(integration.subprocess, "run", side_effect=exception):
+                    self.assertEqual(integration.main(), 1)
+                stop = json.loads((target / "supervisor-stop.json").read_text("utf-8"))
+                self.assertEqual(stop["outcome"], "WALL_TIMEOUT_NOT_PASS" if name == "timeout" else "OPERATOR_STOP_NOT_PASS")
+                self.assertIn("never reconciled", stop["unknown_paid_reservations"])
 
 
 class RealImportedRunnerTests(unittest.TestCase):
@@ -113,11 +146,13 @@ class RealImportedRunnerTests(unittest.TestCase):
         self.root = Path(self.temp.name).resolve()
         self.assertTrue(self.root.is_relative_to(ROOT / ".local-runs"))
         self.addCleanup(self.temp.cleanup)
+        self.review_path = self.root / "authored-review.json"
+        self.review_path.write_text(json.dumps(authored_review()), "utf-8")
 
     def invoke(self, name, *args):
         target = self.root / name
         result = subprocess.run([sys.executable, "-B", str(ROOT / "tools/tradingagents_integration.py"), "--upstream", self.upstream,
-            "--output", str(target), *args], cwd=ROOT, capture_output=True, text=True, timeout=40)
+            "--output", str(target), "--budget-review", str(self.review_path), *args], cwd=ROOT, capture_output=True, text=True, timeout=40)
         self.assertTrue((target / "readiness.json").is_file(), result.stdout + result.stderr)
         return result, json.loads((target / "readiness.json").read_text("utf-8")), target
 
@@ -151,6 +186,8 @@ class RealImportedRunnerTests(unittest.TestCase):
         for kind in ("llm.start", "llm.end", "tool.start", "tool.end", "smoke.tools_offered", "smoke.wire_request"):
             self.assertIn(kind, [e["kind"] for e in trace])
         self.assertTrue(all(w["tool_choice"] == "auto" and "verify_proposal" in w["tools"] for w in report["state"]["wire_requests"]))
+        wires = [e["payload"]["body"] for e in trace if e["kind"] == "smoke.wire_request"]
+        self.assertTrue(all(body["max_output_tokens"] == 1024 and body["store"] is False for body in wires))
 
     def test_no_call_and_truncated_or_ignored_feedback_are_honest_outcomes(self):
         for scenario in ("omit", "truncated", "ignore"):
