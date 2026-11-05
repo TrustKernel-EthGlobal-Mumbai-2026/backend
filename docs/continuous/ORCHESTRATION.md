@@ -1,6 +1,6 @@
 # Continuous verification: active orchestration
 
-Updated: 5 November 2026. Status: implementation workstreams being launched.
+Updated: 5 November 2026. Status: all four implementation chats active.
 Owner approved parallel work in separate chats, coordinated by the existing
 orchestrator chat. This file is the repository's current coordination record.
 The earlier [architecture proposal](../CONTINUOUS_VERIFICATION_PLAN.md) supplies
@@ -23,6 +23,7 @@ dependency. They do not merge PRs or claim another lane's work is complete.
 ## Branch and dependency map
 
 Integration branch: `codex/continuous-verification`, targeting `main`.
+Draft [integration PR #1](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/1) contains the shared plan and current-state records. Initial plan commit `be4e17f926c0fb90e289b415a8e1e0ffc754cebd` passed GitHub offline CI. This is plan/package validation, not runtime implementation validation.
 Each workstream branches from this integration branch and opens a draft PR back
 to it. Retarget to main only after the integration plan is deliberately changed.
 Do not auto-merge any branch. PR descriptions must distinguish implemented work
@@ -92,15 +93,19 @@ of scope; retain stable graph/event IDs and a cursor-based read contract.
 
 | Lane | State | Latest verified evidence | Next action |
 |---|---|---|---|
-| A | PREPARING | Repository/implementation handoff prepared | Launch implementation chat and publish contract candidate |
-| B | PREPARING | Existing inline callbacks/closed-run builder inspected | Launch capture chat; prepare replay independently of A |
-| C | PREPARING | Pinned upstream recorded in repository | Launch adapter chat; inspect tool dispatch and safe pause/resume |
-| D | PREPARING | Official transport routes recorded in architecture plan | Launch interface chat; define thin transport test harness |
+| A | ACTIVE | Chat launch confirmed active; isolated branch and [draft PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2) exist | Publish executable contract candidate and focused tests |
+| B | ACTIVE / contract-dependent | Chat launch confirmed active; isolated branch and [draft PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3) exist | Prepare durable replay/storage slice; bind accepted A contract |
+| C | ACTIVE / contract-and-backend-dependent | Chat launch confirmed active; isolated branch and [draft PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4) exist | Inspect pinned dispatch/resume and test offline adapter seams |
+| D | ACTIVE / contract-and-backend-dependent | Chat launch confirmed active; isolated branch and [draft PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5) exist | Prepare thin transport tests; bind actual A/B interfaces |
 
 The orchestrator updates states after actual chat snapshots and artifact review.
 Public status deliberately omits private machine paths, account data and chat
 transcripts. Exact local chat/checkout identifiers live in the orchestrator's
 private coordination record. Pending or blocked work is never reported as PASS.
+
+Every workstream PR currently starts with a scope/status commit; implementation
+completion will be recorded only after actual changed code and test evidence are
+reviewed. All four PRs target the integration branch, not main. None is merged.
 
 ## Draft PR descriptions
 

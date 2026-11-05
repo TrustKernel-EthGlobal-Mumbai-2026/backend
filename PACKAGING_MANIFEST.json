@@ -808,22 +808,22 @@
     {
       "destination": "context-index/catalog.json",
       "previous_source_ref": "repository-authoring/context-index/catalog.json",
-      "previous_staged_sha256": "fe5a0304b69b1b4341937241348573dde4f3d71cf4f3a38acd4688176631f0be",
+      "previous_staged_sha256": "67d59bfd8ba72d4524b56f0b2011d28dd011ba66fd54612f20caeb9e1c43417b",
       "source_ref": "repository-authoring/context-index/catalog.json",
-      "source_sha256": "67d59bfd8ba72d4524b56f0b2011d28dd011ba66fd54612f20caeb9e1c43417b",
+      "source_sha256": "2fbf49e6c39e449414b890b88518785f790ec81d19f604fe7e9ad43dd151df2f",
       "staged_bytes": 67072,
-      "staged_sha256": "67d59bfd8ba72d4524b56f0b2011d28dd011ba66fd54612f20caeb9e1c43417b",
+      "staged_sha256": "2fbf49e6c39e449414b890b88518785f790ec81d19f604fe7e9ad43dd151df2f",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
     {
       "destination": "context-index/chunks.jsonl",
       "previous_source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "previous_staged_sha256": "1b07698afa471a4cdd0704c88e85942aa62cc44382ea0b0ea2e66007c3443b8a",
+      "previous_staged_sha256": "a6bf9ebc1e5aecdf9940931d811b22e252b9b8d6f2ed7acc1e5703fcdc17ee30",
       "source_ref": "repository-authoring/context-index/chunks.jsonl",
-      "source_sha256": "a6bf9ebc1e5aecdf9940931d811b22e252b9b8d6f2ed7acc1e5703fcdc17ee30",
+      "source_sha256": "682cb0e2d25a52175111da7010944dd6c93fb83155dd22e68c34e455b9512209",
       "staged_bytes": 281456,
-      "staged_sha256": "a6bf9ebc1e5aecdf9940931d811b22e252b9b8d6f2ed7acc1e5703fcdc17ee30",
+      "staged_sha256": "682cb0e2d25a52175111da7010944dd6c93fb83155dd22e68c34e455b9512209",
       "treatment": "repository_handoff_adaptation",
       "workstream": "context-index"
     },
@@ -953,11 +953,13 @@
     },
     {
       "destination": "docs/continuous/ORCHESTRATION.md",
+      "previous_source_ref": "repository-authoring/docs/continuous/ORCHESTRATION.md",
+      "previous_staged_sha256": "9c384fff9c8aef5d39f179ea5569040062ac511346b3385e885e1a3bc1d851e2",
       "source_ref": "repository-authoring/docs/continuous/ORCHESTRATION.md",
-      "source_sha256": "9c384fff9c8aef5d39f179ea5569040062ac511346b3385e885e1a3bc1d851e2",
-      "staged_bytes": 8936,
-      "staged_sha256": "9c384fff9c8aef5d39f179ea5569040062ac511346b3385e885e1a3bc1d851e2",
-      "treatment": "repository_handoff_addition",
+      "source_sha256": "e3498062c6056a96773c04addd8c9dc16f83f4c2fc43d40f72a8c2bfefb1539d",
+      "staged_bytes": 9921,
+      "staged_sha256": "e3498062c6056a96773c04addd8c9dc16f83f4c2fc43d40f72a8c2bfefb1539d",
+      "treatment": "repository_handoff_adaptation",
       "workstream": "docs"
     },
     {
