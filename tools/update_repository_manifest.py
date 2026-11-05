@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ROOT_FILES = {'README.md', 'AGENTS.md', '.gitignore', '.gitattributes', 'requirements.lock.txt',
+ROOT_FILES = {'README.md', 'AGENTS.md', '.gitignore', '.gitattributes', 'requirements.lock.txt', 'requirements-mcp.txt',
               'UPSTREAM.json', 'Launch-Research.ps1', 'Monitor.ps1', 'Run-30Minutes.ps1',
               'Run-Live-30Minutes.ps1', 'Run-Live-Verification.ps1', 'Run-Recorded-Verification.ps1',
               'Run-Verification-Loop.ps1', 'Smoke.ps1', 'View-Traces.ps1', 'Watch-Console.ps1'}
