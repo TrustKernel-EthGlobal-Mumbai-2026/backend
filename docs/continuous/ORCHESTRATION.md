@@ -96,7 +96,7 @@ of scope; retain stable graph/event IDs and a cursor-based read contract.
 | A | ACCEPTED FOR SCOPED OFFLINE INTEGRATION | [PR #2](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/2), corrected `e088970` / contract0.2: orchestrator independently reran all29 tests and original false-PASS control now rejects | B/C/D bind exact accepted API; A stays available for concrete integration defects |
 | B | STORED SERVICE ACCEPTED FOR SCOPED LOCAL INTEGRATION | [PR #3](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/3), `251b3b0`: orchestrator independently reran78 tests (A29+B49); reviewed source imported here | C/D bind actual backend; B stays available for concrete integration defects; semantic readiness remains false |
 | C | CAPTURE REPAIR ACCEPTED / SERVICE BINDING REQUESTED | [PR #4](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/4), corrected `9478a61`: orchestrator reran13 generic tests and original ambiguous-return negative control | Integrate actual B receipts/checkpoints/resolve_view and test bounded feedback/revision/recheck; native/actual-model scope remains explicit |
-| D | TRANSPORT SLICE VERIFIED / BACKEND DEPENDENT | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5), `c7e486f`: orchestrator independently verified16 tests with cached official MCP SDK; base run15 PASS/1 optional SDK SKIP | Accepted A dependency bytes exact; actual persisted B-core SDK/CLI/MCP parity remains untested |
+| D | PERSISTED TRANSPORT PARITY ACCEPTED | [PR #5](https://github.com/TrustKernel-EthGlobal-Mumbai-2026/backend/pull/5), `02a9568`: orchestrator independently reran100 tests with official MCP; base98 PASS/2 explicit MCP skips | Exact A/B dependencies; SDK/injected CLI/stdio MCP verified over actual local stored core; standalone/default host setup remains deferred |
 
 The orchestrator updates states after actual chat snapshots and artifact review.
 Public status deliberately omits private machine paths, account data and chat
@@ -174,6 +174,17 @@ accepts a single-worker local procedural backend, not a background daemon, nativ
 trace-to-typed conversion, remote authentication or complete semantic ledger.
 The accepted commit/API was relayed to C/D; their actual-core integration tests
 remain pending. No PR or main merge, model/provider call or budget change.
+
+Final D parity review: `02a9568a9fe1e28bc9a7cb14a5264e60acf107da` was inspected
+and independently rerun with exact accepted A/B dependency bytes. All100 tests
+pass with cached official MCP1.30.0 (A29+B49+D22); base Python passes98 with two
+explicit genuine-MCP skips. Actual local stored results survive SDK, trusted
+in-process CLI and real MCP stdio, including foreign-reference denial, six
+assessment states, unsupported acknowledgement and restart-stable pinned cursors.
+Exact owned files are imported here and optional MCP CI is registered. Standalone
+default commands still fail unavailable without trusted service injection;
+arbitrary host installation, daemon lifecycle and actual-model response are not
+claimed. C's final persisted/native loop and durable authored demo remain pending.
 
 ## Draft PR descriptions
 
