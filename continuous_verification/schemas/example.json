@@ -1,0 +1,214 @@
+{
+  "request": {
+    "contract_version": "continuous-verification-0.1",
+    "run_id": "authored-run",
+    "request_id": "request-1",
+    "proposal": {
+      "proposal_id": "proposal-1",
+      "revision": 0,
+      "content": "Paper hold",
+      "content_digest": "dc4a8717951f546b37898eed04c73f8a34a383f7db6dd465ebdff526389b34cb",
+      "report_event_id": "event-3",
+      "dependencies": null,
+      "dependency_completeness": "UNKNOWN"
+    },
+    "checkpoint": {
+      "checkpoint_id": "checkpoint-1",
+      "revision": 0,
+      "digest": "7390920514d5335a1a0e914831cc7bb8d36d5225e92b4cfeeea3ff4d96feb44b"
+    },
+    "policy": {
+      "policy_id": "authored-procedure",
+      "version": "1",
+      "digest": "da4319f8347c9867f40257212332f3b52576b8b073349aae43eb064bdd803ae2",
+      "checks": [
+        "required_snapshot_before_market_report",
+        "report_completion"
+      ]
+    },
+    "checks": [
+      "required_snapshot_before_market_report",
+      "report_completion"
+    ]
+  },
+  "checkpoint": {
+    "contract_version": "continuous-verification-0.1",
+    "run_id": "authored-run",
+    "checkpoint_id": "checkpoint-1",
+    "revision": 0,
+    "established_by": {
+      "service_id": "authored-service",
+      "basis": "SERVICE_ESTABLISHED"
+    },
+    "streams": [
+      {
+        "stream_id": "host",
+        "requested": 3,
+        "ingested_through": 3,
+        "projected_through": 3,
+        "gaps": [],
+        "capabilities": [
+          {
+            "name": "phase_boundaries",
+            "state": "CAPTURED",
+            "basis_event_ids": [
+              "event-2"
+            ]
+          },
+          {
+            "name": "report_completion",
+            "state": "CAPTURED",
+            "basis_event_ids": [
+              "event-2"
+            ]
+          },
+          {
+            "name": "model_input",
+            "state": "CAPTURED",
+            "basis_event_ids": [
+              "event-2"
+            ]
+          },
+          {
+            "name": "tool_lifecycle",
+            "state": "CAPTURED",
+            "basis_event_ids": [
+              "event-2"
+            ]
+          }
+        ]
+      }
+    ],
+    "created_at": null
+  },
+  "events": [
+    {
+      "contract_version": "continuous-verification-0.1",
+      "run_id": "authored-run",
+      "stream_id": "host",
+      "event_id": "event-1",
+      "sequence": 1,
+      "event_type": "tool_result",
+      "producer": {
+        "id": "authored-host",
+        "kind": "instrumented",
+        "adapter_version": "fixture-1"
+      },
+      "occurred_at": null,
+      "observed_at": null,
+      "recorded_at": null,
+      "parents": [],
+      "content": "Authored snapshot",
+      "content_digest": "117992a6745e33732f2d0bacfb961882cb34f733e85d7f79c0fe7107d9b28aa1",
+      "origin": {
+        "uri": "fixture:authored",
+        "json_pointer": null,
+        "span": [
+          0,
+          17
+        ],
+        "redaction_profile": "authored-public"
+      },
+      "payload": {
+        "call_id": "call-1",
+        "tool_name": "market_snapshot",
+        "status": "SUCCESS"
+      }
+    },
+    {
+      "contract_version": "continuous-verification-0.1",
+      "run_id": "authored-run",
+      "stream_id": "host",
+      "event_id": "event-2",
+      "sequence": 2,
+      "event_type": "model_input",
+      "producer": {
+        "id": "authored-host",
+        "kind": "instrumented",
+        "adapter_version": "fixture-1"
+      },
+      "occurred_at": null,
+      "observed_at": null,
+      "recorded_at": null,
+      "parents": [
+        "event-1"
+      ],
+      "content": "",
+      "content_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "origin": {
+        "uri": "fixture:authored",
+        "json_pointer": null,
+        "span": [
+          0,
+          0
+        ],
+        "redaction_profile": "authored-public"
+      },
+      "payload": {
+        "input_id": "input-1",
+        "report_id": "market-1",
+        "report_revision": 0,
+        "included_event_ids": [
+          "event-1"
+        ],
+        "boundary": "ASSEMBLED"
+      }
+    },
+    {
+      "contract_version": "continuous-verification-0.1",
+      "run_id": "authored-run",
+      "stream_id": "host",
+      "event_id": "event-3",
+      "sequence": 3,
+      "event_type": "report",
+      "producer": {
+        "id": "authored-host",
+        "kind": "instrumented",
+        "adapter_version": "fixture-1"
+      },
+      "occurred_at": null,
+      "observed_at": null,
+      "recorded_at": null,
+      "parents": [
+        "event-2"
+      ],
+      "content": "Authored paper report",
+      "content_digest": "54c6f92740121894e2e78d91e13deb5bcf60f1b38cb50858af907cd0f26673eb",
+      "origin": {
+        "uri": "fixture:authored",
+        "json_pointer": null,
+        "span": [
+          0,
+          21
+        ],
+        "redaction_profile": "authored-public"
+      },
+      "payload": {
+        "report_id": "market-1",
+        "revision": 0,
+        "report_type": "market",
+        "input_event_id": "event-2",
+        "phase": "CLOSED",
+        "completion": "COMPLETE"
+      }
+    }
+  ],
+  "policy": {
+    "contract_version": "continuous-verification-0.1",
+    "policy_id": "authored-procedure",
+    "version": "1",
+    "checks": [
+      {
+        "check_id": "required_snapshot_before_market_report",
+        "on_fail": "HOLD",
+        "on_inconclusive": "RECHECK"
+      },
+      {
+        "check_id": "report_completion",
+        "on_fail": "HOLD",
+        "on_inconclusive": "RECHECK"
+      }
+    ],
+    "required_tool": "market_snapshot"
+  }
+}
