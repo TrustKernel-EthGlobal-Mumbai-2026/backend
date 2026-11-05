@@ -1,7 +1,8 @@
 """Operator-configured local host; no model-selected paths, grants or factories.
 
 Bootstrap starts empty with UNKNOWN coverage. Client tools are verify/read only.
-Reuse the existing single-owner worker; async capture waits for its accepted API.
+Configured clients reuse the existing worker; runtime_session shares accepted B
+async capture ownership with its restricted local client.
 """
 import argparse
 from contextlib import contextmanager
@@ -17,6 +18,7 @@ from .mcp_server import build_server
 from .sdk import Access, Client, InterfaceError, MAX_BYTES, ServiceErrorAdapter, failure
 from .service import Principal, ServiceBackend, ServiceError
 from .tradingagents import LocalServiceWorker
+from .async_capture import AsyncTraceCapture
 
 CONFIG_VERSION = "trustkernel-host-1"
 CLIENT_OPERATIONS = ("verify", "get_assessment", "get_evidence", "get_run_state", "list_events")
@@ -198,7 +200,8 @@ def initialize(path) -> dict:
 def collector_session(path):
     """Trusted Python host API only; separate collect authority, no configuration grant.
 
-    This is not a poller/daemon. B's proposed async API is intentionally unbound.
+    This is a sequential helper, not a poller/daemon. For concurrent production
+    and client access use runtime_session and its one accepted B owner.
     """
     config = load_config(path)
     if config.body["mode"] != "new":
@@ -226,6 +229,37 @@ def client_session(path):
     finally:
         if worker is not None:
             worker.close()
+
+
+@dataclass(frozen=True)
+class HostRuntime:
+    """Trusted local delegation on one owner, not two authenticated principals."""
+    collector: AsyncTraceCapture
+    client: Client
+
+
+@contextmanager
+def runtime_session(path, *, source_id=None, trace_path=None):
+    """One accepted B owner for trusted submission and restricted verify/read.
+
+    New-mode initialized hosts only. Optional native source arguments belong to
+    trusted Python setup; native inventory never implies typed input coverage.
+    Do not open a separate collector/client owner concurrently on this database.
+    """
+    config = load_config(path)
+    if config.body["mode"] != "new":
+        raise HostError("Shared collector runtime requires an initialized new-mode host.")
+    _check_initialized(config)
+    capture = AsyncTraceCapture(config.database, source_id=source_id, trace_path=trace_path,
+        principal=Principal(config.body["collector_id"], frozenset({"collect", "verify", "read"}), config.run_ids),
+        service_id=config.body["service_id"])
+    try:
+        capture.start()
+        client = Client(ServiceErrorAdapter(capture, ServiceError), Access(
+            frozenset({"verify", "read"}), config.run_ids))
+        yield HostRuntime(capture, client)
+    finally:
+        capture.stop()
 
 
 class _Parser(argparse.ArgumentParser):

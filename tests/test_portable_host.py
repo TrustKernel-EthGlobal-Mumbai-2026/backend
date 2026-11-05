@@ -17,7 +17,7 @@ import unittest
 from continuous_verification import digest
 from continuous_verification.host import (
     CLIENT_OPERATIONS, HostError, client_session, collector_session, initialize,
-    load_config, main, mcp_main,
+    load_config, main, mcp_main, runtime_session,
 )
 from continuous_verification.service import ServiceError
 
@@ -74,6 +74,31 @@ class HostTests(unittest.TestCase):
         with self.assertRaises(HostError):
             initialize(self.config)
         self.assertEqual(load_config(self.config).database.read_bytes(), before)
+
+    def test_one_async_owner_future_commit_restricted_client_and_unknown_coverage(self):
+        initialize(self.config)
+        with runtime_session(self.config) as runtime:
+            self.assertIs(runtime.client.backend.backend, runtime.collector)
+            owner = runtime.collector.snapshot()["owner_thread"]
+            future = runtime.collector.submit("ingest_events", dict(run_id="authored-run",
+                batch_id="async-authored", events=self.packet["events"]))
+            self.assertEqual([e["status"] for e in future.result(timeout=3)["events"]], ["ACCEPTED"] * 3)
+            state = runtime.client.call("get_run_state", {"run_id": "authored-run"})["result"]
+            self.assertEqual(state["raw_ingested_events"], 3)
+            self.assertEqual({c["state"] for c in state["coverage"]["host"]}, {"UNKNOWN"})
+            cp = runtime.collector.execute("checkpoint", dict(run_id="authored-run", checkpoint_id="async-cp",
+                revision=0, registry_revision=0, streams=[dict(stream_id="host", requested=3)]))
+            request = copy.deepcopy(self.packet["request"])
+            request["checkpoint"] = dict(checkpoint_id="async-cp", revision=0, digest=digest(cp))
+            assessed = runtime.client.call("verify", request)
+            self.assertTrue(assessed["ok"], assessed)
+            self.assertEqual({f["outcome"] for f in assessed["result"]["findings"]}, {"INCONCLUSIVE"})
+            self.assertEqual(runtime.client.call("ingest_events", {"run_id": "authored-run"})["error"]["code"], "FORBIDDEN")
+            with self.assertRaises(ServiceError):
+                runtime.collector.install_policy("authored-run", self.packet["policy"])
+            self.assertEqual(runtime.collector.snapshot()["owner_thread"], owner)
+            self.assertFalse(runtime.collector.barrier()["ledger_ready"])
+        self.assertEqual(runtime.collector.snapshot()["lifecycle"], "STOPPED")
 
     def test_real_host_preserves_hold_and_separates_collector_and_client(self):
         request = self.seed_failure()
@@ -144,7 +169,7 @@ import asyncio,copy,hashlib,importlib.resources as resources,json,os,shutil,subp
 from pathlib import Path
 import continuous_verification as package
 from continuous_verification import digest
-from continuous_verification.host import client_session,collector_session,load_config
+from continuous_verification.host import client_session,collector_session,load_config,runtime_session
 from continuous_verification.service import Principal,ServiceBackend
 from continuous_verification.tradingagents import LocalServiceWorker
 from mcp import ClientSession,StdioServerParameters
@@ -167,13 +192,22 @@ cfg.write_text(json.dumps(body))
 r=command(['--config',str(cfg),'init']);assert r.returncode==0,r.stderr
 assert json.loads(r.stdout)['result']['observations_seeded']==0
 events=copy.deepcopy(pkt['events']);events[0]['payload']['status']='ERROR'
-with collector_session(cfg) as collector:
-    collector.execute('ingest_events',dict(run_id='authored-run',batch_id='authored',events=events))
+with runtime_session(cfg) as runtime:
+    collector=runtime.collector
+    committed=collector.submit('ingest_events',dict(run_id='authored-run',batch_id='authored',events=events)).result(timeout=3)
+    assert [e['status'] for e in committed['events']]==['ACCEPTED']*3
+    state=runtime.client.call('get_run_state',dict(run_id='authored-run'))['result']
+    assert {c['state'] for c in state['coverage']['host']}=={'UNKNOWN'}
+    assert runtime.client.call('ingest_events',dict(run_id='authored-run'))['error']['code']=='FORBIDDEN'
     collector.record_coverage('authored-run','host',pkt['checkpoint']['streams'][0]['capabilities'])
     cp=collector.execute('checkpoint',dict(run_id='authored-run',checkpoint_id='checkpoint-1',revision=0,registry_revision=0,streams=[dict(stream_id='host',requested=3)]))
+    runtime_request=copy.deepcopy(pkt['request']);runtime_request['checkpoint']['digest']=digest(cp)
+    runtime_result=runtime.client.call('verify',runtime_request)
+    assert runtime_result['ok'] and runtime_result['result']['disposition']=='HOLD'
 request=copy.deepcopy(pkt['request']);request['checkpoint']['digest']=digest(cp)
 with client_session(cfg) as sdk:
     expected=sdk.call('verify',request)
+assert expected==runtime_result
 assert expected['ok'] and expected['result']['disposition']=='HOLD'
 assert 'FAIL' in [f['outcome'] for f in expected['result']['findings']]
 request_file=root/'-request & literal.json';request_file.write_text(json.dumps(request))

@@ -14,7 +14,7 @@ has no runtime dependencies. Official MCP support is optional: `mcp>=1.28,<2`.
 ```text
 python -m pip wheel --no-deps . --wheel-dir wheelhouse
 python -m venv isolated-env
-isolated-env/bin/python -m pip install "wheelhouse/trustkernel_continuous-0.1.0-py3-none-any.whl[mcp]"
+isolated-env/bin/python -m pip install "wheelhouse/trustkernel_continuous-0.1.1-py3-none-any.whl[mcp]"
 ```
 
 On Windows use `isolated-env/Scripts/python.exe`; installed commands are beside
@@ -24,6 +24,7 @@ and add `--no-build-isolation`. For offline installation use `--no-index
 Only the TrustKernel wheel is platform-neutral; dependencies need their own
 compatible wheels. No Docker, PyPI upload or public release is part of this work.
 
+Version 0.1.1 adds the accepted async module and minimal shared-owner binding.
 The wheel includes `continuous_verification` only, with `schemas/*.json` and
 `prompts/*.md`. Historical corpora, repository tools/tests, caches, personal paths
 and existing virtual environments are not package dependencies. A source checkout
@@ -131,7 +132,7 @@ arrays without a shell. This is a candidate command interface, not a claim of
 tested installation in every agent. Root owns the installed-Codex harness check
 and any per-invocation settings; this lane changes no global harness configuration.
 
-## SQLite ownership and async gate
+## SQLite ownership and accepted shared runtime
 
 All service creation, calls and close run on the existing C.LocalServiceWorker's
 single owner thread. This is reuse of the reviewed host bridge, not another
@@ -140,12 +141,40 @@ collector_session and client_session examples are **sequential**, not concurrent
 writers on one store. The configured standalone host is not a daemon or shared
 network service and supplies no network authentication.
 
-The proposed B async capture API is not accepted/bound here. Before adding a
-concurrent runtime_session, root must approve the actual B implementation/tests.
-Its producer and verify/read facade must share that **one B owner**, with agent
-SDK Access restricted to verify/read. Do not start a second worker writer or
-substitute native visible-text inventory for a typed procedural ledger. The
-existing-copy client remains usable independently of that future integration.
+Accepted B source `4e46e2d9bd6b58756214f788f4724ef087691d9f` was imported by
+cherry-pick without editing its async_capture.py, test_async_capture.py or
+ASYNC_CAPTURE.md. Root independently reviewed its 13 tests and single-owner,
+bounded-command and durable-future behavior before this binding.
+
+For a new-mode initialized host, use one runtime for the producer and client:
+
+```python
+from continuous_verification.host import runtime_session
+
+with runtime_session(operator_config_path) as runtime:
+    receipt = runtime.collector.submit("ingest_events", accepted_batch).result(timeout=3)
+    # A completed Future contains the actual durable B receipt, not enqueue success.
+    state = runtime.client.call("get_run_state", {"run_id": allowed_run})
+    result = runtime.client.call("verify", exact_checkpoint_bound_request)
+```
+
+One AsyncTraceCapture owns SQLite. Its trusted host Principal has collect/verify/
+read, while the agent-facing Client Access is verify/read only. This is explicit
+local delegation on the same owner, **not a separately authenticated agent** or
+an OS/process sandbox. The trusted runtime object is not a model tool argument.
+The runtime cannot install policy or configure runs; initialization remains
+separate. Default typed coverage is UNKNOWN until actual trusted observations
+are recorded. Capture/read success does not create semantic readiness.
+
+Optional source_id and trace_path are trusted Python-only runtime_session keyword
+arguments and must be supplied together. No CLI/MCP request selects a source path.
+Native visible-text inventory is not automatically mapped into A events, assembled
+input or coverage; ledger_ready remains false for that inventory. B's submit,
+execute, snapshot, bounded barrier and stop semantics are preserved. A timeout
+is not acknowledgement; use immutable request IDs and retained state when completion
+is unknown. Context exit calls stop(), not close(). Do not open another worker
+on this database concurrently; use runtime.client on this same owner. Existing-copy
+client_session remains unchanged and independent for the root's harness test.
 
 ## Verification and review evidence
 
@@ -153,7 +182,8 @@ existing-copy client remains usable independently of that future integration.
 python -B -m unittest discover -s tests -p test_portable_host.py -v
 ```
 
-Five host tests cover empty/UNKNOWN initialization, missing config/state, exact
+Six host tests cover shared-owner durable Future submission/restricted reads,
+empty/UNKNOWN initialization, missing config/state, exact
 persisted FAIL/HOLD, separated grants, foreign/profile injection rejection,
 existing copied-store behavior and multi-threaded callers through the one owner.
 An additional installed-wheel acceptance test is explicit: without artifact paths
@@ -171,8 +201,8 @@ references, path-field rejection, restart-stable pinned cursors after a later
 append, missing-config stdout discipline and an unchanged original authored
 store while operating on its copy. All data is authored and temporary.
 
-Observed on this branch: all **6 portable tests passed** with the wheel/wheelhouse
-supplied. Without those explicit artifacts, 5 host tests passed and the clean-
+Observed on this branch: all **7 portable tests passed** with the wheel/wheelhouse
+supplied. Without those explicit artifacts, 6 host tests passed and the clean-
 install test was explicitly skipped. Existing continuous regression suite: 118
 tests, 117 passed and the optional native framework class explicitly skipped in
 the official-MCP environment. No missing optional integration is counted as PASS.
