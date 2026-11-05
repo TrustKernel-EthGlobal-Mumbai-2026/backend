@@ -3,8 +3,10 @@
 Candidate implementation on `codex/correction-experiment`, based on `39e0e1c`.
 The old smoke, core, upstream and main are unchanged. Root owns shared metadata,
 fresh source capture, operational reviews and paid launches. This lane performs
-offline implementation and authored tests only. The B source API shape is known;
-its immutable implementation must be accepted and bound before paid loading.
+offline implementation and authored tests only. Accepted B live-source commit
+`6a39e8545c71bc54095150131edc7d40f3d70c8d` is imported exactly and bound by
+SOURCE_DEPENDENCY. Root independently verified its 21 native source tests and
+the controller's 14 native tests; operational launch gates remain root-owned.
 
 The user authorized seven minutes each for Terra and Sol, fresh read-only market
 and news, and testing whether the model uses CLI checkpoint feedback procedurally.
@@ -147,14 +149,15 @@ It never installs the old permanent API-only network audit before live sources.
 The model transport remains Responses-only. Native HTTP/raw artifacts and fresh
 session caches must stay beneath the new arm output, outside the frozen source tree.
 
-Current offline validation: 14 native tests pass with the explicit provisional B
-candidate supplied (normal pinned factory/SDK/ToolNode; authored transports only).
+Current offline validation: 14 controller native tests pass with the accepted B
+dependency (normal pinned factory/SDK/ToolNode; authored transports only).
 Five standard-library controls pass; the native class explicitly skips when its
 optional dependencies are absent. The B interface test enters the real candidate
 context with its call body replaced by an authored stub, verifies lazy entry,
 repeated dynamic queries/callbacks and closed-session refusal. This is interface
-binding evidence, not accepted source safety or a live fetch. Paid loading stays
-disabled until the accepted immutable B commit is bound.
+binding evidence, not a live fetch. B source safety was separately reviewed by
+root at its immutable accepted commit. Paid execution still requires the exact
+per-arm operator approval and operational gates; this lane performs none.
 
 The source-plan file contains exactly the `plan` object from B's default no-fetch
 preflight JSON output, not its enclosing result. Its bytes are hashed and bound

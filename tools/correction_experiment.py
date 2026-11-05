@@ -24,7 +24,7 @@ from tools.continuous_demo import new_output, write_new
 from tools.tradingagents_integration import checked_upstream, real_runtime, _complete
 
 MILESTONE = "provider-report-checkpoint-correction-v1"
-SOURCE_DEPENDENCY = "PENDING_ACCEPTED_B_LIVE_SOURCE_COMMIT"
+SOURCE_DEPENDENCY = "6a39e8545c71bc54095150131edc7d40f3d70c8d"
 POLICY = dict(contract_version="continuous-verification-0.2", policy_id="correction-report-procedure", version="1",
     required_tool="get_verified_market_snapshot", checks=[dict(check_id=name, on_fail="HOLD", on_inconclusive="RECHECK")
     for name in ("required_snapshot_before_market_report", "report_completion")])
